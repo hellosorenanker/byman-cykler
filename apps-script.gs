@@ -1,17 +1,6 @@
 /**
  * Google Apps Script for Byman Cykler EAN Scanner
  *
- * Sheet structure per tab (Hjelme, Sko, Tøj, Tilbehør, Energi, Tools):
- *   A: Produktnavn        <-- auto-filled from EAN lookup
- *   B: Mærke (brand)      <-- auto-filled from EAN lookup
- *   C: Farve
- *   D: Størrelse
- *   E: Pris (DKK)
- *   F: Antal på lager     <-- set by scanner
- *   G: Leverandør varenr.
- *   H: Stregkode / EAN    <-- matched/set by scanner
- *   I: Beskrivelse        <-- auto-filled from EAN lookup
- *
  * UPDATING: Deploy > Manage deployments > pencil icon >
  * Version: "New version" > Deploy
  */
@@ -21,8 +10,8 @@
 var BARCODELOOKUP_API_KEY = '';  // e.g. 'abc123xyz'
 // ====================================
 
-var EAN_COLUMN = 8;   // Column H
-var QTY_COLUMN = 6;   // Column F
+var EAN_COLUMN = 8;   // Column H: Stregkode / EAN
+var QTY_COLUMN = 6;   // Column F: Antal på lager
 
 function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -48,12 +37,7 @@ function doPost(e) {
       for (var r = 0; r < eanValues.length; r++) {
         if (String(eanValues[r][0]) === ean) {
           sheet.getRange(r + 2, QTY_COLUMN).setValue(qty);
-          results.push({
-            ean: ean,
-            status: 'updated',
-            tab: sheet.getName(),
-            product: sheet.getRange(r + 2, 1).getValue()
-          });
+          results.push({ ean: ean, status: 'updated', tab: sheet.getName() });
           found = true;
           break;
         }
@@ -62,30 +46,22 @@ function doPost(e) {
     }
 
     if (!found) {
-      // New product — look up info and add to selected tab
-      var info = lookupEan(ean);
       var targetSheet = ss.getSheetByName(category);
-
       if (targetSheet) {
-        targetSheet.appendRow([
-          info.name,         // A: Produktnavn
-          info.brand,        // B: Mærke (brand)
-          '',                // C: Farve
-          '',                // D: Størrelse
-          '',                // E: Pris (DKK)
-          qty,               // F: Antal på lager
-          '',                // G: Leverandør varenr.
-          ean,               // H: Stregkode / EAN
-          info.description   // I: Beskrivelse
-        ]);
+        // Step 1: Write EAN + quantity FIRST (so data always appears)
+        targetSheet.appendRow(['', '', '', '', '', qty, '', ean, '']);
+        var newRow = targetSheet.getLastRow();
 
-        results.push({
-          ean: ean,
-          status: 'new',
-          tab: category,
-          product: info.name,
-          lookupSource: info.source
-        });
+        // Step 2: Try to look up product info and update the row
+        try {
+          var info = lookupEan(ean);
+          if (info.name) targetSheet.getRange(newRow, 1).setValue(info.name);
+          if (info.brand) targetSheet.getRange(newRow, 2).setValue(info.brand);
+          if (info.description) targetSheet.getRange(newRow, 9).setValue(info.description);
+          results.push({ ean: ean, status: 'new', tab: category, product: info.name, source: info.source });
+        } catch (err) {
+          results.push({ ean: ean, status: 'new', tab: category, product: '', source: 'error: ' + err.message });
+        }
       }
     }
   }
@@ -95,22 +71,19 @@ function doPost(e) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
-/**
- * Look up product info by EAN code.
- * Tries Barcodelookup.com first (paid, best coverage),
- * then UPCitemdb as free fallback.
- */
 function lookupEan(ean) {
-  var info;
-
-  // Try Barcodelookup.com (paid — best coverage for bike products)
+  // Try Barcodelookup.com first (paid, best coverage)
   if (BARCODELOOKUP_API_KEY) {
-    info = tryBarcodeLookup(ean);
+    Logger.log('Trying Barcodelookup for ' + ean + ' with key: ' + BARCODELOOKUP_API_KEY.substring(0, 5) + '...');
+    var info = tryBarcodeLookup(ean);
     if (info) return info;
+  } else {
+    Logger.log('No Barcodelookup API key configured');
   }
 
-  // Fallback: UPCitemdb (free, 100/day)
-  info = tryUpcItemDb(ean);
+  // Fallback: UPCitemdb (free)
+  Logger.log('Trying UPCitemdb for ' + ean);
+  var info = tryUpcItemDb(ean);
   if (info) return info;
 
   return { name: '', brand: '', description: '', source: 'none' };
@@ -120,14 +93,15 @@ function tryBarcodeLookup(ean) {
   try {
     var url = 'https://api.barcodelookup.com/v3/products?barcode=' + ean
             + '&formatted=y&key=' + BARCODELOOKUP_API_KEY;
-
     var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
     var code = response.getResponseCode();
+    var text = response.getContentText();
+    Logger.log('Barcodelookup response code: ' + code);
+    Logger.log('Barcodelookup response: ' + text.substring(0, 300));
 
     if (code !== 200) return null;
 
-    var data = JSON.parse(response.getContentText());
-
+    var data = JSON.parse(text);
     if (data.products && data.products.length > 0) {
       var p = data.products[0];
       return {
@@ -137,8 +111,9 @@ function tryBarcodeLookup(ean) {
         source: 'barcodelookup'
       };
     }
-  } catch (e) {}
-
+  } catch (e) {
+    Logger.log('Barcodelookup error: ' + e.message);
+  }
   return null;
 }
 
@@ -148,23 +123,20 @@ function tryUpcItemDb(ean) {
       'https://api.upcitemdb.com/prod/trial/lookup?upc=' + ean,
       { muteHttpExceptions: true }
     );
+    var code = response.getResponseCode();
+    Logger.log('UPCitemdb response code: ' + code);
 
-    if (response.getResponseCode() !== 200) return null;
+    if (code !== 200) return null;
 
     var data = JSON.parse(response.getContentText());
-
     if (data.code === 'OK' && data.items && data.items.length > 0) {
       var item = data.items[0];
       var title = (item.title || '').replace(new RegExp('\\s*' + ean + '\\s*$'), '');
-      return {
-        name: title,
-        brand: item.brand || '',
-        description: item.description || '',
-        source: 'upcitemdb'
-      };
+      return { name: title, brand: item.brand || '', description: item.description || '', source: 'upcitemdb' };
     }
-  } catch (e) {}
-
+  } catch (e) {
+    Logger.log('UPCitemdb error: ' + e.message);
+  }
   return null;
 }
 
@@ -172,11 +144,9 @@ function doGet(e) {
   return ContentService.createTextOutput('Byman Cykler scanner script is running.');
 }
 
-// Test: run this in Apps Script editor, check Logs (View > Execution log)
+// Test: select this function and click Run, then check Execution log
 function testLookup() {
-  var result = lookupEan('768686474972'); // Giro Eclipse
-  Logger.log('Giro: ' + JSON.stringify(result));
-
-  var result2 = lookupEan('4026495099189'); // Schwalbe tube
-  Logger.log('Schwalbe: ' + JSON.stringify(result2));
+  Logger.log('API key configured: ' + (BARCODELOOKUP_API_KEY ? 'YES (' + BARCODELOOKUP_API_KEY.substring(0, 5) + '...)' : 'NO'));
+  var result = lookupEan('768686474972');
+  Logger.log('Giro result: ' + JSON.stringify(result));
 }
