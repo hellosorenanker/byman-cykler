@@ -154,7 +154,10 @@ async function sendToSheets() {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ items }),
+            body: JSON.stringify({
+                items,
+                category: document.getElementById('category-select').value,
+            }),
         });
 
         // no-cors means we can't read the response, but if no error, data was sent

@@ -42,6 +42,34 @@ header h1 {
     background: rgba(255,255,255,0.15);
 }
 
+/* Category selector */
+#category-bar {
+    padding: 10px 16px;
+    background: #1b2a4a;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+#category-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+#category-select option {
+    color: #1a1a1a;
+    background: #fff;
+}
+
 /* Scanner */
 #scanner-container {
     position: relative;

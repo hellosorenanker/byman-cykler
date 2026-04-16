@@ -35,6 +35,7 @@ function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var data = JSON.parse(e.postData.contents);
   var items = data.items;
+  var category = data.category; // Selected tab name (e.g. "Hjelme")
   var results = [];
 
   for (var i = 0; i < items.length; i++) {
@@ -47,14 +48,13 @@ function doPost(e) {
     for (var s = 0; s < sheets.length; s++) {
       var sheet = sheets[s];
       var lastRow = sheet.getLastRow();
-      if (lastRow <= 1) continue; // Skip empty or header-only tabs
+      if (lastRow <= 1) continue;
 
-      // Read all EAN values in column H
       var eanValues = sheet.getRange(2, EAN_COLUMN, lastRow - 1, 1).getValues();
 
       for (var r = 0; r < eanValues.length; r++) {
         if (String(eanValues[r][0]) === ean) {
-          // Found — update "Antal på lager" in column F
+          // Found — update "Antal på lager"
           sheet.getRange(r + 2, QTY_COLUMN).setValue(qty);
           results.push({
             ean: ean,
@@ -70,7 +70,18 @@ function doPost(e) {
     }
 
     if (!found) {
-      results.push({ ean: ean, status: 'not_found' });
+      // New product — add to the selected category tab
+      var targetSheet = ss.getSheetByName(category);
+      if (targetSheet) {
+        // Add new row: empty fields except EAN and quantity
+        // [Produktnavn, Mærke, Farve, Størrelse, Pris, Antal, Leverandør nr., EAN, Beskrivelse]
+        targetSheet.appendRow(['', '', '', '', '', qty, '', ean, '']);
+        results.push({
+          ean: ean,
+          status: 'new',
+          tab: category
+        });
+      }
     }
   }
 
@@ -89,8 +100,10 @@ function testDoPost() {
     postData: {
       contents: JSON.stringify({
         items: [
-          { ean: '5711234567890', quantity: 5 }
-        ]
+          { ean: '5711234567890', quantity: 5 },
+          { ean: '9999999999999', quantity: 2 }
+        ],
+        category: 'Hjelme'
       })
     }
   };
