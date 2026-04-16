@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Byman Scanner">
+    <link rel="manifest" href="manifest.json">
+    <title>Byman Cykler - EAN Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Byman Cykler</h1>
+        <button id="settings-btn" onclick="openSettings()" aria-label="Settings">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Scanner -->
+    <div id="scanner-container">
+        <div id="scanner"></div>
+        <div id="flash"></div>
+    </div>
+
+    <!-- Status message -->
+    <div id="status"></div>
+
+    <!-- Summary bar -->
+    <div id="summary">
+        <span id="total-count">No items scanned</span>
+    </div>
+
+    <!-- Scanned items list -->
+    <div id="items-list">
+        <div class="empty">Scan EAN codes to begin...</div>
+    </div>
+
+    <!-- Action buttons -->
+    <div id="actions">
+        <button id="clear-btn" onclick="clearAll()">Clear</button>
+        <button id="send-btn" onclick="sendToSheets()" disabled>Send to Google Sheets</button>
+    </div>
+
+    <!-- Settings modal -->
+    <div id="settings-modal">
+        <div class="modal-content">
+            <h2>Settings</h2>
+            <label for="script-url-input">Google Apps Script URL</label>
+            <input type="url" id="script-url-input" placeholder="https://script.google.com/macros/s/...">
+            <p class="hint">Paste the URL from your Google Apps Script deployment.</p>
+            <div class="modal-actions">
+                <button onclick="closeSettings()">Cancel</button>
+                <button class="primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
