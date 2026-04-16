@@ -31,6 +31,12 @@
     <!-- Status message -->
     <div id="status"></div>
 
+    <!-- Manual entry -->
+    <div id="manual-entry">
+        <input type="text" id="manual-ean" inputmode="numeric" placeholder="Enter EAN manually..." maxlength="13">
+        <button onclick="addManualEan()">+ Add</button>
+    </div>
+
     <!-- Summary bar -->
     <div id="summary">
         <span id="total-count">No items scanned</span>

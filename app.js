@@ -170,6 +170,24 @@ async function sendToSheets() {
     sendBtn.textContent = originalText;
 }
 
+// --- Manual entry ---
+function addManualEan() {
+    const input = document.getElementById('manual-ean');
+    const ean = input.value.trim();
+
+    if (!ean || ean.length < 8 || ean.length > 13 || !/^\d+$/.test(ean)) {
+        showStatus('Enter a valid EAN (8-13 digits)', 'error');
+        return;
+    }
+
+    const currentQty = scannedItems.get(ean) || 0;
+    scannedItems.set(ean, currentQty + 1);
+
+    input.value = '';
+    playBeep();
+    renderItems();
+}
+
 // --- Status messages ---
 function showStatus(message, type) {
     const status = document.getElementById('status');
@@ -192,8 +210,8 @@ function closeSettings() {
 
 function saveSettings() {
     const url = document.getElementById('script-url-input').value.trim();
-    if (url && !url.startsWith('https://script.google.com/')) {
-        showStatus('URL should start with https://script.google.com/', 'error');
+    if (url && !url.includes('script.google.com/')) {
+        showStatus('URL should be a Google Apps Script URL', 'error');
         return;
     }
     localStorage.setItem('googleScriptUrl', url);

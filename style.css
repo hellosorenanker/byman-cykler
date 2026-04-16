@@ -79,6 +79,45 @@ header h1 {
     opacity: 1;
 }
 
+/* Manual entry */
+#manual-entry {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#manual-ean {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: 'SF Mono', 'Menlo', monospace;
+    outline: none;
+}
+
+#manual-ean:focus {
+    border-color: #1b2a4a;
+}
+
+#manual-entry button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #1b2a4a;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+#manual-entry button:active {
+    background: #2c3e5a;
+}
+
 /* Status */
 #status {
     display: none;
