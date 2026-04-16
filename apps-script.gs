@@ -16,8 +16,8 @@
  * Version: "New version" > Deploy
  */
 
-var EAN_COLUMN = 8;   // Column H: Stregkode / EAN
-var QTY_COLUMN = 6;   // Column F: Antal på lager
+var EAN_COLUMN = 8;   // Column H
+var QTY_COLUMN = 6;   // Column F
 
 function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -29,7 +29,6 @@ function doPost(e) {
   for (var i = 0; i < items.length; i++) {
     var ean = String(items[i].ean);
     var qty = items[i].quantity;
-    var info = items[i].info; // Product info from client-side lookup
     var found = false;
 
     // Search every tab for this EAN
@@ -58,30 +57,29 @@ function doPost(e) {
     }
 
     if (!found) {
-      // New product — add to selected category tab
+      // New product — look up info and add to selected tab
+      var info = lookupEan(ean);
       var targetSheet = ss.getSheetByName(category);
-      if (targetSheet) {
-        var productName = (info && info.name) ? info.name : '';
-        var brand = (info && info.brand) ? info.brand : '';
-        var description = (info && info.description) ? info.description : '';
 
+      if (targetSheet) {
         targetSheet.appendRow([
-          productName,   // A: Produktnavn
-          brand,         // B: Mærke (brand)
-          '',            // C: Farve
-          '',            // D: Størrelse
-          '',            // E: Pris (DKK)
-          qty,           // F: Antal på lager
-          '',            // G: Leverandør varenr.
-          ean,           // H: Stregkode / EAN
-          description    // I: Beskrivelse
+          info.name,         // A: Produktnavn
+          info.brand,        // B: Mærke (brand)
+          '',                // C: Farve
+          '',                // D: Størrelse
+          '',                // E: Pris (DKK)
+          qty,               // F: Antal på lager
+          '',                // G: Leverandør varenr.
+          ean,               // H: Stregkode / EAN
+          info.description   // I: Beskrivelse
         ]);
 
         results.push({
           ean: ean,
           status: 'new',
           tab: category,
-          product: productName
+          product: info.name,
+          lookupSource: info.source
         });
       }
     }
@@ -92,6 +90,87 @@ function doPost(e) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
+/**
+ * Look up product info by EAN code.
+ * Tries UPCitemdb first, then Open Food Facts as fallback.
+ */
+function lookupEan(ean) {
+  var info;
+
+  // Try UPCitemdb (100 lookups/day)
+  info = tryUpcItemDb(ean);
+  if (info) return info;
+
+  // Fallback: Open Food Facts (no limit, covers some non-food products)
+  info = tryOpenFoodFacts(ean);
+  if (info) return info;
+
+  return { name: '', brand: '', description: '', source: 'none' };
+}
+
+function tryUpcItemDb(ean) {
+  try {
+    var response = UrlFetchApp.fetch(
+      'https://api.upcitemdb.com/prod/trial/lookup?upc=' + ean,
+      { muteHttpExceptions: true }
+    );
+
+    if (response.getResponseCode() !== 200) return null;
+
+    var data = JSON.parse(response.getContentText());
+
+    if (data.code === 'OK' && data.items && data.items.length > 0) {
+      var item = data.items[0];
+      // Clean up title: remove trailing EAN if present
+      var title = (item.title || '').replace(new RegExp('\\s*' + ean + '\\s*$'), '');
+      return {
+        name: title,
+        brand: item.brand || '',
+        description: item.description || '',
+        source: 'upcitemdb'
+      };
+    }
+  } catch (e) {}
+
+  return null;
+}
+
+function tryOpenFoodFacts(ean) {
+  try {
+    var response = UrlFetchApp.fetch(
+      'https://world.openfoodfacts.org/api/v2/product/' + ean + '.json',
+      { muteHttpExceptions: true }
+    );
+
+    if (response.getResponseCode() !== 200) return null;
+
+    var data = JSON.parse(response.getContentText());
+
+    if (data.status === 1 && data.product) {
+      var p = data.product;
+      if (p.product_name || p.brands) {
+        return {
+          name: p.product_name || '',
+          brand: p.brands || '',
+          description: p.generic_name || '',
+          source: 'openfoodfacts'
+        };
+      }
+    }
+  } catch (e) {}
+
+  return null;
+}
+
 function doGet(e) {
   return ContentService.createTextOutput('Byman Cykler scanner script is running.');
+}
+
+// Test: run this in the Apps Script editor and check Logs (View > Logs)
+function testLookup() {
+  var result = lookupEan('4026495099189'); // Schwalbe tube
+  Logger.log('Schwalbe: ' + JSON.stringify(result));
+
+  var result2 = lookupEan('5711234567890'); // Test EAN
+  Logger.log('Test EAN: ' + JSON.stringify(result2));
 }
