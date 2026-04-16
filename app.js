@@ -4,6 +4,7 @@ const COOLDOWN_MS = 2000; // Same EAN won't count again within 2 seconds
 // --- State ---
 let scanner = null;
 const scannedItems = new Map(); // EAN -> quantity
+const productInfo = new Map();  // EAN -> { name, brand, description }
 const lastScanTime = new Map(); // EAN -> timestamp (debounce)
 
 // --- Initialize ---
@@ -39,19 +40,68 @@ function onScanSuccess(decodedText) {
     const now = Date.now();
     const lastTime = lastScanTime.get(decodedText) || 0;
 
-    // Debounce: skip if same EAN scanned within cooldown period
     if (now - lastTime < COOLDOWN_MS) return;
 
     lastScanTime.set(decodedText, now);
 
-    // Increment quantity
     const currentQty = scannedItems.get(decodedText) || 0;
     scannedItems.set(decodedText, currentQty + 1);
+
+    // Look up product info if we haven't already
+    if (!productInfo.has(decodedText)) {
+        lookupEan(decodedText);
+    }
 
     playBeep();
     vibrate();
     showScanFeedback();
     renderItems();
+}
+
+// --- EAN Lookup ---
+async function lookupEan(ean) {
+    // Try UPCitemdb first
+    try {
+        const res = await fetch(
+            `https://api.upcitemdb.com/prod/trial/lookup?upc=${ean}`
+        );
+        if (res.ok) {
+            const data = await res.json();
+            if (data.code === 'OK' && data.items && data.items.length > 0) {
+                const item = data.items[0];
+                productInfo.set(ean, {
+                    name: item.title || '',
+                    brand: item.brand || '',
+                    description: item.description || '',
+                });
+                renderItems();
+                return;
+            }
+        }
+    } catch (e) {}
+
+    // Fallback: try Open Food Facts (covers some non-food products too)
+    try {
+        const res = await fetch(
+            `https://world.openfoodfacts.org/api/v2/product/${ean}.json`
+        );
+        if (res.ok) {
+            const data = await res.json();
+            if (data.status === 1 && data.product) {
+                const p = data.product;
+                productInfo.set(ean, {
+                    name: p.product_name || '',
+                    brand: p.brands || '',
+                    description: p.generic_name || '',
+                });
+                renderItems();
+                return;
+            }
+        }
+    } catch (e) {}
+
+    // Not found in any database
+    productInfo.set(ean, null);
 }
 
 // --- Feedback ---
@@ -67,9 +117,7 @@ function playBeep() {
         gain.gain.value = 0.3;
         osc.start();
         osc.stop(ctx.currentTime + 0.08);
-    } catch (e) {
-        // Audio not supported, skip silently
-    }
+    } catch (e) {}
 }
 
 function vibrate() {
@@ -94,15 +142,24 @@ function renderItems() {
     let totalItems = 0;
     let html = '';
 
-    // Show newest items first
     const entries = Array.from(scannedItems.entries()).reverse();
 
     for (const [ean, qty] of entries) {
         totalProducts++;
         totalItems += qty;
+        const info = productInfo.get(ean);
+        const nameHtml = info && info.name
+            ? `<div class="item-name">${info.name}</div>`
+            : !productInfo.has(ean)
+                ? `<div class="item-name loading">Looking up...</div>`
+                : '';
+
         html += `
             <div class="item">
-                <div class="item-ean">${ean}</div>
+                <div class="item-details">
+                    <div class="item-ean">${ean}</div>
+                    ${nameHtml}
+                </div>
                 <div class="item-qty">${qty}x</div>
                 <button class="item-remove" onclick="removeItem('${ean}')" aria-label="Remove">✕</button>
             </div>
@@ -118,6 +175,7 @@ function renderItems() {
 
 function removeItem(ean) {
     scannedItems.delete(ean);
+    productInfo.delete(ean);
     lastScanTime.delete(ean);
     renderItems();
 }
@@ -126,6 +184,7 @@ function clearAll() {
     if (scannedItems.size === 0) return;
     if (!confirm('Clear all scanned items?')) return;
     scannedItems.clear();
+    productInfo.clear();
     lastScanTime.clear();
     renderItems();
 }
@@ -141,7 +200,11 @@ async function sendToSheets() {
 
     const items = [];
     scannedItems.forEach((qty, ean) => {
-        items.push({ ean, quantity: qty });
+        items.push({
+            ean,
+            quantity: qty,
+            info: productInfo.get(ean) || null,
+        });
     });
 
     const sendBtn = document.getElementById('send-btn');
@@ -160,9 +223,9 @@ async function sendToSheets() {
             }),
         });
 
-        // no-cors means we can't read the response, but if no error, data was sent
         showStatus('Sent to Google Sheets!', 'success');
         scannedItems.clear();
+        productInfo.clear();
         lastScanTime.clear();
         renderItems();
     } catch (error) {
@@ -185,6 +248,10 @@ function addManualEan() {
 
     const currentQty = scannedItems.get(ean) || 0;
     scannedItems.set(ean, currentQty + 1);
+
+    if (!productInfo.has(ean)) {
+        lookupEan(ean);
+    }
 
     input.value = '';
     playBeep();

@@ -204,11 +204,29 @@ header h1 {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.item-ean {
+.item-details {
     flex: 1;
+    min-width: 0;
+}
+
+.item-ean {
     font-size: 16px;
     font-family: 'SF Mono', 'Menlo', monospace;
     letter-spacing: 0.5px;
+}
+
+.item-name {
+    font-size: 13px;
+    color: #666;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-name.loading {
+    color: #999;
+    font-style: italic;
 }
 
 .item-qty {
