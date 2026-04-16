@@ -2,30 +2,30 @@
  * Google Apps Script for Byman Cykler EAN Scanner
  *
  * Sheet structure per tab (Hjelme, Sko, Tøj, Tilbehør, Energi, Tools):
- *   A: Produktnavn
- *   B: Mærke (brand)
+ *   A: Produktnavn        <-- auto-filled from EAN lookup
+ *   B: Mærke (brand)      <-- auto-filled from EAN lookup
  *   C: Farve
  *   D: Størrelse
  *   E: Pris (DKK)
- *   F: Antal på lager    <-- updated by scanner
+ *   F: Antal på lager     <-- set by scanner
  *   G: Leverandør varenr.
- *   H: Stregkode / EAN   <-- matched by scanner
- *   I: Beskrivelse
+ *   H: Stregkode / EAN    <-- matched/set by scanner
+ *   I: Beskrivelse        <-- auto-filled from EAN lookup
  *
  * HOW TO SET UP:
  * 1. Open your Google Sheet
  * 2. Click Extensions > Apps Script
  * 3. Delete any code already there
  * 4. Paste this entire file
- * 5. Click Deploy > New deployment
+ * 5. Click Deploy > New deployment (or update existing)
  * 6. Choose type: "Web app"
  * 7. Set "Execute as": Me
  * 8. Set "Who has access": Anyone
  * 9. Click Deploy
  * 10. Copy the URL — paste it into the scanner app settings
  *
- * UPDATING: When you paste new code, click Deploy > Manage deployments >
- * edit (pencil icon) > set Version to "New version" > Deploy
+ * UPDATING: Deploy > Manage deployments > pencil icon >
+ * Version: "New version" > Deploy
  */
 
 var EAN_COLUMN = 8;   // Column H: Stregkode / EAN
@@ -35,7 +35,7 @@ function doPost(e) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var data = JSON.parse(e.postData.contents);
   var items = data.items;
-  var category = data.category; // Selected tab name (e.g. "Hjelme")
+  var category = data.category;
   var results = [];
 
   for (var i = 0; i < items.length; i++) {
@@ -54,7 +54,6 @@ function doPost(e) {
 
       for (var r = 0; r < eanValues.length; r++) {
         if (String(eanValues[r][0]) === ean) {
-          // Found — update "Antal på lager"
           sheet.getRange(r + 2, QTY_COLUMN).setValue(qty);
           results.push({
             ean: ean,
@@ -70,16 +69,28 @@ function doPost(e) {
     }
 
     if (!found) {
-      // New product — add to the selected category tab
+      // New product — look up info and add to selected tab
+      var info = lookupEan(ean);
       var targetSheet = ss.getSheetByName(category);
+
       if (targetSheet) {
-        // Add new row: empty fields except EAN and quantity
-        // [Produktnavn, Mærke, Farve, Størrelse, Pris, Antal, Leverandør nr., EAN, Beskrivelse]
-        targetSheet.appendRow(['', '', '', '', '', qty, '', ean, '']);
+        targetSheet.appendRow([
+          info.name,         // A: Produktnavn
+          info.brand,        // B: Mærke (brand)
+          '',                // C: Farve
+          '',                // D: Størrelse
+          '',                // E: Pris (DKK)
+          qty,               // F: Antal på lager
+          '',                // G: Leverandør varenr.
+          ean,               // H: Stregkode / EAN
+          info.description   // I: Beskrivelse
+        ]);
+
         results.push({
           ean: ean,
           status: 'new',
-          tab: category
+          tab: category,
+          product: info.name
         });
       }
     }
@@ -90,20 +101,48 @@ function doPost(e) {
   ).setMimeType(ContentService.MimeType.JSON);
 }
 
+/**
+ * Look up product info from EAN code using UPCitemdb (free, 100 lookups/day)
+ */
+function lookupEan(ean) {
+  var info = { name: '', brand: '', description: '' };
+
+  try {
+    var response = UrlFetchApp.fetch(
+      'https://api.upcitemdb.com/prod/trial/lookup?upc=' + ean,
+      { muteHttpExceptions: true }
+    );
+
+    if (response.getResponseCode() === 200) {
+      var data = JSON.parse(response.getContentText());
+
+      if (data.code === 'OK' && data.items && data.items.length > 0) {
+        var item = data.items[0];
+        info.name = item.title || '';
+        info.brand = item.brand || '';
+        info.description = item.description || '';
+      }
+    }
+  } catch (e) {
+    // Lookup failed — fields will be blank, user fills in manually
+  }
+
+  return info;
+}
+
 function doGet(e) {
   return ContentService.createTextOutput('Byman Cykler scanner script is running.');
 }
 
-// Test function — run this in Apps Script to verify it works
+// Test: run this in Apps Script editor to verify
 function testDoPost() {
   var testEvent = {
     postData: {
       contents: JSON.stringify({
         items: [
-          { ean: '5711234567890', quantity: 5 },
-          { ean: '9999999999999', quantity: 2 }
+          { ean: '4026495099189', quantity: 2 }
         ],
-        category: 'Hjelme'
+        category: 'Tilbehør'
       })
     }
   };
