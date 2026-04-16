@@ -16,6 +16,11 @@
  * Version: "New version" > Deploy
  */
 
+// ========== CONFIGURATION ==========
+// Paste your Barcodelookup.com API key here:
+var BARCODELOOKUP_API_KEY = '';  // e.g. 'abc123xyz'
+// ====================================
+
 var EAN_COLUMN = 8;   // Column H
 var QTY_COLUMN = 6;   // Column F
 
@@ -92,20 +97,49 @@ function doPost(e) {
 
 /**
  * Look up product info by EAN code.
- * Tries UPCitemdb first, then Open Food Facts as fallback.
+ * Tries Barcodelookup.com first (paid, best coverage),
+ * then UPCitemdb as free fallback.
  */
 function lookupEan(ean) {
   var info;
 
-  // Try UPCitemdb (100 lookups/day)
+  // Try Barcodelookup.com (paid — best coverage for bike products)
+  if (BARCODELOOKUP_API_KEY) {
+    info = tryBarcodeLookup(ean);
+    if (info) return info;
+  }
+
+  // Fallback: UPCitemdb (free, 100/day)
   info = tryUpcItemDb(ean);
   if (info) return info;
 
-  // Fallback: Open Food Facts (no limit, covers some non-food products)
-  info = tryOpenFoodFacts(ean);
-  if (info) return info;
-
   return { name: '', brand: '', description: '', source: 'none' };
+}
+
+function tryBarcodeLookup(ean) {
+  try {
+    var url = 'https://api.barcodelookup.com/v3/products?barcode=' + ean
+            + '&formatted=y&key=' + BARCODELOOKUP_API_KEY;
+
+    var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    var code = response.getResponseCode();
+
+    if (code !== 200) return null;
+
+    var data = JSON.parse(response.getContentText());
+
+    if (data.products && data.products.length > 0) {
+      var p = data.products[0];
+      return {
+        name: p.title || p.product_name || '',
+        brand: p.brand || p.manufacturer || '',
+        description: p.description || '',
+        source: 'barcodelookup'
+      };
+    }
+  } catch (e) {}
+
+  return null;
 }
 
 function tryUpcItemDb(ean) {
@@ -121,7 +155,6 @@ function tryUpcItemDb(ean) {
 
     if (data.code === 'OK' && data.items && data.items.length > 0) {
       var item = data.items[0];
-      // Clean up title: remove trailing EAN if present
       var title = (item.title || '').replace(new RegExp('\\s*' + ean + '\\s*$'), '');
       return {
         name: title,
@@ -135,42 +168,15 @@ function tryUpcItemDb(ean) {
   return null;
 }
 
-function tryOpenFoodFacts(ean) {
-  try {
-    var response = UrlFetchApp.fetch(
-      'https://world.openfoodfacts.org/api/v2/product/' + ean + '.json',
-      { muteHttpExceptions: true }
-    );
-
-    if (response.getResponseCode() !== 200) return null;
-
-    var data = JSON.parse(response.getContentText());
-
-    if (data.status === 1 && data.product) {
-      var p = data.product;
-      if (p.product_name || p.brands) {
-        return {
-          name: p.product_name || '',
-          brand: p.brands || '',
-          description: p.generic_name || '',
-          source: 'openfoodfacts'
-        };
-      }
-    }
-  } catch (e) {}
-
-  return null;
-}
-
 function doGet(e) {
   return ContentService.createTextOutput('Byman Cykler scanner script is running.');
 }
 
-// Test: run this in the Apps Script editor and check Logs (View > Logs)
+// Test: run this in Apps Script editor, check Logs (View > Execution log)
 function testLookup() {
-  var result = lookupEan('4026495099189'); // Schwalbe tube
-  Logger.log('Schwalbe: ' + JSON.stringify(result));
+  var result = lookupEan('768686474972'); // Giro Eclipse
+  Logger.log('Giro: ' + JSON.stringify(result));
 
-  var result2 = lookupEan('5711234567890'); // Test EAN
-  Logger.log('Test EAN: ' + JSON.stringify(result2));
+  var result2 = lookupEan('4026495099189'); // Schwalbe tube
+  Logger.log('Schwalbe: ' + JSON.stringify(result2));
 }
