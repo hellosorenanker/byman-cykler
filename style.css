@@ -94,6 +94,38 @@ header h1 {
     display: none !important;
 }
 
+/* Scan guide overlay */
+#scan-guide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+#scan-guide::before,
+#scan-guide::after {
+    content: '';
+    position: absolute;
+    width: 75%;
+    height: 40%;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+}
+
+#scan-line {
+    width: 75%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #34c957, transparent);
+    animation: scanPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes scanPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
 #flash {
     position: absolute;
     inset: 0;

@@ -18,12 +18,18 @@ function startScanner() {
     scanner = new Html5Qrcode('scanner');
 
     const config = {
-        fps: 15,
-        qrbox: { width: 280, height: 120 },
+        fps: 30,
+        // No qrbox — use the full camera frame for scanning
         formatsToSupport: [
             Html5QrcodeSupportedFormats.EAN_13,
             Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+            Html5QrcodeSupportedFormats.CODE_128,
         ],
+        experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+        },
     };
 
     scanner.start(
