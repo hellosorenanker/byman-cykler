@@ -34,20 +34,25 @@ async function startNativeScanner() {
         video.srcObject = stream;
         await video.play();
 
-        const detector = new BarcodeDetector({
-            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'],
-        });
+        const supportedFormats = await BarcodeDetector.getSupportedFormats();
+        const wantedFormats = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'];
+        const formats = wantedFormats.filter(f => supportedFormats.includes(f));
+        const detector = new BarcodeDetector({ formats: formats.length ? formats : wantedFormats });
 
         const loop = async () => {
-            try {
-                const barcodes = await detector.detect(video);
-                if (barcodes.length > 0) {
-                    onScanSuccess(barcodes[0].rawValue);
-                }
-            } catch (e) {}
-            setTimeout(loop, 150); // ~7fps detection
+            if (video.readyState >= 2) {
+                try {
+                    const barcodes = await detector.detect(video);
+                    if (barcodes.length > 0) {
+                        onScanSuccess(barcodes[0].rawValue);
+                    }
+                } catch (e) {}
+            }
+            setTimeout(loop, 200);
         };
-        loop();
+        video.addEventListener('loadeddata', loop, { once: true });
+        // Also start loop immediately in case video already has data
+        if (video.readyState >= 2) loop();
     } catch (e) {
         showStatus('Camera access denied. Please allow camera access and reload.', 'error');
     }
