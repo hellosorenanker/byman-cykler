@@ -4,6 +4,7 @@ const COOLDOWN_MS = 2000; // Same EAN won't count again within 2 seconds
 // --- State ---
 let scanner = null;
 const scannedItems = new Map(); // EAN -> quantity
+const productInfo = new Map();  // EAN -> { name, brand, description } or null
 const lastScanTime = new Map(); // EAN -> timestamp (debounce)
 
 // --- Initialize ---
@@ -30,7 +31,7 @@ function startScanner() {
         config,
         onScanSuccess,
         () => {}
-    ).catch(err => {
+    ).catch(() => {
         showStatus('Camera access denied. Please allow camera access and reload.', 'error');
     });
 }
@@ -38,7 +39,6 @@ function startScanner() {
 function onScanSuccess(decodedText) {
     const now = Date.now();
     const lastTime = lastScanTime.get(decodedText) || 0;
-
     if (now - lastTime < COOLDOWN_MS) return;
 
     lastScanTime.set(decodedText, now);
@@ -46,9 +46,28 @@ function onScanSuccess(decodedText) {
     const currentQty = scannedItems.get(decodedText) || 0;
     scannedItems.set(decodedText, currentQty + 1);
 
+    if (!productInfo.has(decodedText)) {
+        lookupEan(decodedText);
+    }
+
     playBeep();
     vibrate();
     showScanFeedback();
+    renderItems();
+}
+
+// --- EAN Lookup (via Vercel proxy) ---
+async function lookupEan(ean) {
+    try {
+        const res = await fetch(`/api/lookup?ean=${ean}`);
+        if (res.ok) {
+            const data = await res.json();
+            productInfo.set(ean, data.found ? data : null);
+            renderItems();
+            return;
+        }
+    } catch (e) {}
+    productInfo.set(ean, null);
     renderItems();
 }
 
@@ -69,9 +88,7 @@ function playBeep() {
 }
 
 function vibrate() {
-    if (navigator.vibrate) {
-        navigator.vibrate(80);
-    }
+    if (navigator.vibrate) navigator.vibrate(80);
 }
 
 function showScanFeedback() {
@@ -95,9 +112,20 @@ function renderItems() {
     for (const [ean, qty] of entries) {
         totalProducts++;
         totalItems += qty;
+
+        const info = productInfo.get(ean);
+        const nameHtml = info && info.name
+            ? `<div class="item-name">${info.name}</div>`
+            : !productInfo.has(ean)
+                ? `<div class="item-name loading">Søger...</div>`
+                : '';
+
         html += `
             <div class="item">
-                <div class="item-ean">${ean}</div>
+                <div class="item-details">
+                    <div class="item-ean">${ean}</div>
+                    ${nameHtml}
+                </div>
                 <div class="item-qty">${qty}x</div>
                 <button class="item-remove" onclick="removeItem('${ean}')" aria-label="Remove">✕</button>
             </div>
@@ -106,21 +134,23 @@ function renderItems() {
 
     list.innerHTML = html || '<div class="empty">Scan EAN codes to begin...</div>';
     totalCount.textContent = totalProducts > 0
-        ? `${totalProducts} product${totalProducts !== 1 ? 's' : ''}, ${totalItems} item${totalItems !== 1 ? 's' : ''} total`
-        : 'No items scanned';
+        ? `${totalProducts} produkt${totalProducts !== 1 ? 'er' : ''}, ${totalItems} stk. i alt`
+        : 'Ingen varer scannet';
     sendBtn.disabled = totalProducts === 0;
 }
 
 function removeItem(ean) {
     scannedItems.delete(ean);
+    productInfo.delete(ean);
     lastScanTime.delete(ean);
     renderItems();
 }
 
 function clearAll() {
     if (scannedItems.size === 0) return;
-    if (!confirm('Clear all scanned items?')) return;
+    if (!confirm('Ryd alle scannede varer?')) return;
     scannedItems.clear();
+    productInfo.clear();
     lastScanTime.clear();
     renderItems();
 }
@@ -130,19 +160,24 @@ async function sendToSheets() {
     const url = localStorage.getItem('googleScriptUrl');
     if (!url) {
         openSettings();
-        showStatus('Please add your Google Apps Script URL first.', 'error');
+        showStatus('Tilføj din Google Apps Script URL først.', 'error');
         return;
     }
 
     const items = [];
     scannedItems.forEach((qty, ean) => {
-        items.push({ ean, quantity: qty });
+        const info = productInfo.get(ean);
+        items.push({
+            ean,
+            quantity: qty,
+            info: (info && info.found) ? info : null,
+        });
     });
 
     const sendBtn = document.getElementById('send-btn');
     sendBtn.disabled = true;
     const originalText = sendBtn.textContent;
-    sendBtn.textContent = 'Sending...';
+    sendBtn.textContent = 'Sender...';
 
     try {
         await fetch(url, {
@@ -155,12 +190,13 @@ async function sendToSheets() {
             }),
         });
 
-        showStatus('Sent to Google Sheets!', 'success');
+        showStatus('Sendt til Google Sheets!', 'success');
         scannedItems.clear();
+        productInfo.clear();
         lastScanTime.clear();
         renderItems();
     } catch (error) {
-        showStatus('Failed to send. Check your connection and try again.', 'error');
+        showStatus('Fejl ved afsendelse. Tjek din forbindelse.', 'error');
     }
 
     sendBtn.disabled = false;
@@ -173,12 +209,16 @@ function addManualEan() {
     const ean = input.value.trim();
 
     if (!ean || ean.length < 8 || ean.length > 13 || !/^\d+$/.test(ean)) {
-        showStatus('Enter a valid EAN (8-13 digits)', 'error');
+        showStatus('Indtast en gyldig EAN (8-13 cifre)', 'error');
         return;
     }
 
     const currentQty = scannedItems.get(ean) || 0;
     scannedItems.set(ean, currentQty + 1);
+
+    if (!productInfo.has(ean)) {
+        lookupEan(ean);
+    }
 
     input.value = '';
     playBeep();
@@ -208,10 +248,10 @@ function closeSettings() {
 function saveSettings() {
     const url = document.getElementById('script-url-input').value.trim();
     if (url && !url.includes('script.google.com/')) {
-        showStatus('URL should be a Google Apps Script URL', 'error');
+        showStatus('URL skal være en Google Apps Script URL', 'error');
         return;
     }
     localStorage.setItem('googleScriptUrl', url);
     closeSettings();
-    showStatus('Settings saved!', 'success');
+    showStatus('Indstillinger gemt!', 'success');
 }

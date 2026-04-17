@@ -1,7 +1,7 @@
 {
     "name": "Byman Cykler EAN Scanner",
     "short_name": "Byman Scanner",
-    "start_url": "/byman-cykler/",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#1b2a4a",
     "theme_color": "#1b2a4a",
