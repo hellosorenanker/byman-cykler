@@ -14,27 +14,58 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // --- Scanner ---
-function startScanner() {
-    scanner = new Html5Qrcode('scanner');
+async function startScanner() {
+    if ('BarcodeDetector' in window) {
+        await startNativeScanner();
+    } else {
+        startFallbackScanner();
+    }
+}
 
-    const config = {
-        fps: 30,
-        // No qrbox — use the full camera frame for scanning
-        formatsToSupport: [
+// Native BarcodeDetector (Safari 17+, Chrome on Android)
+async function startNativeScanner() {
+    const video = document.getElementById('scanner-video');
+    document.getElementById('scanner-fallback').style.display = 'none';
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = stream;
+        await video.play();
+
+        const detector = new BarcodeDetector({
+            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'],
+        });
+
+        const loop = async () => {
+            try {
+                const barcodes = await detector.detect(video);
+                if (barcodes.length > 0) {
+                    onScanSuccess(barcodes[0].rawValue);
+                }
+            } catch (e) {}
+            setTimeout(loop, 150); // ~7fps detection
+        };
+        loop();
+    } catch (e) {
+        showStatus('Camera access denied. Please allow camera access and reload.', 'error');
+    }
+}
+
+// Fallback: html5-qrcode (older browsers)
+function startFallbackScanner() {
+    const video = document.getElementById('scanner-video');
+    video.style.display = 'none';
+
+    scanner = new Html5Qrcode('scanner-fallback');
+    scanner.start(
+        { facingMode: 'environment' },
+        { fps: 15, formatsToSupport: [
             Html5QrcodeSupportedFormats.EAN_13,
             Html5QrcodeSupportedFormats.EAN_8,
             Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.UPC_E,
-            Html5QrcodeSupportedFormats.CODE_128,
-        ],
-        experimentalFeatures: {
-            useBarCodeDetectorIfSupported: true,
-        },
-    };
-
-    scanner.start(
-        { facingMode: 'environment' },
-        config,
+        ]},
         onScanSuccess,
         () => {}
     ).catch(() => {

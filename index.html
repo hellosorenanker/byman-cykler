@@ -36,10 +36,11 @@
 
     <!-- Scanner -->
     <div id="scanner-container">
-        <div id="scanner"></div>
-        <div id="scan-guide">
-            <div id="scan-line"></div>
-        </div>
+        <!-- Native BarcodeDetector mode -->
+        <video id="scanner-video" playsinline muted autoplay></video>
+        <!-- Fallback: html5-qrcode -->
+        <div id="scanner-fallback"></div>
+        <div id="scan-guide"><div id="scan-line"></div></div>
         <div id="flash"></div>
     </div>
 
