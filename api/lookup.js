@@ -14,8 +14,7 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.BARCODELOOKUP_API_KEY;
     if (!apiKey) {
-        const keys = Object.keys(process.env).filter(k => !['PATH','HOME','USER','SHELL','PWD','LANG'].includes(k));
-        return res.status(200).json({ found: false, error: 'API key not configured', allEnvKeys: keys });
+        return res.status(200).json({ found: false });
     }
 
     try {
