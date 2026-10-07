@@ -1,0 +1,1615 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Byman Cykler · Medlemskab & serviceplaner – beslutningsmodel</title>
+<style>
+:root{
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --card:#ffffff;
+  --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s1wash:rgba(42,120,214,.10); --s2wash:rgba(235,104,52,.10);
+  --pos:#2a78d6; --neg:#e34948; --tot:#52514e; --mid:#f0efec;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b; --goodText:#006300; --critText:#b42828; --warnText:#8a5a00;
+  --base:#d6d5ce; --hover:rgba(11,11,11,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root{ color-scheme: dark; --page:#0d0d0d; --surface:#1a1a19; --card:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s1wash:rgba(57,135,229,.16); --s2wash:rgba(217,89,38,.16);
+    --pos:#3987e5; --neg:#e66767; --tot:#c3c2b7; --mid:#383835; --goodText:#0ca30c; --critText:#e66767; --warnText:#fab219;
+    --base:#4a4a46; --hover:rgba(255,255,255,.05); }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--s1)}
+header.top{position:sticky;top:0;z-index:20;background:var(--page);border-bottom:1px solid var(--border)}
+.topin{max-width:1440px;margin:0 auto;padding:12px 20px 0}
+.titlebar{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.titlebar h1{font-size:18px;margin:0;font-weight:650}
+.titlebar .sub{color:var(--ink2);font-size:13px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid var(--border);color:var(--ink2);background:var(--card)}
+.badge .dot{width:8px;height:8px;border-radius:50%}
+.filters{display:flex;gap:16px;flex-wrap:wrap;align-items:end;margin:10px 0 8px}
+.filters label{display:flex;flex-direction:column;font-size:12px;color:var(--ink2);gap:3px}
+select,input[type=number],input[type=text]{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 8px}
+select{padding-right:24px}
+button{font:inherit;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--ink);border-radius:6px;padding:5px 11px}
+button:hover{background:var(--hover)}
+button.primary{background:var(--s1);color:#fff;border-color:transparent}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 12px;color:var(--ink2);white-space:nowrap}
+nav.tabs button.on{color:var(--ink);border-bottom-color:var(--s1);font-weight:600}
+main{max-width:1440px;margin:0 auto;padding:18px 20px 80px}
+.tab{display:none}.tab.on{display:block}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g5{grid-template-columns:repeat(5,minmax(0,1fr))}
+.lab{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:1100px){.g4,.g5{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:1fr}.lab{grid-template-columns:1fr}}
+@media (max-width:760px){.g2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.card h2{font-size:15px;margin:0 0 4px;font-weight:650}
+.card h3{font-size:13px;margin:14px 0 6px;font-weight:650;color:var(--ink2);text-transform:none}
+.card .desc{color:var(--ink2);font-size:12.5px;margin:0 0 10px}
+.controls{position:sticky;top:132px;max-height:calc(100vh - 150px);overflow:auto}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.tile .l{font-size:12px;color:var(--ink2)}
+.tile .v{font-size:22px;font-weight:620;margin-top:2px}
+.tile .s{font-size:12px;color:var(--muted);margin-top:2px}
+.hero .v{font-size:30px}
+.field{display:grid;grid-template-columns:1fr 92px;gap:2px 10px;align-items:center;margin:9px 0}
+.field .fl{font-size:12.5px;color:var(--ink);grid-column:1 / -1;display:flex;gap:6px;align-items:center}
+.field .fl .u{color:var(--muted);font-size:11.5px}
+.field input[type=range]{width:100%;accent-color:var(--s1)}
+.field input[type=number]{width:92px;text-align:right;font-variant-numeric:tabular-nums;padding:3px 6px}
+.field .hint{grid-column:1 / -1;font-size:11.5px;color:var(--muted)}
+.help{display:inline-flex;width:15px;height:15px;border-radius:50%;border:1px solid var(--axis);color:var(--muted);font-size:10px;align-items:center;justify-content:center;cursor:help;flex:none}
+details.grp{border-top:1px solid var(--border);padding:6px 0}
+details.grp>summary{cursor:pointer;font-weight:600;font-size:13px;padding:4px 0;list-style:none;display:flex;justify-content:space-between}
+details.grp>summary::after{content:"+";color:var(--muted)}
+details.grp[open]>summary::after{content:"–"}
+table{border-collapse:collapse;width:100%}
+th,td{padding:6px 8px;border-bottom:1px solid var(--grid);text-align:left;vertical-align:top}
+th{font-size:12px;color:var(--ink2);font-weight:600;background:var(--card);position:sticky;top:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--hover)}
+tr.sel td{background:var(--s1wash)}
+.tblwrap{overflow:auto;max-width:100%}
+.small{font-size:12px;color:var(--ink2)}
+.muted{color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;white-space:nowrap;border:1px solid var(--border)}
+.chip i{font-style:normal;width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700}
+.chip.good{color:var(--goodText)}.chip.good i{background:var(--good)}
+.chip.warn{color:var(--warnText)}.chip.warn i{background:var(--warn);color:#000}
+.chip.bad{color:var(--critText)}.chip.bad i{background:var(--crit)}
+.chip.info{color:var(--ink2)}.chip.info i{background:var(--muted)}
+.meter{height:8px;border-radius:4px;background:var(--s1wash);position:relative;min-width:70px}
+.meter>span{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--s1)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin:4px 0 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:12px;height:10px;border-radius:2px;display:inline-block}
+.legend .ln{width:16px;height:0;border-top:2px solid;display:inline-block}
+.legend .lnd{width:16px;height:0;border-top:2px dashed;display:inline-block}
+svg text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.chart{width:100%;display:block;overflow:visible}
+.note{border-left:3px solid var(--s1);background:var(--s1wash);padding:10px 12px;border-radius:0 8px 8px 0;font-size:13px}
+.note.warnbox{border-left-color:var(--warn);background:rgba(250,178,25,.10)}
+.note.badbox{border-left-color:var(--crit);background:rgba(208,59,59,.08)}
+.summary p{margin:0 0 8px}
+.summary ul{margin:4px 0 8px 18px;padding:0}
+ul.tight{margin:4px 0;padding-left:18px}ul.tight li{margin:3px 0}
+#tip{position:fixed;pointer-events:none;z-index:100;background:var(--card);color:var(--ink);border:1px solid var(--border);box-shadow:0 4px 14px rgba(0,0,0,.12);border-radius:8px;padding:7px 10px;font-size:12px;display:none;max-width:320px}
+#tip .tv{font-weight:650;font-size:13px}
+#tip .tr{display:flex;gap:6px;align-items:center;color:var(--ink2)}
+#tip .tr .k{width:12px;border-top:2px solid;display:inline-block}
+.heat td{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{font-size:11px;padding:1px 6px;border-radius:4px;background:var(--mid);color:var(--ink2)}
+.ic{font-size:20px;font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.right{margin-left:auto}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13px}
+.kv b{font-weight:600}
+textarea{width:100%;font:inherit}
+.footer{color:var(--muted);font-size:12px;margin-top:24px}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin">
+  <div class="titlebar">
+    <h1>Byman Cykler · Medlemskab &amp; serviceplaner</h1>
+    <span class="sub">Klikbar beslutningsmodel – justér antagelserne og se effekten på margin, kapacitet og risiko</span>
+    <span class="badge" id="dataBadge"><span class="dot" style="background:var(--warn)"></span>Alle tal er antagelser</span>
+    <span class="right row"><button id="btnReset" title="Sæt alle tal tilbage til standard">Nulstil</button></span>
+  </div>
+  <div class="filters">
+    <label>Koncept i fokus <select id="selConcept"></select></label>
+    <label>Scenarie <select id="selScenario"></select></label>
+    <label>Halo-effekt i beregningen <select id="selHalo">
+      <option value="none">Ingen (anbefalet base case)</option>
+      <option value="kons">Konservativ</option>
+      <option value="sands">Sandsynlig</option>
+      <option value="maks">Maksimal (teoretisk)</option></select></label>
+    <label>Usikkerhed i simulering <select id="selUnc">
+      <option value="50">Lav (½ ×)</option><option value="100">Normal</option><option value="150">Høj (1½ ×)</option><option value="200">Meget høj (2 ×)</option></select></label>
+    <span class="small" id="calcInfo"></span>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</div></header>
+
+<main>
+  <section class="tab" data-tab="overblik"></section>
+  <section class="tab" data-tab="lab"></section>
+  <section class="tab" data-tab="arkitektur"></section>
+  <section class="tab" data-tab="vaerksted"></section>
+  <section class="tab" data-tab="kunder"></section>
+  <section class="tab" data-tab="scenarier"></section>
+  <section class="tab" data-tab="redteam"></section>
+  <section class="tab" data-tab="pilot"></section>
+  <section class="tab" data-tab="antagelser"></section>
+  <section class="tab" data-tab="marked"></section>
+  <div class="footer">Prototype · bygget 7. oktober 2026 · Alle tal er antagelser, indtil butikkens egne data er lagt ind. Alle beregninger sker lokalt i browseren – intet sendes nogen steder. Dine ændringer gemmes kun i din egen browser (andre testere ser ikke dine tal). Brug "Nulstil" for at starte forfra.</div>
+</main>
+<div id="tip"></div>
+
+<!-- ===================================================================== -->
+<!-- MODEL: rene beregningsfunktioner (ingen DOM)                           -->
+<!-- ===================================================================== -->
+<script id="model">
+"use strict";
+const MONTHS = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+const sum = a => a.reduce((s,x)=>s+x,0);
+const clamp = (x,a,b) => Math.min(b, Math.max(a, x));
+
+function normInv(p){
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  const pl=0.02425; let q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p<=1-pl){q=p-0.5;r=q*q;return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  q=Math.sqrt(-2*Math.log(1-p));return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
+function normCdf(x){
+  const t=1/(1+0.3275911*Math.abs(x)/Math.SQRT2);
+  const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x/2);
+  return x>=0?0.5*(1+y):0.5*(1-y);
+}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function tri(u,a,m,b){ if(b<=a) return m; const F=(m-a)/(b-a); return u<F ? a+Math.sqrt(u*(b-a)*(m-a)) : b-Math.sqrt((1-u)*(b-a)*(b-m)); }
+const NQ = 60, NQ_MC = 24;
+const ZQ = Array.from({length:NQ},(_,i)=>normInv((i+0.5)/NQ));
+const PQ = Array.from({length:NQ},(_,i)=>(i+0.5)/NQ);
+/* Kvantil-knuder: h0_i = exp(mu) * m_i, hvor m_i er den betingede middelværdi i hvert kvantil-bånd (bevarer gennemsnittet eksakt) */
+const NODE_CACHE = new Map();
+function quantNodes(n, sig){
+  const key=n+'|'+sig; if(NODE_CACHE.has(key)) return NODE_CACHE.get(key);
+  const zb=[-Infinity]; for(let k=1;k<n;k++) zb.push(normInv(k/n)); zb.push(Infinity);
+  const F=x=> x===Infinity?1: x===-Infinity?0: normCdf(x);
+  const m=[]; for(let i=0;i<n;i++){ m.push(Math.exp(sig*sig/2)*n*(F(zb[i+1]-sig)-F(zb[i]-sig))); }
+  NODE_CACHE.set(key,m); return m;
+}
+
+/* ---------- Standardantagelser ---------- */
+function defaultConcepts(){ return withDefaults([
+ {id:'A', name:'Premium Access Club', short:'Access Club', model:'Adgang & convenience',
+  segment:'Entusiaster med high-end cykel, der vil have prioritet og overblik',
+  promise:'Kom foran i køen, få årligt health check og digital servicehistorik – uden løfte om fri mekanikertid.',
+  benefits:'Garanteret værkstedstid inden for 3 hverdage · årligt health check (nov–feb) · digital servicehistorik · proaktive påmindelser · lånecykel ved service (efter tilgængelighed) · 2 medlemsture/events om året · 5 % på dele og tilbehør',
+  rules:'Health check bookes nov–feb. Prioritet gælder booking, ikke gratis arbejde. Al øvrig service til medlemspris = normalpris.',
+  fee:995, copay:0, E:0.5, util:85, elig:0, uplift:0, inclParts:0, partsInt:25, laborDisc:0, partsDisc:5, lowSeason:80,
+  fulfil:120, admin:60, cac:100, setup:15000, N:80, existing:85, sel:15, segMult:1.0, renew:75, conv:700, haloMult:100,
+  complexity:2, brand:5, legal:2, retention:4, measurable:true, cert:false, subscription:true},
+ {id:'B', name:'Service Credits (værkstedskonto)', short:'Service Credits', model:'Forudbetalt kredit',
+  segment:'Faste værkstedskunder, der kender deres årlige forbrug',
+  promise:'Betal 1.995 kr og få 2.400 kr i værkstedskredit – brug den, når du har brug for det.',
+  benefits:'Kredit til al arbejdsløn (3 timer à 800 kr) · +20 % ekstra værdi · bonuskredit ved brug nov–feb · saldo i digital servicehistorik',
+  rules:'Kredit udløber efter 12 mdr. Dækker arbejdsløn, ikke dele. Kan ikke ombyttes til kontanter.',
+  fee:1995, copay:0, E:3.0, util:0, elig:90, uplift:8, inclParts:0, laborDisc:0, partsDisc:0, lowSeason:35,
+  fulfil:0, admin:50, cac:75, setup:8000, N:60, existing:85, sel:60, segMult:1.0, renew:65, conv:150, haloMult:70,
+  complexity:2, brand:4, legal:2, retention:3, measurable:true, cert:false, subscription:true},
+ {id:'C', name:'Vedligeholdelsesplan (2 services/år)', short:'Vedligeholdelse', model:'Planlagt service med loft',
+  segment:'Kunder, der kører meget og vil have forudsigelig vedligeholdelse',
+  promise:'To planlagte serviceeftersyn om året til fast pris – din cykel er altid klar.',
+  benefits:'2 × service (1,25 t) · den ene bookes okt–feb · 10 % på ekstra arbejdsløn og dele · påmindelser',
+  rules:'Sliddele betales til medlemspris. Styrtskader, opgraderinger og hjulbyg er ikke inkluderet.',
+  fee:1995, copay:0, E:2.5, util:85, elig:60, uplift:10, inclParts:0, laborDisc:10, partsDisc:10, lowSeason:50,
+  fulfil:0, admin:60, cac:100, setup:10000, N:60, existing:80, sel:60, segMult:1.0, renew:70, conv:400, haloMult:100,
+  complexity:3, brand:4, legal:2, retention:4, measurable:true, cert:false, subscription:true},
+ {id:'D', name:'Concierge Care', short:'Concierge', model:'Premium convenience',
+  segment:'Tidsfattige premiumkunder i København',
+  promise:'Vi henter, servicerer og leverer – du skal aldrig selv tage cyklen med på værkstedet.',
+  benefits:'Afhentning/levering 4 gange/år · 2 × service · lånecykel · fast kontaktperson · prioritet · småforbrugsvarer inkluderet',
+  rules:'Afhentning inden for Storkøbenhavn. Ekstra afhentning 295 kr. Dele betales separat.',
+  fee:5995, copay:0, E:3, util:85, elig:75, uplift:15, inclParts:20, laborDisc:0, partsDisc:0, lowSeason:20,
+  fulfil:850, admin:150, cac:400, setup:20000, N:20, existing:55, sel:40, segMult:1.2, renew:75, conv:2500, haloMult:130,
+  complexity:4, brand:5, legal:2, retention:5, measurable:true, cert:false, subscription:true},
+ {id:'E', name:'Ny cykel Care Plan', short:'Ny cykel-plan', model:'Bundlet med cykelkøb',
+  segment:'Købere af ny high-end cykel hos Byman',
+  promise:'Køb cyklen – og få første års vedligeholdelse og opsætning med i én pakke.',
+  benefits:'2 × service første år · gratis justering af sadel/greb · servicehistorik fra dag 1 · tilbud om fornyelse til Access Club eller plan',
+  rules:'Kun cykler købt hos Byman. Gælder 12 mdr. Sliddele betales.',
+  fee:1295, copay:0, E:2.0, util:90, elig:80, uplift:10, inclParts:0, laborDisc:0, partsDisc:10, lowSeason:30,
+  fulfil:0, admin:40, cac:50, setup:5000, N:77, nFromBikes:true, attach:35, existing:70, sel:20, segMult:0.8, renew:45, conv:400, haloMult:140,
+  complexity:2, brand:5, legal:2, retention:5, measurable:true, cert:false, subscription:true},
+ {id:'F', name:'Multi-bike Household', short:'Household', model:'Fælles loft for flere cykler',
+  segment:'Husstande/entusiaster med 2-4 cykler',
+  promise:'Én plan for hele husstandens cykler med fælles timepulje.',
+  benefits:'Op til 3 navngivne cykler · 6 timers fælles pulje · 10 % på dele og ekstra arbejdsløn · prioritet',
+  rules:'Puljen er fælles og udløber efter 12 mdr. Kun navngivne cykler.',
+  fee:4495, copay:0, E:6, util:0, elig:80, uplift:25, inclParts:0, laborDisc:10, partsDisc:10, lowSeason:20,
+  fulfil:0, admin:100, cac:150, setup:10000, N:20, existing:80, sel:90, segMult:2.2, renew:70, conv:600, haloMult:120,
+  complexity:3, brand:4, legal:3, retention:4, measurable:true, cert:false, subscription:true},
+ {id:'G', name:'Sæsonplan: Vinterklargøring', short:'Vinterklargøring', model:'Sæsonpakke (lavsæson)',
+  segment:'Landevejs- og gravelkunder, der vil være klar til foråret',
+  promise:'Stort eftersyn om vinteren til fast lavsæsonpris – klar til første tur i marts uden ventetid.',
+  benefits:'Stort eftersyn (2,5 t) okt–feb · tubeless-refresh · Di2/AXS firmware-tjek · 10 % på dele i pakken',
+  rules:'Skal bookes og udføres oktober–februar. Kan ikke flyttes til højsæson.',
+  fee:1495, copay:0, E:2.5, util:95, elig:60, uplift:0, inclParts:0, laborDisc:0, partsDisc:10, lowSeason:100,
+  fulfil:0, admin:40, cac:75, setup:5000, N:80, existing:75, sel:35, segMult:1.0, renew:65, conv:400, haloMult:80,
+  complexity:1, brand:4, legal:1, retention:3, measurable:true, cert:false, subscription:false},
+ {id:'H', name:'E-bike Care Plan', short:'E-bike Care', model:'Specialiseret plan',
+  segment:'Ejere af e-MTB/e-road (fx Turbo Levo/Creo)',
+  promise:'Mekanisk service, software- og batteridiagnose og prioriteret hjælp til din e-bike.',
+  benefits:'2 × service inkl. diagnose · batteritjek · softwareopdatering · prioritet ved motor-/batterifejl',
+  rules:'Garantisager håndteres via producent. Batteri og motor er ikke inkluderet.',
+  fee:1995, copay:0, E:2.5, util:80, elig:70, uplift:15, inclParts:0, laborDisc:0, partsDisc:5, lowSeason:30,
+  fulfil:0, admin:80, cac:150, setup:40000, N:15, existing:60, sel:70, segMult:1.3, renew:70, conv:600, haloMult:100,
+  complexity:4, brand:3, legal:3, retention:4, measurable:true, cert:true, subscription:true},
+ {id:'I', name:'Loyalitetsprogram (uden medlemskab)', short:'Loyalitet', model:'Point/fordele på køb',
+  segment:'Alle kunder',
+  promise:'Optjen 5 % i point på alle køb og service – ingen binding, ingen betaling.',
+  benefits:'5 % point på alt · fødselsdagsfordel · adgang til events',
+  rules:'Point udløber efter 12 mdr. Ingen inkluderet mekanikertid.',
+  fee:0, copay:0, E:0, util:0, elig:0, uplift:0, inclParts:0, laborDisc:3.5, partsDisc:3.5, lowSeason:0,
+  fulfil:0, admin:24, cac:10, setup:10000, N:500, existing:95, sel:0, segMult:1.0, renew:85, conv:150, haloMult:100,
+  complexity:2, brand:2, legal:1, retention:3, measurable:true, cert:false, subscription:false},
+ {id:'J', name:'Pay-as-you-go Plus', short:'PAYG Plus', model:'Fuld pris + prioritetsgebyr',
+  segment:'Kunder, der en gang imellem har travlt',
+  promise:'Normalpris som altid – men mulighed for ekspres/prioritet og faste servicepakker.',
+  benefits:'Ekspres-service mod gebyr (349 kr) · faste prispakker · ingen abonnement',
+  rules:'Ekspres kun i et begrænset antal daglige slots. Forventet 1,3 brug pr. kunde/år.',
+  fee:450, copay:0, E:0, util:0, elig:0, uplift:0, inclParts:0, laborDisc:0, partsDisc:0, lowSeason:0,
+  fulfil:60, admin:20, cac:0, setup:3000, N:120, existing:90, sel:10, segMult:1.0, renew:70, conv:500, haloMult:20,
+  complexity:1, brand:4, legal:1, retention:2, measurable:true, cert:false, subscription:false},
+ {id:'K', name:'Klassisk medlemskab (fri service)', short:'Fri service', model:'Klassisk "alt inkluderet"',
+  segment:'Bredt – alle værkstedskunder',
+  promise:'249 kr/md. og så er al arbejdsløn inkluderet (fair use).',
+  benefits:'Fri arbejdsløn op til fair-use-loft · 15 % på ekstra arbejde · 10 % på dele og tilbehør',
+  rules:'Fair use: 12 timer/år. Dele betales.',
+  fee:2988, copay:0, E:12, util:0, elig:85, uplift:35, inclParts:0, laborDisc:15, partsDisc:10, lowSeason:0,
+  fulfil:0, admin:80, cac:150, setup:10000, N:60, existing:80, sel:100, segMult:1.0, renew:70, conv:300, haloMult:100,
+  complexity:2, brand:2, legal:3, retention:3, measurable:true, cert:false, subscription:true}
+]);}
+function withDefaults(arr){ return arr.map(c=>({partsInt:100, ...c})); }
+
+function defaultState(){ return {
+  v:1,
+  shop:{ moms:25, fte:2.5, paidHours:1924, absencePct:15, productivePct:75, billablePct:85, loadedCost:470000,
+    priceIncl:800, partsPerHour:350, partsMargin:40, varCostPerHour:15, otPct:10, otCost:450, hoursPerVisit:1.2,
+    peakThreshold:90, lowThreshold:70, bikesSold:220,
+    demand:[45,55,85,105,112,108,80,98,88,68,52,42],
+    capProfile:[1.0,0.95,1.0,0.95,1.05,1.0,0.55,0.95,1.05,1.05,1.05,0.85] },
+  cust:{ activeCustomers:850, medianHours:1.8, sigma:0.8, accessorySpend:1500, accessoryMargin:40,
+    alpha:60, alphaDrift:10, bikeGP:8000, upliftValueShare:50, maxPenetration:40,
+    halo:{ kons:{spend:200,rebuy:1}, sands:{spend:800,rebuy:5}, maks:{spend:2000,rebuy:12} } },
+  fin:{ payFeePct:2, discount:10, payMode:'aarlig' },
+  gates:{ maxLoss:25000, minPerHour:550, maxPeakImpact:10, maxHeavyShare:40, fairUseMax:6, minRenewal:60,
+    maxPaybackMonths:18, minMarginPct:20, maxAdminPct:15, pilotN:40 },
+  weights:{ econ:30, perHour:20, cust:15, cap:10, ret:10, ops:5, brand:5, risk:5 },
+  concepts: defaultConcepts(),
+  scenario:'base', halo:'none', uncertainty:100, dataStatus:'antagelser', selected:'G',
+  portfolio:['A','G','J'], cls:{}, ui:{tab:'overblik'}
+};}
+
+const SCENARIOS = {
+  base:    {label:'Base case', ov:{}},
+  kons:    {label:'Konservativ', ov:{usageMult:1.15, adoptMult:0.7, renewAdd:-0.10, alphaAdd:0.2, halo:'none'}},
+  upside:  {label:'Upside', ov:{usageMult:0.95, adoptMult:1.25, renewAdd:0.05, halo:'sands'}},
+  adverse: {label:'Adverse selection', ov:{alphaSet:1.2, usageMult:1.15}},
+  capacity:{label:'Høj kapacitetsbelastning', ov:{demandMult:1.15}},
+  lowret:  {label:'Lav fornyelse', ov:{renewAdd:-0.25}},
+  cannibal:{label:'Høj kannibalisering', ov:{existSet:0.95}}
+};
+const STRESS = ['kons','adverse','capacity','lowret','cannibal'];
+
+function combineOv(a, b){
+  a=a||{}; b=b||{}; const o = {...a};
+  for (const k of ['usageMult','adoptMult','upliftMult','demandMult','haloMult','costMult']) if (b[k]!=null) o[k]=(a[k]??1)*b[k];
+  for (const k of ['alphaAdd','existAdd','renewAdd','utilAdd']) if (b[k]!=null) o[k]=(a[k]??0)+b[k];
+  return o;
+}
+
+/* ---------- Værkstedet ---------- */
+function derive(st, ov){
+  ov=ov||{};
+  const sh=st.shop;
+  const vat=1+sh.moms/100, priceEx=sh.priceIncl/vat;
+  const paid=sh.fte*sh.paidHours, present=paid*(1-sh.absencePct/100);
+  const productive=present*sh.productivePct/100, billable=productive*sh.billablePct/100;
+  const capSum=sum(sh.capProfile)||12;
+  const C=sh.capProfile.map(x=>billable*x/capSum);
+  const dm=ov.demandMult||1;
+  const B=C.map((c,i)=>c*sh.demand[i]/100*dm);
+  const Bsum=sum(B)||1;
+  const m0=B.map(b=>b/Bsum);
+  const O=C.map(c=>c*sh.otPct/100);
+  const pph=sh.partsPerHour, pm=sh.partsMargin/100, partsGPh=pph*pm;
+  const lost=priceEx+partsGPh-sh.varCostPerHour;
+  const ot=Math.min(sh.otCost, lost);
+  const util=B.map((b,i)=>b/C[i]);
+  const peak=util.map(u=>u>=sh.peakThreshold/100);
+  const low=util.map(u=>u<=sh.lowThreshold/100);
+  const spare=C.map((c,i)=>Math.max(0,c-B[i]));
+  let lw=spare.map((s,i)=>low[i]?s:0); if(sum(lw)<=0) lw=spare.slice(); if(sum(lw)<=0) lw=C.slice();
+  const lwS=sum(lw), lowDist=lw.map(x=>x/lwS);
+  const loadedPerBillable=sh.fte*sh.loadedCost/billable;
+  const served=B.map((b,i)=>Math.min(b,C[i]+O[i]));
+  const servedSum=sum(served);
+  const otUsed=B.map((b,i)=>Math.min(Math.max(b-C[i],0),O[i]));
+  const turnedAway=B.map((b,i)=>Math.max(b-C[i]-O[i],0));
+  const marg=B.map((b,i)=> b<C[i]? sh.varCostPerHour : (b<C[i]+O[i]? sh.varCostPerHour+ot : lost));
+  return {vat,priceEx,paid,present,productive,billable,C,B,Bsum,m0,O,pph,pm,partsGPh,lost,ot,var:sh.varCostPerHour,
+    util,peak,low,lowDist,spare,loadedPerBillable,served,servedSum,otUsed,turnedAway,marg,
+    contribPerBillable: priceEx+partsGPh-sh.varCostPerHour,
+    contribPerProductive: servedSum*(priceEx+partsGPh-sh.varCostPerHour)/productive,
+    laborResult: servedSum*priceEx - sh.fte*sh.loadedCost - sum(otUsed)*sh.otCost,
+    workshopResult: servedSum*(priceEx+partsGPh-sh.varCostPerHour) - sh.fte*sh.loadedCost - sum(otUsed)*sh.otCost,
+    lowSpare: sum(spare.map((s,i)=>low[i]?s:0)), peakDeficit: sum(B.map((b,i)=>Math.max(0,b-C[i]))) };
+}
+function capCost(L,C,O,d){ const served=Math.min(Math.max(L,0),C+O); return d.var*served + d.ot*Math.min(Math.max(L-C,0),O) + d.lost*Math.max(L-C-O,0); }
+
+/* ---------- Koncept ---------- */
+function baseN(c,st){ return c.nFromBikes ? st.shop.bikesSold*c.attach/100 : c.N; }
+function cp(c, st, ov){
+  ov=ov||{};
+  return { id:c.id, fee:c.fee, copay:c.copay, E:c.E,
+    util:clamp(c.util/100+(ov.utilAdd||0),0,1), elig:c.elig/100, uplift:c.uplift/100*(ov.upliftMult??1),
+    inc:c.inclParts/100, ld:c.laborDisc/100, pd:c.partsDisc/100, low:c.lowSeason/100,
+    admin:c.admin*(ov.costMult??1), fulfil:c.fulfil*(ov.costMult??1), cac:c.cac, setup:c.setup,
+    e:clamp(ov.existSet!=null?ov.existSet:c.existing/100+(ov.existAdd||0),0,1),
+    renew:clamp(c.renew/100+(ov.renewAdd||0),0.05,0.98),
+    N:Math.max(0,Math.round(baseN(c,st)*(ov.adoptMult??1)*(ov.nMult??1))),
+    sel:c.sel/100, segMult:c.segMult, conv:c.conv, haloMult:c.haloMult/100, pi:(c.partsInt??100)/100 };
+}
+/* Økonomi for ét medlem med basisforbrug h0 (timer/år ved fuld pris) */
+function member(h0, p, d, st){
+  const cu=st.cust, sh=st.shop;
+  const he=h0*p.elig;
+  const cover = p.E>0 ? Math.min(p.E, Math.max(p.E*p.util, he*(1+p.uplift))) : 0;
+  const overflow=Math.max(0, he-p.E);
+  const hn=h0*(1-p.elig);
+  const paidH=overflow+hn, h1=cover+paidH;
+  const visits=cover/sh.hoursPerVisit;
+  const feeEx=p.fee/d.vat, copayEx=p.copay/d.vat*visits;
+  const laborRev=paidH*d.priceEx*(1-p.ld);
+  const cp=cover*p.pi; // reservedelsforbrug på inkluderet arbejde
+  const partsRev=(cp*(1-p.inc)+paidH)*d.pph*(1-p.pd);
+  const partsCost=(cp+paidH)*d.pph*(1-d.pm);
+  const payFees=(feeEx+copayEx)*st.fin.payFeePct/100;
+  const fixed=p.admin+p.fulfil;
+  const accDisc=cu.accessorySpend*p.pd;
+  const baseContrib=h0*(d.priceEx+d.partsGPh);
+  const econCore=feeEx+copayEx+laborRev+partsRev-partsCost-payFees-fixed;
+  const discounts=paidH*d.priceEx*p.ld+(cp*(1-p.inc)+paidH)*d.pph*p.pd+accDisc;
+  const acct=feeEx+copayEx-payFees-cover*d.loadedPerBillable-cp*p.inc*d.pph*(1-d.pm)-discounts-fixed;
+  const contribNum=econCore-accDisc;
+  const pphI=d.pph*d.vat;
+  const payg=h0*sh.priceIncl+h0*pphI+cu.accessorySpend*d.vat;
+  const plan=p.fee+p.copay*visits+paidH*sh.priceIncl*(1-p.ld)+partsRev*d.vat+cu.accessorySpend*d.vat*(1-p.pd);
+  const extra=Math.max(0,h1-h0)*(sh.priceIncl+pphI*p.pi)*cu.upliftValueShare/100;
+  return {h0,cover,paidH,h1,visits,feeEx,copayEx,laborRev,partsGP:partsRev-partsCost,partsRev,partsCost,payFees,fixed,
+    accDisc,baseContrib,econCore,acct,contribNum,discounts,inclPartsCost:cp*p.inc*d.pph*(1-d.pm),
+    savings:payg-plan,custNet:payg-plan+extra+p.conv};
+}
+const AVG_KEYS=['h0','cover','paidH','h1','visits','feeEx','copayEx','laborRev','partsGP','payFees','fixed','accDisc','baseContrib','econCore','acct','contribNum','discounts','inclPartsCost','savings','custNet'];
+function haloPer(st,p,level,mult){
+  if(!level||level==='none') return 0;
+  const L=st.cust.halo[level]; if(!L) return 0;
+  return p.haloMult*(mult??1)*(L.spend*Math.max(0,st.cust.accessoryMargin/100-p.pd) + L.rebuy/100*st.cust.bikeGP/3);
+}
+function memberMu(p, st, ov, yearIdx){
+  const alpha=clamp((ov.alphaSet!=null?ov.alphaSet:st.cust.alpha/100+(ov.alphaAdd||0))+st.cust.alphaDrift/100*yearIdx,0,2.5);
+  const sig=st.cust.sigma, theta=alpha*p.sel;
+  return {mu:Math.log(st.cust.medianHours*p.segMult*(ov.usageMult||1))+theta*sig*sig, sig, theta, alpha};
+}
+function evalYear(c, st, ov, yearIdx, d, haloLevel, detail, nq){
+  const p=cp(c,st,ov);
+  const {mu,sig,theta,alpha}=memberMu(p,st,ov,yearIdx);
+  nq=nq||NQ; const nodes=quantNodes(nq,sig), em=Math.exp(mu);
+  const avg={}; for(const k of AVG_KEYS) avg[k]=0;
+  for(let i=0;i<nq;i++){ const m=member(em*nodes[i],p,d,st); for(const k of AVG_KEYS) avg[k]+=m[k]; }
+  for(const k of AVG_KEYS) avg[k]/=nq;
+  const e=p.e, N=p.N;
+  const sv=d.m0.map((m,i)=>p.low*d.lowDist[i]+(1-p.low)*m);
+  const delta1=d.m0.map((m,i)=>avg.cover*sv[i]+avg.paidH*m-e*avg.h0*m);
+  const gross1=d.m0.map((m,i)=>avg.cover*sv[i]+avg.paidH*m);
+  const Dm=delta1.map(x=>x*N);
+  let cap=0; const rate=[];
+  for(let i=0;i<12;i++){
+    const c0=capCost(d.B[i],d.C[i],d.O[i],d), c1=capCost(d.B[i]+Dm[i],d.C[i],d.O[i],d);
+    cap+=c1-c0;
+    rate.push(Math.abs(Dm[i])>1e-9?(c1-c0)/Dm[i]:d.marg[i]);
+  }
+  const capPer = N>0 ? cap/N : sum(rate.map((r,i)=>r*delta1[i]));
+  const newM = yearIdx===0 ? N : N*(1-p.renew);
+  const cacPer = N>0 ? newM*p.cac/N : (yearIdx===0?p.cac:p.cac*(1-p.renew));
+  const cannib = e*avg.baseContrib, accCannib = e*avg.accDisc;
+  const cannibNet = Math.max(0, e*(avg.baseContrib-avg.laborRev-avg.partsGP)); // tabt betalt værkstedskøb netto
+  const econDirect = avg.econCore - e*(avg.baseContrib+avg.accDisc) - capPer - cacPer;
+  const halo = haloPer(st,p,haloLevel,ov.haloMult);
+  const out={p,N,avg,e,econDirect,halo,econ:econDirect+halo,capPer,cacPer,cannib,cannibNet,accCannib,
+    acctPer:avg.acct-cacPer, contribPerHour: avg.h1>0?(avg.contribNum-cacPer)/avg.h1:0,
+    total:N*(econDirect+halo), totalDirect:N*econDirect, theta, alpha, mu, sig};
+  if(detail){
+    out.delta1=delta1; out.gross1=gross1; out.sv=sv; out.rate=rate; out.Dm=Dm; out.capTotal=cap;
+    out.peakImpact = Math.max(...d.C.map((C,i)=>d.peak[i]?Dm[i]/C:-Infinity));
+    if(!isFinite(out.peakImpact)) out.peakImpact = Math.max(...Dm.map((x,i)=>x/d.C[i]));
+    out.peakMonth = Dm.reduce((bi,x,i,a)=> (d.peak[i] && (bi<0 || x/d.C[i] > a[bi]/d.C[bi])) ? i : bi, -1);
+    out.peakHoursGross = N*sum(gross1.map((g,i)=>d.peak[i]?g:0));
+    out.netPeakHours = sum(Dm.map((x,i)=>d.peak[i]?Math.max(0,x):0));
+    out.displaced = sum(d.B.map((b,i)=>Math.max(b+Dm[i]-d.C[i]-d.O[i],0)-Math.max(b-d.C[i]-d.O[i],0)));
+    out.otExtra = sum(d.B.map((b,i)=>Math.min(Math.max(b+Dm[i]-d.C[i],0),d.O[i])-Math.min(Math.max(b-d.C[i],0),d.O[i])));
+    out.newUtil = d.B.map((b,i)=>(b+Dm[i])/d.C[i]);
+    out.removedBase = d.m0.map(m=>N*e*avg.h0*m);
+    out.memberGross = gross1.map(g=>N*g);
+  }
+  return out;
+}
+function memberPointEcon(h0, y, p, d, st, haloLevel, ov){
+  const m=member(h0,p,d,st);
+  const dl=d.m0.map((mm,i)=>m.cover*y.sv[i]+m.paidH*mm-y.e*m.h0*mm);
+  const capA=sum(dl.map((x,i)=>x*y.rate[i]));
+  const econ=m.econCore-y.e*(m.baseContrib+m.accDisc)-capA-y.cacPer+haloPer(st,p,haloLevel,ov&&ov.haloMult);
+  return {...m, econ, acctPer:m.acct-y.cacPer, perHour:m.h1>0?(m.contribNum-y.cacPer)/m.h1:0, capA};
+}
+function evalConcept(c, st, ov, d, haloLevel, detail, nq){
+  ov=ov||{};
+  const ys=[0,1,2].map(t=>evalYear(c,st,ov,t,d,haloLevel,detail&&t===0,nq));
+  const r=st.fin.discount/100;
+  const setup=c.setup;
+  let npv=-setup; ys.forEach((y,t)=>{ npv+=y.total/Math.pow(1+r,t+1); });
+  const y1=ys[0];
+  const res={id:c.id, N:y1.N, ys, y1, npv, y1Total:y1.total, setup};
+  if(!detail) return res;
+  const p=y1.p;
+  res.peakImpact=y1.peakImpact; res.peakMonth=y1.peakMonth;
+  res.heavyShare = 1-normCdf(0.6745-y1.theta*y1.sig);
+  // percentiler og arketyper
+  const pt=q=>memberPointEcon(Math.exp(y1.mu+y1.sig*normInv(q)),y1,p,d,st,haloLevel,ov);
+  res.points={P10:pt(0.10),P50:pt(0.5),P90:pt(0.90),P95:pt(0.95)};
+  const buckets=[['Light',0,0.40],['Normal',0.40,0.75],['Heavy',0.75,0.93],['Extreme',0.93,1.0]];
+  res.arche=buckets.map(([name,a,b])=>{
+    const pts=[]; for(let i=0;i<NQ;i++){ if(PQ[i]>=a&&PQ[i]<b) pts.push(memberPointEcon(Math.exp(y1.mu+y1.sig*ZQ[i]),y1,p,d,st,haloLevel,ov)); }
+    const av=k=>sum(pts.map(x=>x[k]))/Math.max(1,pts.length);
+    return {name,a,b,h0:av('h0'),h1:av('h1'),cover:av('cover'),econ:av('econ'),acctPer:av('acctPer'),custNet:av('custNet'),savings:av('savings'),perHour:av('perHour')};
+  });
+  // andel af målgruppen (uden selvselektion) der får positiv værdi
+  const mu0=Math.log(st.cust.medianHours*p.segMult*(ov.usageMult||1));
+  let pos=0; for(let i=0;i<NQ;i++){ if(member(Math.exp(mu0+y1.sig*ZQ[i]),p,d,st).custNet>=0) pos++; }
+  res.attractShare=pos/NQ;
+  // andel medlemmer med negativ værdi
+  let negM=0; for(let i=0;i<NQ;i++){ if(member(Math.exp(y1.mu+y1.sig*ZQ[i]),p,d,st).custNet<0) negM++; }
+  res.memberNegShare=negM/NQ;
+  // break-even forbrug for kunden
+  res.beUsage=null; for(let h=0;h<=20;h+=0.05){ if(member(h,p,d,st).custNet>=0){ res.beUsage=h; break; } }
+  // kurver
+  res.curve=[]; for(let h=0;h<=12.0001;h+=0.25){ const m=memberPointEcon(h,y1,p,d,st,haloLevel,ov); res.curve.push({h,cust:m.custNet,shop:m.econ}); }
+  // break-even pris (år 1 pr. medlem)
+  const pf=1-st.fin.payFeePct/100;
+  res.beFee = c.fee - y1.econ*d.vat/pf;
+  res.effPrice = y1.avg.cover>0.01 ? (y1.avg.feeEx+y1.avg.copayEx-y1.avg.payFees-y1.avg.fixed-y1.cacPer)/y1.avg.cover : null;
+  res.cannibShare = (y1.avg.feeEx+y1.avg.copayEx)>0 ? y1.cannibNet/(y1.avg.feeEx+y1.avg.copayEx) : null;
+  const memberRev=y1.avg.feeEx+y1.avg.copayEx+y1.avg.laborRev+y1.avg.partsGP;
+  res.marginPct = memberRev>0 ? y1.econ/memberRev : null;
+  res.adminPct = (y1.avg.feeEx+y1.avg.copayEx)>0 ? (y1.avg.fixed+y1.avg.payFees)/(y1.avg.feeEx+y1.avg.copayEx) : null;
+  res.haloShare = (y1.econDirect+y1.halo)>0 && y1.halo>0 ? y1.halo/(y1.econDirect+y1.halo) : 0;
+  // sikkert maksimum & økonomisk optimum
+  const lim=[]; let safe=Infinity, bind=-1;
+  for(let i=0;i<12;i++){
+    const dl=y1.delta1[i]; if(dl<=1e-9) continue;
+    const L = d.peak[i] ? st.gates.maxPeakImpact/100*d.C[i] : Math.max(0,0.95*d.C[i]-d.B[i]);
+    const n=L/dl; lim.push(n); if(n<safe){safe=n;bind=i;}
+  }
+  const custCap=st.cust.activeCustomers*st.cust.maxPenetration/100/Math.max(0.05,p.e||0.05);
+  res.safeN=Math.floor(Math.min(safe,custCap,5000)); res.safeBind = safe<=custCap ? bind : -2;
+  const NmaxScan=Math.max(50,Math.min(3000,Math.ceil(Math.max(res.safeN,y1.N)*2.5)));
+  const perDirect = y1.avg.econCore - y1.e*(y1.avg.baseContrib+y1.avg.accDisc) - p.cac + y1.halo;
+  let best=-Infinity,bestN=0; res.nCurve=[];
+  const step=Math.max(1,Math.round(NmaxScan/120));
+  for(let n=0;n<=NmaxScan;n+=step){
+    let cc=0; for(let i=0;i<12;i++){ cc+=capCost(d.B[i]+y1.delta1[i]*n,d.C[i],d.O[i],d)-capCost(d.B[i],d.C[i],d.O[i],d); }
+    const tot=n*perDirect-cc; res.nCurve.push({n,tot}); if(tot>best){best=tot;bestN=n;}
+  }
+  res.optN=bestN;
+  // pengestrøm 36 mdr.
+  const cash=[]; let cum=-setup; const monthly=st.fin.payMode==='maanedlig';
+  for(let k=0;k<36;k++){
+    const t=Math.floor(k/12), y=ys[t], mi=k%12;
+    const feeTot=y.N*(y.avg.feeEx-y.avg.payFees);
+    const rest=y.total-feeTot+y.N*y.cacPer; // alt andet end betaling og CAC
+    let cf = (monthly? feeTot/12 : (mi===0?feeTot:0)) + rest*d.m0[mi] - (mi===0? y.N*y.cacPer : 0);
+    cum+=cf; cash.push(cum);
+  }
+  res.cash=cash; res.payback=null; for(let k=0;k<36;k++){ if(cash[k]>=0){ res.payback=k+1; break; } }
+  res.ltv = [0,1,2].reduce((s,t)=>s+(ys[t].econ+ys[t].cacPer)*Math.pow(p.renew,t)/Math.pow(1+r,t+1),0) - p.cac;
+  res.beMembers = null;
+  const perMemberNpv = (npv+setup)/Math.max(1,y1.N);
+  if(perMemberNpv>0) res.beMembers=Math.ceil(setup/perMemberNpv);
+  return res;
+}
+function makeDraws(n, w){
+  const rnd=mulberry32(20261007), T=(a,m,b)=>tri(rnd(),m-(m-a)*w,m,m+(b-m)*w);
+  return Array.from({length:n},()=>({usageMult:T(.85,1,1.35),alphaAdd:T(-.25,0,.35),existAdd:T(-.15,0,.15),upliftMult:T(.5,1,1.8),
+    adoptMult:T(.5,1,1.3),renewAdd:T(-.2,0,.1),demandMult:T(.92,1,1.1),utilAdd:T(-.1,0,.08),haloMult:T(0,1,1.6),costMult:T(.9,1,1.4)}));
+}
+const qtl=(arr,q)=>{ if(!arr.length) return 0; const s=arr; const i=(s.length-1)*q, lo=Math.floor(i), hi=Math.ceil(i); return s[lo]+(s[hi]-s[lo])*(i-lo); };
+
+function computeAll(st, opts){
+  opts=opts||{};
+  const scen=SCENARIOS[st.scenario]||SCENARIOS.base;
+  const sov=scen.ov, haloLevel=sov.halo||st.halo;
+  const d=derive(st,sov);
+  const nSim=opts.nSim||300;
+  const draws=makeDraws(nSim, st.uncertainty/100);
+  const dCache=draws.map(dr=>derive(st,combineOv(sov,dr)));
+  const out={d, haloLevel, byId:{}, scenario:st.scenario, nSim};
+  const sD={}; for(const k of Object.keys(SCENARIOS)) sD[k]=derive(st,SCENARIOS[k].ov);
+  for(const c of st.concepts){
+    const det=evalConcept(c,st,sov,d,haloLevel,true);
+    const detLikely=evalConcept(c,st,sov,d,'sands',false);
+    const detNone=evalConcept(c,st,sov,d,'none',false);
+    const y1=[],npv=[];
+    for(let s=0;s<nSim;s++){ const r=evalConcept(c,st,combineOv(sov,draws[s]),dCache[s],haloLevel,false,NQ_MC); y1.push(r.y1Total); npv.push(r.npv); }
+    y1.sort((a,b)=>a-b); npv.sort((a,b)=>a-b);
+    const mc={y1,npv,y1P10:qtl(y1,.1),y1P50:qtl(y1,.5),y1P90:qtl(y1,.9),npvP10:qtl(npv,.1),npvP50:qtl(npv,.5),npvP90:qtl(npv,.9),
+      probLoss:y1.filter(x=>x<0).length/y1.length};
+    const stress={};
+    for(const k of Object.keys(SCENARIOS)){
+      const o=SCENARIOS[k].ov; const r=evalConcept(c,st,o,sD[k],o.halo||st.halo,false);
+      stress[k]={y1:r.y1Total,npv:r.npv};
+    }
+    out.byId[c.id]={c,det,detLikely,detNone,mc,stress};
+  }
+  scoreAndGate(st,out);
+  return out;
+}
+
+/* ---------- Gates, score og anbefaling ---------- */
+const GATES=[
+  ['g1','Positivt risikojusteret økonomisk DB'],['g2','Acceptabelt bidrag pr. mekanikertime'],['g3','Ingen uacceptabel peak-påvirkning'],
+  ['g4','Troværdig kundeværdi'],['g5','Tydelige fair-use-regler'],['g6','Begrænset adverse selection'],['g7','Operationelt gennemførligt'],
+  ['g8','Enkel kundekommunikation'],['g9','Målbar inkrementel effekt'],['g10','Pilot med begrænset downside']];
+function ruleCount(c){ let n=0; if(c.E>0)n++; if(c.util>0)n++; if(c.copay>0)n++; if(c.lowSeason>0&&c.lowSeason<100)n++; if(c.lowSeason===100)n++; if(c.laborDisc>0)n++; if(c.partsDisc>0)n++; if(c.inclParts>0)n++; if(c.fulfil>0)n++; return n; }
+function scoreAndGate(st,out){
+  const G=st.gates, ids=Object.keys(out.byId);
+  for(const id of ids){
+    const R=out.byId[id], c=R.c, det=R.det, mc=R.mc, y1=det.y1;
+    const g={};
+    const pilotScale=Math.min(1,G.pilotN/Math.max(1,det.N));
+    g.g1={ok: mc.y1P50>0 && mc.y1P10>=-G.maxLoss, val:`P50 ${fmtKrM(mc.y1P50)} · P10 ${fmtKrM(mc.y1P10)}`};
+    g.g2={ok: y1.contribPerHour>=G.minPerHour, val:`${fmtKrM(y1.contribPerHour)}/t`};
+    g.g3={ok: det.peakImpact<=G.maxPeakImpact/100, val:`${(det.peakImpact*100).toFixed(1).replace('.',',')} %`};
+    g.g4={ok: det.points.P50.custNet>=0, val:`median ${fmtKrM(det.points.P50.custNet)}`};
+    g.g5={ok: c.E<=G.fairUseMax, val: c.E>0?`loft ${String(c.E).replace('.',',')} t`:'ingen inkl. tid'};
+    g.g6={ok: det.heavyShare<=G.maxHeavyShare/100, val:`${Math.round(det.heavyShare*100)} % heavy`};
+    g.g7={ok: c.complexity<=4, warn:c.complexity===4||c.cert, val:`kompleksitet ${c.complexity}/5${c.cert?' · kræver certificering':''}`};
+    const rc=ruleCount(c); g.g8={ok: rc<=5, warn: rc===5, val:`${rc} regler`};
+    g.g9={ok: !!c.measurable && c.id!=='I', warn:c.id==='I', val: c.id==='I'?'svært at isolere effekten':'kontrolgruppe mulig'};
+    const pilotP10 = mc.y1P10*pilotScale - c.setup;
+    g.g10={ok: pilotP10>=-G.maxLoss, val:`P10 pilot ${fmtKrM(pilotP10)}`};
+    R.gates=g; R.gatesPassed=GATES.filter(([k])=>g[k].ok).length;
+    R.hardFail=['g1','g2','g3','g4','g6'].filter(k=>!g[k].ok);
+    // supplerende tærskler
+    R.extra={
+      margin:{ok: det.marginPct!=null ? det.marginPct>=G.minMarginPct/100 : true, val: det.marginPct!=null?`${Math.round(det.marginPct*100)} %`:'–'},
+      payback:{ok: det.payback!=null && det.payback<=G.maxPaybackMonths, val: det.payback!=null?`${det.payback} mdr.`:'> 36 mdr.'},
+      renewal:{ok: c.renew>=G.minRenewal, val:`${c.renew} %`},
+      admin:{ok: det.adminPct==null || det.adminPct<=G.maxAdminPct/100, val: det.adminPct!=null?`${Math.round(det.adminPct*100)} %`:'–'}
+    };
+    R.stressNeg=STRESS.filter(k=>R.stress[k].y1<0).length;
+    R.riskNpv = mc.npvP50 - 0.5*(mc.npvP50-mc.npvP10);
+  }
+  // relativ skalering
+  const rn=ids.map(id=>out.byId[id].riskNpv), mn=Math.min(0,...rn), mx=Math.max(0,...rn);
+  // DB pr. begrænset mekanikertime = årligt DB / ekstra timer i højsæson (frigjort tid giver maks.)
+  const ph=ids.map(id=>{ const y=out.byId[id].det.y1; return clamp(y.total/Math.max(y.netPeakHours,5),-3000,3000); });
+  const pmn=Math.min(...ph), pmx=Math.max(...ph);
+  const W=st.weights, wsum=sum(Object.values(W))||1;
+  ids.forEach((id,ix)=>{
+    const R=out.byId[id], c=R.c, det=R.det;
+    const s={};
+    s.econ = mx>mn ? 100*(R.riskNpv-mn)/(mx-mn) : 50;
+    s.perHour = pmx>pmn ? 100*(ph[ix]-pmn)/(pmx-pmn) : 50;
+    R.dbPerPeakHour=ph[ix];
+    s.cust = 100*det.attractShare;
+    s.cap = clamp(60-600*det.peakImpact,0,100);
+    s.ret = 100*(0.5*clamp((c.renew-40)/50,0,1)+0.5*(c.retention-1)/4);
+    s.ops = 100*(5-c.complexity)/4;
+    s.brand = clamp(100*(c.brand-1)/4 - (c.laborDisc>15?30:0) - (c.partsDisc>10?20:0),0,100);
+    s.risk = 100*(5-c.legal)/4;
+    R.scores=s;
+    R.score = (W.econ*s.econ+W.perHour*s.perHour+W.cust*s.cust+W.cap*s.cap+W.ret*s.ret+W.ops*s.ops+W.brand*s.brand+W.risk*s.risk)/wsum;
+    const spread=(R.mc.y1P90-R.mc.y1P10)/Math.max(1,Math.abs(R.mc.y1P50));
+    let lvl = spread<0.8?2:spread<2?1:0;           // 2=høj, 1=middel, 0=lav
+    if(st.dataStatus==='antagelser') lvl=Math.max(0,lvl-1);
+    R.confidence=['lav','middel','høj'][lvl];
+    let rec;
+    if(det.y1.N===0) rec={k:'info',t:'Ingen data'};
+    else if(R.hardFail.length) rec={k:'bad',t:'Forkast'};
+    else if(det.y1.econDirect<0 && det.y1.econ>0) rec={k:'bad',t:'Forkast (kun rentabel med halo)'};
+    else if(R.gatesPassed<10) rec={k:'warn',t:'Kun pilot / redesign'};
+    else if(st.dataStatus==='antagelser') rec={k:'warn',t:'Pilot'};
+    else if(R.stressNeg===0) rec={k:'good',t:'Anbefal'};
+    else rec={k:'warn',t:'Anbefal m. betingelser'};
+    R.rec=rec;
+  });
+  const ranked=ids.slice().sort((a,b)=>out.byId[b].score-out.byId[a].score);
+  out.ranked=ranked;
+  out.passing=ranked.filter(id=>out.byId[id].hardFail.length===0 && out.byId[id].det.y1.N>0 && !(out.byId[id].det.y1.econDirect<0));
+  out.top = out.passing[0] || null;
+  const nonSub=ids.filter(id=>!out.byId[id].c.subscription && id!==out.top).sort((a,b)=>out.byId[b].mc.npvP50-out.byId[a].mc.npvP50);
+  out.bestNonSub = nonSub[0]||null;
+  // IC-beslutning
+  if(!out.top) out.ic={k:'bad',t:'Reject',why:'Intet abonnements- eller servicekoncept består de hårde gates. Bliv ved pay-as-you-go eller test det bedste ikke-abonnementsalternativ.'};
+  else {
+    const T=out.byId[out.top];
+    if(st.dataStatus==='antagelser') out.ic={k:'warn',t:'Pilot only',why:'Modellen bygger på antagelser, ikke verificerede tal. Intet koncept kan godkendes til fuld lancering, før en pilot har målt forbrug, kannibalisering og fornyelse.'};
+    else if(T.stressNeg===0 && T.mc.npvP10>0) out.ic={k:'good',t:'Approve',why:'Konceptet består alle gates og er positivt i alle stress-scenarier.'};
+    else if(T.stressNeg<=2) out.ic={k:'warn',t:'Approve with conditions',why:`Konceptet består gates, men er negativt i ${T.stressNeg} stress-scenarie(r). Guardrails og kill criteria skal være på plads.`};
+    else out.ic={k:'warn',t:'Pilot only',why:`Konceptet er negativt i ${T.stressNeg} af ${STRESS.length} stress-scenarier.`};
+  }
+}
+function fmtKrM(x){ if(!isFinite(x)) return '–'; return new Intl.NumberFormat('da-DK',{maximumFractionDigits:0}).format(Math.round(x))+' kr'; }
+</script>
+
+<!-- ===================================================================== -->
+<!-- UI                                                                     -->
+<!-- ===================================================================== -->
+<script>
+"use strict";
+const STORE='byman-medlemskab-v1';
+const TABS=[['overblik','Overblik'],['lab','Koncept-lab'],['arkitektur','Arkitektur (op til 3)'],['vaerksted','Værksted & kapacitet'],['kunder','Kunder & adfærd'],['scenarier','Scenarier & følsomhed'],['redteam','Red team & gates'],['pilot','Pilotplan'],['antagelser','Antagelser & data'],['marked','Markedsbenchmark']];
+const nf0=new Intl.NumberFormat('da-DK',{maximumFractionDigits:0});
+const nf1=new Intl.NumberFormat('da-DK',{maximumFractionDigits:1,minimumFractionDigits:1});
+const nf2=new Intl.NumberFormat('da-DK',{maximumFractionDigits:2});
+const kr=x=>isFinite(x)?nf0.format(Math.round(x))+' kr':'–';
+const krs=x=>isFinite(x)?(x>0?'+':'')+nf0.format(Math.round(x))+' kr':'–';
+const tk=x=>{ if(!isFinite(x)) return '–'; const a=Math.abs(x); return a>=1e6? nf1.format(x/1e6)+' mio. kr' : a>=1e4? nf0.format(Math.round(x/1000))+' t.kr.' : nf0.format(Math.round(x))+' kr'; };
+const h1f=x=>isFinite(x)?nf1.format(x):'–';
+const pc=x=>isFinite(x)?nf0.format(Math.round(x*100))+' %':'–';
+const pc1=x=>isFinite(x)?nf1.format(x*100)+' %':'–';
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function deepMerge(base, over){
+  if(Array.isArray(base)) return Array.isArray(over)?over:base;
+  if(base && typeof base==='object'){ const o={...base}; if(over&&typeof over==='object') for(const k of Object.keys(over)) o[k]= k in base ? deepMerge(base[k],over[k]) : over[k]; return o; }
+  return over===undefined?base:over;
+}
+function loadState(){
+  try{ const raw=localStorage.getItem(STORE); if(!raw) return defaultState(); const s=JSON.parse(raw); const d=defaultState();
+    const m=deepMerge(d,s); // koncepter: flet pr. id
+    m.concepts=d.concepts.map(dc=>{ const sc=(s.concepts||[]).find(x=>x.id===dc.id); return sc?{...dc,...sc}:dc; });
+    m.concepts.forEach(c=>{ if(c.partsInt==null) c.partsInt=100; });
+    return m; }catch(e){ return defaultState(); }
+}
+let ST=loadState(), RES=null;
+const save=()=>{ try{ localStorage.setItem(STORE,JSON.stringify(ST)); }catch(e){} };
+const getPath=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const setPath=(o,p,v)=>{ const ks=p.split('.'); const last=ks.pop(); const t=ks.reduce((a,k)=>a[k],o); t[last]=v; };
+const conceptIdx=id=>ST.concepts.findIndex(c=>c.id===id);
+const C_=id=>ST.concepts[conceptIdx(id)];
+
+/* ---------- tooltip ---------- */
+const tip=document.getElementById('tip');
+function showTip(lines, x, y){
+  tip.replaceChildren();
+  lines.forEach((ln,i)=>{
+    const div=document.createElement('div');
+    if(typeof ln==='string'){ div.textContent=ln; if(i===0) div.className='tv'; }
+    else { div.className='tr'; if(ln.color){ const k=document.createElement('span'); k.className='k'; k.style.borderColor=ln.color; div.appendChild(k);} const b=document.createElement('b'); b.textContent=ln.v; b.style.color='var(--ink)'; div.appendChild(b); const s=document.createElement('span'); s.textContent=ln.l; div.appendChild(s); }
+    tip.appendChild(div);
+  });
+  tip.style.display='block';
+  const r=tip.getBoundingClientRect(); let lx=x+14, ly=y+14;
+  if(lx+r.width>innerWidth-8) lx=x-r.width-14; if(ly+r.height>innerHeight-8) ly=y-r.height-14;
+  tip.style.left=lx+'px'; tip.style.top=ly+'px';
+}
+const hideTip=()=>{ tip.style.display='none'; };
+const LINECH={};
+document.addEventListener('pointermove',ev=>{
+  const t=ev.target.closest && ev.target.closest('[data-tip],[data-help],[data-lc]');
+  if(!t){ hideTip(); document.querySelectorAll('.xhair').forEach(l=>l.setAttribute('opacity',0)); return; }
+  if(t.dataset.help){ showTip([t.dataset.help],ev.clientX,ev.clientY); return; }
+  if(t.dataset.tip){ showTip(JSON.parse(t.dataset.tip),ev.clientX,ev.clientY); return; }
+  if(t.dataset.lc){
+    const ch=LINECH[t.dataset.lc]; if(!ch) return;
+    const svg=t.ownerSVGElement||t.closest('svg'); const pt=svg.createSVGPoint(); pt.x=ev.clientX; pt.y=ev.clientY;
+    const loc=pt.matrixTransform(svg.getScreenCTM().inverse());
+    let bi=0,bd=Infinity; ch.xs.forEach((x,i)=>{ const dd=Math.abs(ch.sx(x)-loc.x); if(dd<bd){bd=dd;bi=i;} });
+    const xl=svg.querySelector('.xhair'); if(xl){ xl.setAttribute('x1',ch.sx(ch.xs[bi])); xl.setAttribute('x2',ch.sx(ch.xs[bi])); xl.setAttribute('opacity',1); }
+    showTip([ch.xfmt(ch.xs[bi]), ...ch.series.map(s=>({color:s.color,v:ch.yfmt(s.values[bi]),l:s.name}))],ev.clientX,ev.clientY);
+  }
+});
+
+/* ---------- SVG-diagrammer ---------- */
+function niceTicks(min,max,n){ n=n||5; if(!(max>min)){ max=min+1; } const span=max-min, s0=span/n, mag=Math.pow(10,Math.floor(Math.log10(s0))), nr=s0/mag; const step=(nr<1.5?1:nr<3?2:nr<7?5:10)*mag; const lo=Math.floor(min/step)*step, hi=Math.ceil(max/step)*step; const t=[]; for(let v=lo;v<=hi+step*1e-6;v+=step) t.push(+v.toFixed(8)); return {lo,hi,ticks:t}; }
+const axfmt=v=>{ const a=Math.abs(v); return a>=1e6? nf1.format(v/1e6)+' mio.' : nf0.format(v); };
+const TIP=a=>esc(JSON.stringify(a));
+function svgOpen(w,h){ return `<svg class="chart" viewBox="0 0 ${w} ${h}" role="img">`; }
+
+function columnsChart(o){
+  const W=o.w||760,H=o.h||260,ml=54,mr=o.mr||70,mt=12,mb=26, iw=W-ml-mr, ih=H-mt-mb;
+  const n=o.cats.length;
+  let maxV=0; for(let i=0;i<n;i++){ let s=0; o.series.forEach(se=>s+=Math.max(0,se.values[i])); maxV=Math.max(maxV,s); (o.lines||[]).forEach(l=>maxV=Math.max(maxV,l.values[i])); }
+  const {hi,ticks}=niceTicks(0,maxV*1.05,4); const sy=v=>mt+ih-ih*v/hi; const bw=Math.min(24,iw/n*0.6), step=iw/n;
+  let g=svgOpen(W,H);
+  ticks.forEach(t=>{ g+=`<line x1="${ml}" x2="${W-mr}" y1="${sy(t)}" y2="${sy(t)}" stroke="var(--grid)" stroke-width="1"/><text x="${ml-6}" y="${sy(t)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${axfmt(t)}</text>`; });
+  if(o.yLabel) g+=`<text x="${ml}" y="${mt-2}" font-size="11" fill="var(--muted)">${esc(o.yLabel)}</text>`;
+  for(let i=0;i<n;i++){
+    const cx=ml+step*i+step/2; let y0=0; const tipLines=[o.cats[i]];
+    o.series.forEach((se,si)=>{ const v=Math.max(0,se.values[i]); if(v<=0){ tipLines.push({color:se.color,v:o.fmt(se.values[i]),l:se.name}); return; }
+      const yTop=sy(y0+v), yBot=sy(y0); const hgt=Math.max(0,yBot-yTop-(si>0?2:0)); const isTop=si===o.series.length-1 || o.series.slice(si+1).every(s2=>s2.values[i]<=0);
+      g+= isTop ? `<path d="${roundTop(cx-bw/2,yTop,bw,hgt)}" fill="${se.color}"/>` : `<rect x="${cx-bw/2}" y="${yTop+ (si>0?0:0)}" width="${bw}" height="${hgt}" fill="${se.color}"/>`;
+      y0+=v; tipLines.push({color:se.color,v:o.fmt(se.values[i]),l:se.name}); });
+    (o.lines||[]).forEach(l=>tipLines.push({color:l.color,v:o.fmt(l.values[i]),l:l.name}));
+    if(o.extraTip) o.extraTip(i).forEach(x=>tipLines.push(x));
+    g+=`<rect x="${ml+step*i}" y="${mt}" width="${step}" height="${ih}" fill="transparent" data-tip="${TIP(tipLines)}"/>`;
+    g+=`<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(o.cats[i])}</text>`;
+  }
+  (o.lines||[]).forEach(l=>{ let d=''; for(let i=0;i<n;i++){ const x0=ml+step*i+2, x1=ml+step*(i+1)-2, y=sy(l.values[i]); d+=`M${x0},${y}L${x1},${y}`; }
+    g+=`<path d="${d}" stroke="${l.color}" stroke-width="2" fill="none" ${l.dash?'stroke-dasharray="4 3"':''} pointer-events="none"/>`;
+    g+=`<text x="${W-mr+6}" y="${sy(l.values[n-1])+4}" font-size="11" fill="var(--ink2)">${esc(l.name)}</text>`; });
+  g+=`<line x1="${ml}" x2="${W-mr}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--axis)"/>`;
+  return g+'</svg>';
+}
+function roundTop(x,y,w,h){ const r=Math.min(4,h,w/2); if(h<=0) return ''; return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`; }
+function lineChart(o){
+  const id='lc'+Math.random().toString(36).slice(2,8);
+  const W=o.w||760,H=o.h||250,ml=60,mr=o.mr||90,mt=14,mb=30,iw=W-ml-mr,ih=H-mt-mb;
+  const xs=o.xs; const xmin=Math.min(...xs), xmax=Math.max(...xs);
+  let ymin=Infinity,ymax=-Infinity; o.series.forEach(s=>s.values.forEach(v=>{ if(isFinite(v)){ymin=Math.min(ymin,v);ymax=Math.max(ymax,v);} }));
+  if(o.zero){ ymin=Math.min(ymin,0); ymax=Math.max(ymax,0); }
+  const pad=(ymax-ymin)*0.06||1; const {lo,hi,ticks}=niceTicks(ymin-pad,ymax+pad,5);
+  const sx=x=>ml+iw*(x-xmin)/((xmax-xmin)||1), sy=v=>mt+ih-ih*(v-lo)/((hi-lo)||1);
+  let g=svgOpen(W,H);
+  ticks.forEach(t=>{ g+=`<line x1="${ml}" x2="${W-mr}" y1="${sy(t)}" y2="${sy(t)}" stroke="${t===0&&o.zero?'var(--axis)':'var(--grid)'}" stroke-width="1"/><text x="${ml-6}" y="${sy(t)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${axfmt(t)}</text>`; });
+  const xt=o.xticks||niceTicks(xmin,xmax,6).ticks.filter(t=>t>=xmin&&t<=xmax);
+  xt.forEach(t=>{ g+=`<text x="${sx(t)}" y="${H-12}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(o.xtfmt?o.xtfmt(t):axfmt(t))}</text>`; });
+  if(o.xLabel) g+=`<text x="${ml+iw}" y="${H-0}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(o.xLabel)}</text>`;
+  if(o.yLabel) g+=`<text x="${ml}" y="${mt-3}" font-size="11" fill="var(--muted)">${esc(o.yLabel)}</text>`;
+  (o.bands||[]).forEach(b=>{ g+=`<rect x="${sx(b.x0)}" y="${mt}" width="${Math.max(0,sx(b.x1)-sx(b.x0))}" height="${ih}" fill="${b.color}" opacity="${b.op||0.08}"/>`; });
+  (o.vmarks||[]).forEach(m=>{ if(m.x<xmin||m.x>xmax) return; g+=`<line x1="${sx(m.x)}" x2="${sx(m.x)}" y1="${mt}" y2="${mt+ih}" stroke="var(--axis)" stroke-width="1"/><text x="${sx(m.x)+3}" y="${mt+10+(m.row||0)*12}" font-size="10.5" fill="var(--ink2)">${esc(m.label)}</text>`; });
+  o.series.forEach(s=>{
+    let d=''; s.values.forEach((v,i)=>{ d+=(i?'L':'M')+sx(xs[i]).toFixed(1)+','+sy(v).toFixed(1); });
+    if(s.area){ g+=`<path d="${d}L${sx(xs[xs.length-1])},${sy(Math.max(lo,0))}L${sx(xs[0])},${sy(Math.max(lo,0))}Z" fill="${s.color}" opacity="0.10"/>`; }
+    g+=`<path d="${d}" stroke="${s.color}" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const lv=s.values[s.values.length-1];
+    g+=`<circle cx="${sx(xs[xs.length-1])}" cy="${sy(lv)}" r="4" fill="${s.color}" stroke="var(--card)" stroke-width="2"/>`;
+    if(o.endLabels!==false) g+=`<text x="${sx(xs[xs.length-1])+8}" y="${sy(lv)+4+(s.dy||0)}" font-size="11" fill="var(--ink2)">${esc(s.name)}</text>`;
+  });
+  (o.points||[]).forEach(p=>{ g+=`<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="5" fill="${p.color}" stroke="var(--card)" stroke-width="2"/><text x="${sx(p.x)+8}" y="${sy(p.y)-8}" font-size="11" fill="var(--ink)">${esc(p.label)}</text>`; });
+  g+=`<line class="xhair" x1="0" x2="0" y1="${mt}" y2="${mt+ih}" stroke="var(--muted)" stroke-width="1" opacity="0" pointer-events="none"/>`;
+  g+=`<rect x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="transparent" data-lc="${id}"/>`;
+  LINECH[id]={xs,series:o.series,sx,xfmt:o.xfmt||(x=>String(x)),yfmt:o.yfmt||kr};
+  return g+'</svg>';
+}
+function waterfall(items, o){
+  o=o||{}; const W=o.w||620, rowH=24, ml=230, mr=90, mt=6, H=mt+items.length*rowH+20, iw=W-ml-mr;
+  let run=0, mn=0, mx=0; const bars=items.map(it=>{ let a,b; if(it.kind==='total'){ a=0;b=it.value; run=it.value; } else { a=run; b=run+it.value; run=b; } mn=Math.min(mn,a,b); mx=Math.max(mx,a,b); return {...it,a,b}; });
+  const {lo,hi,ticks}=niceTicks(mn,mx,4); const sx=v=>ml+iw*(v-lo)/((hi-lo)||1);
+  let g=svgOpen(W,H);
+  ticks.forEach(t=>{ g+=`<line x1="${sx(t)}" x2="${sx(t)}" y1="${mt}" y2="${H-18}" stroke="${t===0?'var(--axis)':'var(--grid)'}"/><text x="${sx(t)}" y="${H-5}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${axfmt(t)}</text>`; });
+  bars.forEach((b,i)=>{ const y=mt+i*rowH+4, h=rowH-8; const x0=sx(Math.min(b.a,b.b)), x1=sx(Math.max(b.a,b.b)); const col=b.kind==='total'?'var(--tot)':(b.value>=0?'var(--pos)':'var(--neg)');
+    g+=`<text x="${ml-8}" y="${y+h/2+4}" text-anchor="end" font-size="11.5" fill="${b.kind==='total'?'var(--ink)':'var(--ink2)'}" ${b.kind==='total'?'font-weight="600"':''}>${esc(b.label)}</text>`;
+    g+=`<rect x="${x0}" y="${y}" width="${Math.max(1,x1-x0)}" height="${h}" rx="3" fill="${col}"/>`;
+    g+=`<text x="${x1+6}" y="${y+h/2+4}" font-size="11" fill="var(--ink)">${esc(b.kind==='total'?kr(b.value):krs(b.value))}</text>`;
+    g+=`<rect x="0" y="${y-4}" width="${W}" height="${rowH}" fill="transparent" data-tip="${TIP([b.label,{v:kr(b.value),l:b.note||''}])}"/>`; });
+  return g+'</svg>';
+}
+function histChart(vals, marks, o){
+  o=o||{}; const W=o.w||620,H=o.h||190,ml=40,mr=16,mt=26,mb=30,iw=W-ml-mr,ih=H-mt-mb;
+  if(!vals.length) return '';
+  const mn=vals[0], mx=vals[vals.length-1]; const {lo,hi,ticks}=niceTicks(Math.min(mn,0),Math.max(mx,0),6);
+  const nb=28, bwv=(hi-lo)/nb; const cnt=new Array(nb).fill(0); vals.forEach(v=>{ cnt[Math.min(nb-1,Math.max(0,Math.floor((v-lo)/bwv)))]++; });
+  const cm=Math.max(...cnt); const sx=v=>ml+iw*(v-lo)/(hi-lo), sy=c=>mt+ih-ih*c/cm;
+  let g=svgOpen(W,H);
+  cnt.forEach((c,i)=>{ if(!c) return; const x0=sx(lo+i*bwv)+1, x1=sx(lo+(i+1)*bwv)-1, mid=lo+(i+0.5)*bwv; const col=mid<0?'var(--neg)':'var(--pos)';
+    g+=`<path d="${roundTop(x0,sy(c),Math.max(1,x1-x0),mt+ih-sy(c))}" fill="${col}" opacity="0.85"/><rect x="${x0-1}" y="${mt}" width="${x1-x0+2}" height="${ih}" fill="transparent" data-tip="${TIP([`${tk(lo+i*bwv)} til ${tk(lo+(i+1)*bwv)}`,{v:pc(c/vals.length),l:'af simuleringerne'}])}"/>`; });
+  ticks.forEach(t=>{ g+=`<text x="${sx(t)}" y="${H-12}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${axfmt(t)}</text>`; });
+  g+=`<line x1="${ml}" x2="${W-mr}" y1="${mt+ih}" y2="${mt+ih}" stroke="var(--axis)"/>`;
+  if(lo<0&&hi>0) g+=`<line x1="${sx(0)}" x2="${sx(0)}" y1="${mt-4}" y2="${mt+ih}" stroke="var(--ink2)" stroke-width="1"/>`;
+  marks.forEach((m,i)=>{ g+=`<line x1="${sx(m.v)}" x2="${sx(m.v)}" y1="${mt-2}" y2="${mt+ih}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/><text x="${sx(m.v)}" y="${mt-8}" text-anchor="middle" font-size="11" fill="var(--ink)" font-weight="600">${esc(m.l)}</text>`; });
+  if(o.xLabel) g+=`<text x="${W-mr}" y="${H}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(o.xLabel)}</text>`;
+  return g+'</svg>';
+}
+function tornadoChart(rows, base, o){
+  o=o||{}; const W=o.w||720, rowH=26, ml=250, mr=70, mt=20, H=mt+rows.length*rowH+24, iw=W-ml-mr;
+  let mn=base, mx=base; rows.forEach(r=>{ mn=Math.min(mn,r.lo,r.hi); mx=Math.max(mx,r.lo,r.hi); });
+  const {lo,hi,ticks}=niceTicks(mn,mx,5); const sx=v=>ml+iw*(v-lo)/((hi-lo)||1);
+  let g=svgOpen(W,H);
+  ticks.forEach(t=>{ g+=`<line x1="${sx(t)}" x2="${sx(t)}" y1="${mt}" y2="${H-20}" stroke="${t===0?'var(--axis)':'var(--grid)'}"/><text x="${sx(t)}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${axfmt(t)}</text>`; });
+  g+=`<text x="${sx(base)}" y="${mt-6}" text-anchor="middle" font-size="11" fill="var(--ink)">Base ${esc(tk(base))}</text>`;
+  rows.forEach((r,i)=>{ const y=mt+i*rowH+4, h=rowH-8;
+    g+=`<text x="${ml-8}" y="${y+h/2+4}" text-anchor="end" font-size="11.5" fill="var(--ink2)">${esc(r.label)}</text>`;
+    [[r.lo,r.loL],[r.hi,r.hiL]].forEach(([v,l])=>{ const a=Math.min(base,v), b=Math.max(base,v); const col=v>=base?'var(--pos)':'var(--neg)';
+      g+=`<rect x="${sx(a)}" y="${y}" width="${Math.max(1,sx(b)-sx(a))}" height="${h}" rx="3" fill="${col}"/>`; });
+    g+=`<rect x="0" y="${y-4}" width="${W}" height="${rowH}" fill="transparent" data-tip="${TIP([r.label,{color:'var(--neg)',v:tk(Math.min(r.lo,r.hi)),l:'laveste NPV'},{color:'var(--pos)',v:tk(Math.max(r.lo,r.hi)),l:'højeste NPV'},{v:r.loL+' / '+r.hiL,l:'testet lav / høj'}])}"/>`; });
+  g+=`<line x1="${sx(base)}" x2="${sx(base)}" y1="${mt}" y2="${H-20}" stroke="var(--ink)" stroke-width="1"/>`;
+  return g+'</svg>';
+}
+function tableBlock(head, rows, cls){ return `<details class="grp"><summary>Vis tal som tabel</summary><div class="tblwrap"><table class="${cls||''}"><thead><tr>${head.map((h,i)=>`<th class="${i?'n':''}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'n':''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`; }
+const chip=(k,t)=>`<span class="chip ${k}"><i>${k==='good'?'✓':k==='bad'?'✕':k==='warn'?'!':'i'}</i>${esc(t)}</span>`;
+const gchip=g=> g.ok ? (g.warn?chip('warn','OK*'):chip('good','OK')) : chip('bad','Fejl');
+const helpI=t=>`<span class="help" data-help="${esc(t)}">?</span>`;
+
+/* ---------- formularfelter ---------- */
+function field(path, o){
+  const v=getPath(ST,path); const id='f_'+path.replace(/\./g,'_');
+  return `<div class="field"><div class="fl">${esc(o.label)}${o.unit?` <span class="u">(${esc(o.unit)})</span>`:''}${o.help?helpI(o.help):''}</div>
+    <input type="range" min="${o.min}" max="${o.max}" step="${o.step||1}" value="${v}" data-path="${path}" data-pair="${id}" aria-label="${esc(o.label)}">
+    <input type="number" id="${id}" min="${o.min}" max="${o.max}" step="${o.step||1}" value="${v}" data-path="${path}">
+    ${o.hint?`<div class="hint" data-hint="${path}">${o.hint}</div>`:''}</div>`;
+}
+document.addEventListener('input',ev=>{
+  const t=ev.target; if(!t.dataset) return;
+  if(t.dataset.path){
+    let v=t.type==='range'||t.type==='number'? parseFloat(t.value) : t.value; if(t.type!=='text'&&t.tagName!=='SELECT'&&!isFinite(v)) return;
+    setPath(ST,t.dataset.path,v);
+    if(t.type==='range'){ const o=document.getElementById(t.dataset.pair); if(o) o.value=v; }
+    else if(t.type==='number'){ const o=document.querySelector(`input[type=range][data-pair="${t.id}"]`); if(o) o.value=v; }
+    schedule();
+  }
+});
+document.addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.dataset && t.dataset.cls){ ST.cls[t.dataset.cls]=t.value; save(); }
+  if(t.dataset && t.dataset.pathsel){ setPath(ST,t.dataset.pathsel,t.value); schedule(); }
+  if(t.dataset && t.dataset.port){ const id=t.dataset.port; ST.portfolio=ST.portfolio.filter(x=>x!==id); if(t.checked){ ST.portfolio.push(id); if(ST.portfolio.length>3) ST.portfolio.shift(); } buildControls('arkitektur'); schedule(); }
+});
+let timer=null; function schedule(){ clearTimeout(timer); timer=setTimeout(recompute,140); }
+
+/* ---------- top-kontroller ---------- */
+function buildTop(){
+  const tabs=document.getElementById('tabs');
+  tabs.innerHTML=TABS.map(([k,l])=>`<button data-tabbtn="${k}" class="${ST.ui.tab===k?'on':''}">${esc(l)}</button>`).join('');
+  tabs.onclick=e=>{ const b=e.target.closest('[data-tabbtn]'); if(!b) return; ST.ui.tab=b.dataset.tabbtn; showTab(); };
+  const sc=document.getElementById('selConcept'); sc.innerHTML=ST.concepts.map(c=>`<option value="${c.id}">${esc(c.id+' · '+c.short)}</option>`).join(''); sc.value=ST.selected;
+  sc.onchange=()=>{ ST.selected=sc.value; buildControls('lab'); renderAll(); save(); };
+  const ss=document.getElementById('selScenario'); ss.innerHTML=Object.entries(SCENARIOS).map(([k,s])=>`<option value="${k}">${esc(s.label)}</option>`).join(''); ss.value=ST.scenario;
+  ss.onchange=()=>{ ST.scenario=ss.value; recompute(); };
+  const sh=document.getElementById('selHalo'); sh.value=ST.halo; sh.onchange=()=>{ ST.halo=sh.value; recompute(); };
+  const su=document.getElementById('selUnc'); su.value=String(ST.uncertainty); su.onchange=()=>{ ST.uncertainty=+su.value; recompute(); };
+  document.getElementById('btnReset').onclick=()=>{ if(confirm('Sæt alle antagelser tilbage til standard? Dine ændringer går tabt.')){ ST=defaultState(); save(); init(); } };
+}
+function showTab(){
+  document.querySelectorAll('[data-tabbtn]').forEach(b=>b.classList.toggle('on',b.dataset.tabbtn===ST.ui.tab));
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.dataset.tab===ST.ui.tab));
+  if(!document.querySelector(`section[data-tab="${ST.ui.tab}"]`).dataset.built) buildControls(ST.ui.tab);
+  renderAll(); save(); window.scrollTo({top:0});
+}
+function selectConcept(id, gotoLab){ ST.selected=id; document.getElementById('selConcept').value=id; buildControls('lab'); if(gotoLab){ ST.ui.tab='lab'; showTab(); } else renderAll(); }
+
+/* ---------- byg statiske kontroller pr. fane ---------- */
+function buildControls(tab){
+  const sec=document.querySelector(`section[data-tab="${tab}"]`); sec.dataset.built='1';
+  const B=BUILD[tab]; sec.innerHTML = B ? B() : '';
+}
+const BUILD={
+ overblik:()=>`
+  <div class="grid g5" id="ovTiles"></div>
+  <div class="grid g2" style="margin-top:16px"><div class="card summary" id="ovSummary"></div><div class="card" id="ovIC"></div></div>
+  <div class="card" style="margin-top:16px"><h2>Rangeret konceptportefølje</h2>
+   <p class="desc">Alle koncepter vurderet mod "ingen ny model". Klik på en række for at åbne konceptet i Koncept-lab. Økonomisk DB = reel ekstra indtjening efter kannibalisering og kapacitetsomkostning. Regnskabsmæssigt DB = medlemskabet som produkt med fuld mekanikerløn.</p>
+   <div class="tblwrap" id="ovTable"></div></div>`,
+ lab:()=>{ const c=C_(ST.selected), i=conceptIdx(ST.selected), P=k=>`concepts.${i}.${k}`;
+  return `<div class="lab"><div class="card controls">
+   <h2>${esc(c.id)} · ${esc(c.name)}</h2><p class="desc">${esc(c.promise)}</p>
+   <p class="small"><b>Målgruppe:</b> ${esc(c.segment)}<br><b>Indhold:</b> ${esc(c.benefits)}<br><b>Regler:</b> ${esc(c.rules)}</p>
+   <details class="grp" open><summary>Pris og adoption</summary>
+    ${field(P('fee'),{label:'Årlig pris (inkl. moms)',unit:'kr',min:0,max:9000,step:5,help:'Det kunden betaler pr. år. Modellen trækker selv momsen fra.',hint:'&nbsp;'})}
+    ${field(P('copay'),{label:'Egenbetaling pr. besøg (inkl. moms)',unit:'kr',min:0,max:600,step:5,help:'Et mindre beløb kunden betaler hver gang den inkluderede service bruges. Dæmper overforbrug.'})}
+    ${c.nFromBikes? field(P('attach'),{label:'Andel af cykelkøbere der tager planen',unit:'%',min:0,max:100,help:'Antal medlemmer = solgte cykler pr. år × denne andel.'}) + field('shop.bikesSold',{label:'Solgte cykler pr. år',unit:'stk',min:0,max:1500,step:5}) : field(P('N'),{label:'Antal medlemmer (mål år 1)',unit:'stk',min:0,max:1200,help:'Hvor mange der køber konceptet. Skal valideres i pilot.'})}
+    ${field(P('existing'),{label:'Andel der allerede er kunder i værkstedet',unit:'%',min:0,max:100,help:'Eksisterende kunder ville have betalt for deres service alligevel. Deres nuværende køb trækkes fra som kannibalisering.'})}
+    ${field(P('renew'),{label:'Fornyelse efter 1 år',unit:'%',min:5,max:98,help:'Hvor mange der fortsætter år 2 og 3. Påvirker NPV og hvervningsomkostning.'})}
+   </details>
+   <details class="grp" open><summary>Indhold og loft</summary>
+    ${field(P('E'),{label:'Inkluderet mekanikertid pr. år (loft)',unit:'timer',min:0,max:20,step:0.05,help:'Maksimalt antal mekanikertimer medlemmet kan bruge uden at betale arbejdsløn. 0 = ingen inkluderet tid.',hint:'&nbsp;'})}
+    ${field(P('util'),{label:'Udnyttelse af planlagte services',unit:'%',min:0,max:100,help:'Ved planlagte services (fx 2 eftersyn/år) bruger de fleste dem, også hvis de ellers ikke ville være kommet. 0 = kun efter behov.'})}
+    ${field(P('elig'),{label:'Del af kundens normale værkstedsbehov, planen dækker',unit:'%',min:0,max:100,help:'Fx dækker en serviceplan typisk ikke styrtskader og opgraderinger. Resten betales til normalpris (minus evt. rabat).'})}
+    ${field(P('uplift'),{label:'Ekstra forbrug når service er "gratis"',unit:'%',min:0,max:80,help:'Når kunden ikke betaler pr. gang, kommer de oftere – fx for småjusteringer. Kaldes moral hazard.'})}
+    ${field(P('inclParts'),{label:'Dele inkluderet på dækket arbejde',unit:'%',min:0,max:100,help:'Andel af reservedele, butikken betaler på inkluderet arbejde. 0 = kunden betaler alle dele.'})}
+    ${field(P('partsInt'),{label:'Reservedelsforbrug på inkluderet arbejde',unit:'% af normalt',min:0,max:200,step:5,help:'Et health check bruger få dele (fx 25 %), et stort eftersyn mange (100 % eller mere).'})}
+   </details>
+   <details class="grp"><summary>Rabatter</summary>
+    ${field(P('laborDisc'),{label:'Rabat på ekstra arbejdsløn',unit:'%',min:0,max:40,step:0.5,help:'Rabat på arbejde, der ikke er inkluderet. Store rabatter skader premium-positionering.'})}
+    ${field(P('partsDisc'),{label:'Rabat på dele og tilbehør',unit:'%',min:0,max:30,step:0.5,help:'Gælder også køb kunden ville have lavet alligevel – det koster avance.'})}
+   </details>
+   <details class="grp" open><summary>Booking og sæson</summary>
+    ${field(P('lowSeason'),{label:'Inkluderet tid der bookes i lavsæson',unit:'%',min:0,max:100,help:'Andel af den inkluderede tid, der skal bookes i måneder med ledig kapacitet. Ledig tid koster næsten ingenting; højsæsontid fortrænger betalende kunder.'})}
+   </details>
+   <details class="grp"><summary>Omkostninger</summary>
+    ${field(P('admin'),{label:'Administration pr. medlem pr. år',unit:'kr',min:0,max:600,step:5,help:'Booking, opkrævning, kundeservice, system.'})}
+    ${field(P('fulfil'),{label:'Afhentning, lånecykel, events pr. medlem',unit:'kr',min:0,max:2500,step:10,help:'Direkte omkostninger til ydelser, der ikke er mekanikertid.'})}
+    ${field(P('cac'),{label:'Hvervning og onboarding pr. nyt medlem',unit:'kr',min:0,max:1500,step:5,help:'Markedsføring og personaletid for at få et nyt medlem i gang (CAC).'})}
+    ${field(P('setup'),{label:'Engangsomkostning ved opstart',unit:'kr',min:0,max:150000,step:500,help:'System, materialer, træning, evt. værktøj/certificering.'})}
+   </details>
+   <details class="grp"><summary>Kundeadfærd og værdi</summary>
+    ${field(P('sel'),{label:'Selvselektion (tiltrækker storforbrugere)',unit:'0–100',min:0,max:100,help:'Hvor meget planens værdi stiger med forbruget. 100 = "fri service" (tiltrækker især de tunge brugere). 0 = alle får samme værdi.'})}
+    ${field(P('segMult'),{label:'Målgruppens forbrug ift. gennemsnitskunde',unit:'×',min:0.3,max:4,step:0.05,help:'Fx har husstande med flere cykler højere forbrug (2×), nye cykler lavere (0,8×).'})}
+    ${field(P('conv'),{label:'Oplevet convenience-værdi for kunden',unit:'kr/år',min:0,max:5000,step:25,help:'Kroneværdien af prioritet, afhentning, overblik mv. – ud over den økonomiske besparelse. Hypotese der skal testes.'})}
+    ${field(P('haloMult'),{label:'Halo-potentiale ift. standard',unit:'%',min:0,max:200,help:'Hvor meget mersalg/genkøb dette koncept kan udløse relativt til standardniveauet (se Kunder-fanen).'})}
+   </details>
+   <details class="grp"><summary>Kvalitative vurderinger (1–5)</summary>
+    ${field(P('complexity'),{label:'Operationel kompleksitet',unit:'1 = enkel',min:1,max:5})}
+    ${field(P('brand'),{label:'Premium brand fit',unit:'5 = stærk',min:1,max:5})}
+    ${field(P('legal'),{label:'Juridisk/kontrakt/CX-risiko',unit:'5 = høj',min:1,max:5})}
+    ${field(P('retention'),{label:'Effekt på loyalitet og genkøb',unit:'5 = stærk',min:1,max:5})}
+   </details>
+   <div class="row" style="margin-top:10px"><button id="btnResetConcept">Nulstil dette koncept</button></div>
+  </div>
+  <div id="labOut"></div></div>`; },
+ arkitektur:()=>`<div class="card"><h2>Sammensæt en arkitektur (højst 3 koncepter)</h2>
+   <p class="desc">Vælg op til tre koncepter, der skal køre samtidig. Modellen lægger deres mekanikertimer oven i hinanden, så du kan se, om de tilsammen sprænger kapaciteten i højsæsonen.</p>
+   <div class="row">${ST.concepts.map(c=>`<label class="pill" style="padding:4px 8px"><input type="checkbox" data-port="${c.id}" ${ST.portfolio.includes(c.id)?'checked':''}> ${esc(c.id+' · '+c.short)}</label>`).join('')}</div></div>
+   <div id="archOut"></div>`,
+ vaerksted:()=>`<div class="lab"><div class="card controls"><h2>Værkstedets kapacitet og økonomi</h2><p class="desc">Erstat standardtallene med jeres egne. Alle beløb pr. år.</p>
+   <details class="grp" open><summary>Mekanikere og timer</summary>
+    ${field('shop.fte',{label:'Antal mekanikere (fuldtid)',unit:'FTE',min:0.5,max:10,step:0.1})}
+    ${field('shop.paidHours',{label:'Betalte timer pr. fuldtid',unit:'timer/år',min:1200,max:2200,step:1,help:'37 timer × 52 uger = 1.924'})}
+    ${field('shop.absencePct',{label:'Ferie, helligdage, sygdom, kursus',unit:'%',min:0,max:30,step:0.5})}
+    ${field('shop.productivePct',{label:'Andel af tiden ved arbejdsbænken',unit:'%',min:30,max:100,help:'Resten går til butik, telefon, oprydning, indkøb.'})}
+    ${field('shop.billablePct',{label:'Heraf kundearbejde (fakturerbart)',unit:'%',min:30,max:100,help:'Resten er fx klargøring af nye cykler til salg, garanti og omarbejde.'})}
+    ${field('shop.loadedCost',{label:'Lønomkostning pr. mekaniker inkl. alt',unit:'kr/år',min:250000,max:800000,step:1000,help:'Løn, pension, feriepenge, ATP, forsikring mv.'})}
+   </details>
+   <details class="grp" open><summary>Priser og dele</summary>
+    ${field('shop.priceIncl',{label:'Timepris (inkl. moms)',unit:'kr',min:300,max:1500,step:5})}
+    ${field('shop.partsPerHour',{label:'Reservedelssalg pr. værkstedstime (ekskl. moms)',unit:'kr',min:0,max:1500,step:5})}
+    ${field('shop.partsMargin',{label:'Bruttoavance på reservedele',unit:'%',min:0,max:70})}
+    ${field('shop.varCostPerHour',{label:'Forbrugsstoffer pr. time (olie, rens mv.)',unit:'kr',min:0,max:100})}
+    ${field('shop.hoursPerVisit',{label:'Gennemsnitlig tid pr. værkstedsbesøg',unit:'timer',min:0.3,max:4,step:0.05})}
+    ${field('shop.moms',{label:'Momssats',unit:'%',min:0,max:30,step:0.5})}
+   </details>
+   <details class="grp"><summary>Højsæson og overarbejde</summary>
+    ${field('shop.otPct',{label:'Mulig ekstra kapacitet via overarbejde/sæsonhjælp',unit:'% af måned',min:0,max:40})}
+    ${field('shop.otCost',{label:'Pris pr. ekstra time (overarbejde/vikar)',unit:'kr',min:0,max:1200,step:5})}
+    ${field('shop.peakThreshold',{label:'Højsæson = belastning over',unit:'%',min:60,max:120})}
+    ${field('shop.lowThreshold',{label:'Lavsæson = belastning under',unit:'%',min:20,max:95})}
+    ${field('shop.bikesSold',{label:'Solgte cykler pr. år',unit:'stk',min:0,max:1500,step:5})}
+   </details></div>
+   <div><div class="card" style="margin-bottom:16px"><h2>Sæson måned for måned (redigerbar)</h2><p class="desc">Skriv jeres egne tal. Efterspørgsel = hvor travlt der er i dag i % af månedens kapacitet (over 100 % = ventetid). Kapacitetsprofil = relativ bemanding (juli er lav pga. ferie).</p>
+    <div class="tblwrap"><table><thead><tr><th>Måned</th>${MONTHS.map(m=>`<th class="n">${m}</th>`).join('')}</tr></thead><tbody>
+    <tr><td>Efterspørgsel (%)</td>${ST.shop.demand.map((v,i)=>`<td class="n"><input type="number" style="width:58px" min="0" max="200" step="1" value="${v}" data-path="shop.demand.${i}" aria-label="Efterspørgsel ${MONTHS[i]}"></td>`).join('')}</tr>
+    <tr><td>Kapacitetsprofil</td>${ST.shop.capProfile.map((v,i)=>`<td class="n"><input type="number" style="width:58px" min="0" max="2" step="0.05" value="${v}" data-path="shop.capProfile.${i}" aria-label="Kapacitet ${MONTHS[i]}"></td>`).join('')}</tr>
+    </tbody></table></div></div>
+   <div id="shopOut"></div></div></div>`,
+ kunder:()=>`<div class="lab"><div class="card controls"><h2>Kunder, forbrug og halo</h2><p class="desc">Fordelingen af serviceforbrug er afgørende: få kunder bruger meget.</p>
+   <details class="grp" open><summary>Kundebase og forbrug</summary>
+    ${field('cust.activeCustomers',{label:'Aktive værkstedskunder pr. år',unit:'stk',min:50,max:5000,step:10})}
+    ${field('cust.medianHours',{label:'Median-kundens værkstedstimer pr. år',unit:'timer',min:0.3,max:6,step:0.05,help:'Halvdelen af kunderne bruger mindre, halvdelen mere.'})}
+    ${field('cust.sigma',{label:'Spredning i forbruget',unit:'σ',min:0.2,max:1.5,step:0.05,help:'Hvor skævt forbruget er fordelt. 0,8 betyder at top 10 % bruger ca. 3× median.'})}
+    ${field('cust.maxPenetration',{label:'Maks. andel af kunderne der kan blive medlemmer',unit:'%',min:5,max:100})}
+   </details>
+   <details class="grp" open><summary>Adverse selection</summary>
+    ${field('cust.alpha',{label:'Styrke af selvselektion',unit:'0–150',min:0,max:150,help:'Hvor kraftigt storforbrugere vælger planer, der giver mest værdi ved højt forbrug. Ganges med hvert koncepts selektionsfølsomhed.'})}
+    ${field('cust.alphaDrift',{label:'Forværring pr. fornyelsesår',unit:'point',min:0,max:50,help:'Light users opsiger først – medlemsbasen bliver tungere år for år.'})}
+    ${field('cust.upliftValueShare',{label:'Kundens værdi af ekstra service',unit:'% af pris',min:0,max:100})}
+   </details>
+   <details class="grp"><summary>Tilbehør og genkøb</summary>
+    ${field('cust.accessorySpend',{label:'Køb af tilbehør/dele pr. kunde (ekskl. moms)',unit:'kr/år',min:0,max:10000,step:50})}
+    ${field('cust.accessoryMargin',{label:'Bruttoavance på tilbehør',unit:'%',min:0,max:70})}
+    ${field('cust.bikeGP',{label:'Dækningsbidrag pr. solgt cykel',unit:'kr',min:0,max:40000,step:250})}
+   </details>
+   <details class="grp" open><summary>Halo-niveauer (pr. medlem pr. år)</summary>
+    <p class="small">Halo = ekstra køb og genkøb, som medlemskabet <i>forårsager</i>. Medtages kun hvis du vælger det i topmenuen.</p>
+    ${['kons','sands','maks'].map(l=>`<h3>${{kons:'Konservativ',sands:'Sandsynlig',maks:'Maksimal'}[l]}</h3>${field(`cust.halo.${l}.spend`,{label:'Ekstra køb af tilbehør/dele',unit:'kr ekskl. moms',min:0,max:6000,step:50})}${field(`cust.halo.${l}.rebuy`,{label:'Højere sandsynlighed for næste cykelkøb',unit:'%-point over 3 år',min:0,max:40,step:0.5})}`).join('')}
+   </details>
+   <details class="grp"><summary>Finansielt</summary>
+    ${field('fin.payFeePct',{label:'Betalingsgebyrer',unit:'% af medlemsbetaling',min:0,max:6,step:0.1})}
+    ${field('fin.discount',{label:'Diskonteringsrente (NPV)',unit:'%',min:0,max:25,step:0.5})}
+    <div class="field"><div class="fl">Betaling</div><select data-pathsel="fin.payMode" style="grid-column:1/-1"><option value="aarlig" ${ST.fin.payMode==='aarlig'?'selected':''}>Årligt forud</option><option value="maanedlig" ${ST.fin.payMode==='maanedlig'?'selected':''}>Månedligt</option></select></div>
+   </details></div>
+   <div id="custOut"></div></div>`,
+ scenarier:()=>`<div id="scenOut"></div>`,
+ redteam:()=>`<div class="lab"><div class="card controls"><h2>Hårde gates og tærskler</h2><p class="desc">Et koncept må kun anbefales, hvis det består alle gates. Justér tærsklerne.</p>
+   ${field('gates.maxLoss',{label:'Maks. acceptabelt tab i et dårligt år (P10)',unit:'kr',min:0,max:200000,step:1000})}
+   ${field('gates.minPerHour',{label:'Min. bidrag pr. mekanikertime',unit:'kr',min:0,max:1200,step:10,help:'Normal fuldpriskunde giver timepris ekskl. moms + avance på dele.'})}
+   ${field('gates.maxPeakImpact',{label:'Maks. ekstra belastning i højsæson',unit:'% af kapacitet',min:0,max:40,step:0.5})}
+   ${field('gates.maxHeavyShare',{label:'Maks. andel heavy users blandt medlemmer',unit:'%',min:10,max:80,help:'Heavy = de 25 % af målgruppen, der bruger mest. Uden selvselektion er andelen 25 %.'})}
+   ${field('gates.fairUseMax',{label:'Fair use: maks. inkluderede timer',unit:'timer/år',min:0,max:20,step:0.5})}
+   ${field('gates.pilotN',{label:'Antal medlemmer i pilot',unit:'stk',min:10,max:200})}
+   <h3>Supplerende tærskler</h3>
+   ${field('gates.minMarginPct',{label:'Min. økonomisk margin af medlemsomsætning',unit:'%',min:0,max:60})}
+   ${field('gates.maxPaybackMonths',{label:'Maks. tilbagebetalingstid',unit:'mdr.',min:1,max:36})}
+   ${field('gates.minRenewal',{label:'Min. fornyelsesrate',unit:'%',min:20,max:95})}
+   ${field('gates.maxAdminPct',{label:'Maks. admin + gebyrer af medlemsbetaling',unit:'%',min:0,max:60})}
+   <h3>Vægte i scoringsmodellen</h3>
+   ${[['econ','Risikojusteret DB og NPV'],['perHour','DB pr. begrænset mekanikertime'],['cust','Kundeværdi og betalingsvillighed'],['cap','Kapacitets- og sæsonfit'],['ret','Retention, share of wallet, genkøb'],['ops','Operationel enkelhed'],['brand','Premium brand fit'],['risk','Juridisk/CX-risiko (lav = godt)']].map(([k,l])=>field('weights.'+k,{label:l,unit:'%',min:0,max:60})).join('')}
+   </div><div id="redOut"></div></div>`,
+ pilot:()=>`<div id="pilotOut"></div>`,
+ antagelser:()=>`<div class="card"><h2>Datagrundlag</h2><p class="desc">Når I har erstattet antagelserne med egne tal, kan I skifte status. Så længe modellen kører på antagelser, kan red team højst give "Pilot only".</p>
+   <select data-pathsel="dataStatus"><option value="antagelser" ${ST.dataStatus==='antagelser'?'selected':''}>Antagelser (standard)</option><option value="estimater" ${ST.dataStatus==='estimater'?'selected':''}>Butikkens egne estimater</option><option value="verificeret" ${ST.dataStatus==='verificeret'?'selected':''}>Verificeret intern data</option></select></div>
+   <div id="assOut"></div>`,
+ marked:()=>`<div id="mktOut"></div>`
+};
+
+/* ---------- beregn og tegn ---------- */
+function recompute(){
+  const t0=performance.now();
+  RES=computeAll(ST);
+  document.getElementById('calcInfo').textContent=`${ST.concepts.length} koncepter × ${RES.nSim} simuleringer · ${Math.round(performance.now()-t0)} ms`;
+  renderAll(); save();
+}
+function renderAll(){
+  const b=document.getElementById('dataBadge');
+  const ds={antagelser:['var(--warn)','Alle tal er antagelser'],estimater:['var(--serious)','Butikkens estimater'],verificeret:['var(--good)','Verificeret data']}[ST.dataStatus];
+  b.innerHTML=`<span class="dot" style="background:${ds[0]}"></span>${esc(ds[1])}`;
+  const R=RENDER[ST.ui.tab]; if(R&&RES) R();
+}
+const R_=id=>RES.byId[id];
+const cname=id=>{ const c=C_(id); return c?c.id+' · '+c.short:'–'; };
+
+const RENDER={
+ overblik(){
+  const top=RES.top, T=top?R_(top):null, ic=RES.ic, bn=RES.bestNonSub?R_(RES.bestNonSub):null;
+  document.getElementById('ovTiles').innerHTML=[
+    `<div class="tile hero"><div class="l">Bedste koncept lige nu</div><div class="v">${top?esc(C_(top).short):'Ingen'}</div><div class="s">${top?`score ${Math.round(T.score)}/100 · ${esc(T.rec.t)}`:'intet koncept består gates'}</div></div>`,
+    `<div class="tile"><div class="l">Økonomisk DB år 1 (P50)</div><div class="v">${T?tk(T.mc.y1P50):'–'}</div><div class="s">${T?`P10 ${tk(T.mc.y1P10)} · P90 ${tk(T.mc.y1P90)}`:''}</div></div>`,
+    `<div class="tile"><div class="l">3-årig NPV (P50)</div><div class="v">${T?tk(T.mc.npvP50):'–'}</div><div class="s">${T?`P10 ${tk(T.mc.npvP10)} · P90 ${tk(T.mc.npvP90)}`:''}</div></div>`,
+    `<div class="tile"><div class="l">Sikkert maks. medlemmer</div><div class="v">${T?nf0.format(T.det.safeN):'–'}</div><div class="s">${T?`plan: ${nf0.format(T.det.N)} · økonomisk optimum ${nf0.format(T.det.optN)}`:''}</div></div>`,
+    `<div class="tile"><div class="l">Red team / investeringskomité</div><div class="v">${chip(ic.k,ic.t)}</div><div class="s">${T?`negativ i ${T.stressNeg} af ${STRESS.length} stress-scenarier`:''}</div></div>`
+  ].join('');
+  // resumé
+  const rej=RES.ranked.filter(id=>R_(id).rec.k==='bad');
+  let s=`<h2>Hvad modellen siger lige nu</h2><p class="small">Scenarie: <b>${esc(SCENARIOS[ST.scenario].label)}</b> · Halo: <b>${esc({none:'ingen',kons:'konservativ',sands:'sandsynlig',maks:'maksimal'}[RES.haloLevel])}</b></p>`;
+  if(T){ const c=C_(top), y=T.det.y1;
+    s+=`<p><b>${esc(c.name)}</b> giver den bedste risikojusterede balance: ${chip(T.rec.k,T.rec.t)}</p><ul>
+      <li>Pris <b>${kr(c.fee)}</b>/år inkl. moms (${kr(c.fee/RES.d.vat)} ekskl.) til <b>${esc(c.segment.toLowerCase())}</b>.</li>
+      <li>Økonomisk DB <b>${kr(y.econ)}</b> pr. medlem (regnskabsmæssigt ${kr(y.acctPer)}) – <b>${kr(y.contribPerHour)}</b> pr. mekanikertime.</li>
+      <li>Ved ${nf0.format(T.det.N)} medlemmer: ${tk(T.mc.y1P50)} om året (P50). Sandsynlighed for tab år 1: ${pc(T.mc.probLoss)}.</li>
+      <li>Ekstra belastning i højsæson: <b>${pc1(T.det.peakImpact)}</b> af kapaciteten. Sikkert maksimum ≈ <b>${nf0.format(T.det.safeN)}</b> medlemmer.</li>
+      <li>${T.det.haloShare>0?`Halo udgør ${pc(T.det.haloShare)} af resultatet.`:'Resultatet er uden halo-effekter (kun direkte økonomi).'}</li></ul>`; }
+  else s+=`<p class="note badbox">Intet koncept består de hårde gates med de nuværende antagelser. Det betyder ikke nødvendigvis, at ideen er død – men at pris, loft eller lavsæsonregler skal ændres, eller at "ingen ny model" er bedst.</p>`;
+  if(bn) s+=`<p><b>Bedste ikke-abonnement:</b> ${esc(C_(RES.bestNonSub).name)} – NPV ${tk(bn.mc.npvP50)} (P50).</p>`;
+  if(rej.length) s+=`<p><b>Forkast:</b> ${rej.map(id=>esc(C_(id).short)).join(', ')}.</p>`;
+  document.getElementById('ovSummary').innerHTML=s;
+  document.getElementById('ovIC').innerHTML=`<h2>Investeringskomitéens vurdering (Agent 10)</h2><p class="ic">${chip(ic.k,ic.t)}</p><p>${esc(ic.why)}</p>
+   <h3>De vigtigste forbehold</h3><ul class="tight">${redFlags(top||ST.selected).slice(0,5).map(f=>`<li>${f}</li>`).join('')||'<li>Ingen alvorlige advarsler.</li>'}</ul>
+   <p class="small">Se fanen <b>Red team &amp; gates</b> for hele vurderingen.</p>`;
+  // tabel
+  const rows=RES.ranked.map((id,ix)=>{ const R=R_(id), c=R.c, y=R.det.y1;
+    return `<tr class="click ${id===ST.selected?'sel':''}" data-goto="${id}">
+     <td class="n">${ix+1}</td><td><b>${esc(c.id)} · ${esc(c.short)}</b><div class="small">${esc(c.model)}</div></td>
+     <td class="small" style="max-width:200px">${esc(c.segment)}</td>
+     <td class="n">${kr(c.fee)}</td><td class="n">${nf0.format(R.det.N)}</td>
+     <td class="n">${h1f(y.avg.h1)} t<div class="small">heraf inkl. ${h1f(y.avg.cover)}</div></td>
+     <td class="n">${kr(y.acctPer)}</td><td class="n"><b>${kr(y.econ)}</b><div class="small">m. sands. halo ${kr(R.detLikely.y1.econ)}</div></td>
+     <td class="n">${kr(y.contribPerHour)}</td>
+     <td class="n">${pc1(R.det.peakImpact)}</td>
+     <td class="n"><b>${tk(R.mc.npvP50)}</b><div class="small">${tk(R.mc.npvP10)} – ${tk(R.mc.npvP90)}</div></td>
+     <td><div class="row" style="gap:6px"><div class="meter" style="width:70px"><span style="width:${clamp(R.score,0,100)}%"></span></div><b>${Math.round(R.score)}</b></div></td>
+     <td class="n">${R.gatesPassed}/10</td><td>${esc(R.confidence)}</td><td>${chip(R.rec.k,R.rec.t)}</td></tr>`; }).join('');
+  document.getElementById('ovTable').innerHTML=`<table><thead><tr><th class="n">#</th><th>Koncept</th><th>Målgruppe</th><th class="n">Pris/år inkl. moms</th><th class="n">Medlemmer</th><th class="n">Timer/medlem</th><th class="n">Regnsk. DB/medlem</th><th class="n">Økon. DB/medlem</th><th class="n">Bidrag/mek.-time</th><th class="n">Peak-påvirkning</th><th class="n">NPV 3 år (P50)<div class="small">P10 – P90</div></th><th>Score</th><th class="n">Gates</th><th>Confidence</th><th>Anbefaling</th></tr></thead><tbody>${rows}
+    <tr><td></td><td><b>0 · Ingen ny model</b><div class="small">Kontrolscenarie</div></td><td class="small">–</td><td class="n">–</td><td class="n">0</td><td class="n">–</td><td class="n">0 kr</td><td class="n">0 kr</td><td class="n">${kr(RES.d.contribPerBillable)}</td><td class="n">0 %</td><td class="n">0 kr</td><td></td><td></td><td></td><td>${chip('info','Reference')}</td></tr></tbody></table>`;
+  document.querySelectorAll('[data-goto]').forEach(tr=>tr.onclick=()=>selectConcept(tr.dataset.goto,true));
+ },
+ lab(){
+  const id=ST.selected, R=R_(id), c=R.c, det=R.det, y=det.y1, d=RES.d, a=y.avg;
+  const ci=conceptIdx(id), setHint=(k,t)=>{ const el=document.querySelector(`[data-hint="concepts.${ci}.${k}"]`); if(el) el.textContent=t; };
+  setHint('fee',`= ${kr(c.fee/12)} pr. måned · ${kr(c.fee/d.vat)} ekskl. moms · break-even ${kr(det.beFee)}`);
+  setHint('E', c.E>0?`= ${kr(c.E*ST.shop.priceIncl)} i arbejdsløn til normalpris (${nf1.format(c.E/ST.shop.hoursPerVisit)} besøg)`:'Ingen inkluderet mekanikertid');
+  const btn=document.getElementById('btnResetConcept'); if(btn) btn.onclick=()=>{ const dc=defaultConcepts().find(x=>x.id===id); ST.concepts[conceptIdx(id)]=dc; buildControls('lab'); recompute(); };
+  const tiles=`<div class="grid g4">
+    <div class="tile"><div class="l">Økonomisk DB pr. medlem (år 1)</div><div class="v">${kr(y.econ)}</div><div class="s">direkte ${kr(y.econDirect)} · halo ${kr(y.halo)}</div></div>
+    <div class="tile"><div class="l">Regnskabsmæssigt DB pr. medlem</div><div class="v">${kr(y.acctPer)}</div><div class="s">med fuld mekanikerløn (${kr(d.loadedPerBillable)}/t)</div></div>
+    <div class="tile"><div class="l">Bidrag pr. mekanikertime</div><div class="v">${kr(y.contribPerHour)}</div><div class="s">fuldpriskunde: ${kr(d.contribPerBillable)}</div></div>
+    <div class="tile"><div class="l">I alt år 1 (P50) ved ${nf0.format(det.N)} medl.</div><div class="v">${tk(R.mc.y1P50)}</div><div class="s">P10 ${tk(R.mc.y1P10)} · P90 ${tk(R.mc.y1P90)}</div></div>
+    <div class="tile"><div class="l">3-årig NPV (P50)</div><div class="v">${tk(R.mc.npvP50)}</div><div class="s">P10 ${tk(R.mc.npvP10)} · P90 ${tk(R.mc.npvP90)}</div></div>
+    <div class="tile"><div class="l">Peak-påvirkning</div><div class="v">${pc1(det.peakImpact)}</div><div class="s">${det.peakMonth>=0?'værst i '+MONTHS[det.peakMonth]:''} · grænse ${ST.gates.maxPeakImpact} %</div></div>
+    <div class="tile"><div class="l">Sikkert maks. medlemmer</div><div class="v">${nf0.format(det.safeN)}</div><div class="s">${det.safeBind===-2?'begrænset af kundebasen':det.safeBind>=0?'begrænset af '+MONTHS[det.safeBind]:''} · optimum ${nf0.format(det.optN)}</div></div>
+    <div class="tile"><div class="l">Break-even pris</div><div class="v">${kr(det.beFee)}</div><div class="s">inkl. moms/år · nu ${kr(c.fee)}</div></div></div>`;
+  const wf=[
+    {label:'Medlemsbetaling (ekskl. moms)',value:a.feeEx},{label:'Egenbetaling (co-pay)',value:a.copayEx},
+    {label:'Værkstedsarbejde der stadig betales',value:a.laborRev,note:'Arbejdsløn uden for planen (efter evt. rabat)'},{label:'Avance på dele',value:a.partsGP},
+    {label:'Betalingsgebyrer',value:-a.payFees},{label:'Admin, afhentning, events',value:-a.fixed},
+    {label:'Eksisterende kunders køb i dag',value:-y.cannib,note:'Det eksisterende kunder ville have betalt for værkstedet uden medlemskab (arbejdsløn + avance på dele)'},
+    {label:'Rabat på tilbehør, de købte alligevel',value:-y.accCannib},
+    {label:'Kapacitet (overarbejde/fortrængning)',value:-y.capPer,note:'Negativ = frigjort højsæsontid'},
+    {label:'Hvervning (CAC)',value:-y.cacPer},
+    {label:'Direkte økonomisk DB',value:y.econDirect,kind:'total'},
+    {label:'Halo (valgt niveau)',value:y.halo},{label:'Økonomisk DB inkl. halo',value:y.econ,kind:'total'}].filter(x=>x.kind==='total'||Math.abs(x.value)>0.5);
+  const acct=[['Medlemsbetaling + co-pay (ekskl. moms)',a.feeEx+a.copayEx],['− Mekanikerløn på inkluderet tid',-a.cover*d.loadedPerBillable],['− Inkluderede dele (kostpris)',-a.inclPartsCost],['− Rabatter givet',-a.discounts],['− Gebyrer',-a.payFees],['− Admin, afhentning, events',-a.fixed],['− Hvervning (CAC)',-y.cacPer],['= Regnskabsmæssigt DB',y.acctPer]];
+  const pts=det.points, ar=det.arche;
+  const pRows=[...ar.map(x=>[`${x.name} (${Math.round(x.a*100)}–${Math.round(x.b*100)} %)`,x.h0,x.h1,x.custNet,x.econ,x.acctPer,x.perHour]),
+    ...['P90','P95'].map(k=>[`${k}-medlem`,pts[k].h0,pts[k].h1,pts[k].custNet,pts[k].econ,pts[k].acctPer,pts[k].perHour])];
+  const cats=MONTHS;
+  const nonMem=d.B.map((b,i)=>Math.max(0,b-y.removedBase[i]));
+  const capChart=columnsChart({cats,series:[{name:'Øvrige kunder',color:'var(--base)',values:nonMem},{name:'Medlemmer',color:'var(--s2)',values:y.memberGross}],
+    lines:[{name:'Kapacitet',color:'var(--ink)',values:d.C},{name:'+ overarbejde',color:'var(--muted)',values:d.C.map((x,i)=>x+d.O[i]),dash:true}],fmt:v=>h1f(v)+' t',yLabel:'Mekanikertimer pr. måned',
+    extraTip:i=>[{v:pc(y.newUtil[i]),l:'belastning efter medlemmer'},{v:pc(d.util[i]),l:'belastning uden'}]});
+  const xs=det.curve.map(p=>p.h);
+  const vChart=lineChart({xs,series:[{name:'Kundens nettoværdi',color:'var(--s1)',values:det.curve.map(p=>p.cust)},{name:'Butikkens DB',color:'var(--s2)',values:det.curve.map(p=>p.shop),dy:12}],
+    zero:true,xLabel:'Kundens normale værkstedstimer pr. år',yLabel:'kr pr. medlem pr. år',xfmt:x=>h1f(x)+' timer/år',
+    vmarks:[{x:pts.P50.h0,label:'Median-medlem'},{x:pts.P90.h0,label:'P90',row:1},{x:pts.P95.h0,label:'P95',row:2}]});
+  const nChart=lineChart({xs:det.nCurve.map(p=>p.n),series:[{name:'Samlet DB år 1',color:'var(--s1)',values:det.nCurve.map(p=>p.tot)}],zero:true,xLabel:'Antal medlemmer',yLabel:'kr pr. år (ekskl. opstart)',xfmt:x=>nf0.format(x)+' medlemmer',endLabels:false,
+    vmarks:[{x:det.N,label:'Plan'},{x:det.safeN,label:'Sikkert maks.',row:1},{x:det.optN,label:'Optimum',row:2}]});
+  const hist=histChart(R.mc.y1,[{v:R.mc.y1P10,l:'P10'},{v:R.mc.y1P50,l:'P50'},{v:R.mc.y1P90,l:'P90'}],{xLabel:'Økonomisk DB i alt år 1 (kr)'});
+  const cash=lineChart({xs:det.cash.map((_,i)=>i+1),series:[{name:'Akkumuleret pengestrøm',color:'var(--s1)',values:det.cash}],zero:true,xLabel:'Måned',xfmt:x=>'Måned '+x,endLabels:false,h:200});
+  const g=R.gates;
+  const html=`${tiles}
+   <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2>Økonomi pr. medlem – fra betaling til reel indtjening</h2><p class="desc">Gennemsnitsmedlem år 1, efter selvselektion. Blå = indtægt, rød = omkostning/tab.</p>${waterfall(wf)}
+     ${tableBlock(['Post','kr pr. medlem'],wf.map(x=>[x.label,kr(x.value)]))}</div>
+    <div class="card"><h2>Regnskabsmæssigt vs. økonomisk</h2><p class="desc">Regnskabsmæssigt: medlemskabet som produkt med fuld mekanikerløn – uden kannibalisering og kapacitet. Økonomisk: hvad butikken reelt tjener ekstra ift. "ingen ny model". Løn tælles kun ét sted.</p>
+     <table>${acct.map(([l,v],i)=>`<tr><td ${i===acct.length-1?'style="font-weight:600"':''}>${esc(l)}</td><td class="n" ${i===acct.length-1?'style="font-weight:600"':''}>${kr(v)}</td></tr>`).join('')}</table>
+     <h3>Nøgletal</h3><div class="kv">
+      <span>Timer pr. medlem</span><b>${h1f(a.h1)} t (inkl. ${h1f(a.cover)} t, betalt ${h1f(a.paidH)} t) vs. ${h1f(a.h0)} t i dag</b>
+      <span>Reel pris pr. inkluderet time</span><b>${det.effPrice!=null?kr(det.effPrice)+' (normal: '+kr(d.priceEx)+')':'– (ingen inkl. tid)'}</b>
+      <span>Netto-kannibalisering</span><b>${det.cannibShare!=null?kr(y.cannibNet)+' pr. medlem = '+pc(det.cannibShare)+' af medlemsbetalingen er omsætning I allerede havde':'–'}</b>
+      <span>Heavy users blandt medlemmer</span><b>${pc(det.heavyShare)} (25 % uden selvselektion)</b>
+      <span>Kunder med fordel af planen</span><b>${pc(det.attractShare)} af målgruppen${det.beUsage!=null?` · break-even ved ${h1f(det.beUsage)} t/år`:''}</b>
+      <span>Medlemmer der ikke får værdi</span><b>${pc(det.memberNegShare)} – risiko for opsigelse</b>
+      <span>Tilbagebetaling</span><b>${det.payback?det.payback+' mdr.':'over 36 mdr.'}</b>
+      <span>3-årig LTV pr. medlem</span><b>${kr(det.ltv)}</b>
+      <span>Break-even antal medlemmer</span><b>${det.beMembers?nf0.format(det.beMembers)+' (dækker opstart på 3 år)':'–'}</b></div></div>
+   </div>
+   <div class="card" style="margin-top:16px"><h2>Light, normal, heavy og extreme users</h2><p class="desc">Gennemsnit er ikke nok. Her er økonomien for forskellige medlemstyper – inkl. de 10 % og 5 % tungeste.</p>
+    <div class="tblwrap"><table><thead><tr><th>Medlemstype</th><th class="n">Timer i dag</th><th class="n">Timer som medlem</th><th class="n">Kundens nettoværdi</th><th class="n">Økon. DB for butikken</th><th class="n">Regnsk. DB</th><th class="n">Bidrag/mek.-time</th></tr></thead><tbody>
+    ${pRows.map(r=>`<tr><td>${esc(r[0])}</td><td class="n">${h1f(r[1])}</td><td class="n">${h1f(r[2])}</td><td class="n">${kr(r[3])}</td><td class="n" style="color:${r[4]<0?'var(--critText)':'inherit'}">${kr(r[4])}</td><td class="n">${kr(r[5])}</td><td class="n">${kr(r[6])}</td></tr>`).join('')}</tbody></table></div></div>
+   <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2>Hvem vinder? Kunde vs. butik</h2><p class="desc">Blå: hvad kunden sparer + oplevet værdi. Orange: butikkens økonomiske DB. Hvor begge er over nul, er planen en win-win. Hvis kun storforbrugere har positiv værdi, tiltrækker planen primært dem.</p>
+     <div class="legend"><span><i class="ln" style="border-color:var(--s1)"></i>Kundens nettoværdi</span><span><i class="ln" style="border-color:var(--s2)"></i>Butikkens DB</span></div>${vChart}
+     ${tableBlock(['Timer/år','Kunde','Butik'],det.curve.filter((_,i)=>i%4===0).map(p=>[h1f(p.h),kr(p.cust),kr(p.shop)]))}</div>
+    <div class="card"><h2>Kapacitet måned for måned</h2><p class="desc">Grå: øvrige kunder. Orange: medlemmernes timer. Over den sorte linje kræver det overarbejde; over den stiplede fortrænges betalende kunder.</p>
+     <div class="legend"><span><i class="sw" style="background:var(--base)"></i>Øvrige kunder</span><span><i class="sw" style="background:var(--s2)"></i>Medlemmer</span><span><i class="ln" style="border-color:var(--ink)"></i>Kapacitet</span><span><i class="lnd" style="border-color:var(--muted)"></i>+ overarbejde</span></div>${capChart}
+     ${tableBlock(['Måned','Øvrige','Medlemmer','Kapacitet','Belastning'],cats.map((m,i)=>[m,h1f(nonMem[i]),h1f(y.memberGross[i]),h1f(d.C[i]),pc(y.newUtil[i])]))}
+     <p class="small">Fortrængte betalende timer: <b>${h1f(det.y1.displaced)}</b> · ekstra overarbejdstimer: <b>${h1f(det.y1.otExtra)}</b> pr. år (negativt tal = frigjort).</p></div>
+   </div>
+   <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2>Hvor mange medlemmer?</h2><p class="desc">Samlet økonomisk DB år 1 ved forskellige medlemstal. Kurven knækker, når medlemmerne begynder at fortrænge betalende kunder.</p>${nChart}</div>
+    <div class="card"><h2>Usikkerhed (Monte Carlo, ${RES.nSim} simuleringer)</h2><p class="desc">Forbrug, selvselektion, adoption, kannibalisering, fornyelse m.m. varieres samtidig. Sandsynlighed for tab år 1: <b>${pc(R.mc.probLoss)}</b>.</p>${hist}
+     <h3>Pengestrøm 36 måneder (inkl. opstart ${kr(c.setup)})</h3>${cash}</div>
+   </div>
+   <div class="card" style="margin-top:16px"><h2>Hårde gates for ${esc(c.short)}</h2><div class="tblwrap"><table><tbody>${GATES.map(([k,l])=>`<tr><td>${esc(l)}</td><td>${gchip(g[k])}</td><td class="small">${esc(g[k].val)}</td></tr>`).join('')}</tbody></table></div>
+    <h3>Red team-advarsler</h3><ul class="tight">${redFlags(id).map(f=>`<li>${f}</li>`).join('')||'<li>Ingen alvorlige advarsler.</li>'}</ul></div>`;
+  document.getElementById('labOut').innerHTML=html;
+ },
+ arkitektur(){
+  const ids=ST.portfolio.filter(id=>R_(id)); const d=RES.d; const out=document.getElementById('archOut');
+  if(!ids.length){ out.innerHTML='<div class="card" style="margin-top:16px">Vælg mindst ét koncept.</div>'; return; }
+  const cols=['var(--s1)','var(--s2)','var(--s3)'];
+  const Dm=new Array(12).fill(0), removed=new Array(12).fill(0);
+  ids.forEach(id=>{ const y=R_(id).det.y1; for(let i=0;i<12;i++){ Dm[i]+=y.Dm[i]; removed[i]+=y.removedBase[i]; } });
+  let capComb=0; for(let i=0;i<12;i++) capComb+=capCost(d.B[i]+Dm[i],d.C[i],d.O[i],d)-capCost(d.B[i],d.C[i],d.O[i],d);
+  const capSep=sum(ids.map(id=>R_(id).det.y1.capTotal));
+  const totSep=sum(ids.map(id=>R_(id).det.y1.total));
+  const totComb=totSep+capSep-capComb;
+  const npvSep=sum(ids.map(id=>R_(id).mc.npvP50));
+  const peakImp=Math.max(...d.C.map((C,i)=>d.peak[i]?Dm[i]/C:-Infinity));
+  const series=[{name:'Øvrige kunder',color:'var(--base)',values:d.B.map((b,i)=>Math.max(0,b-removed[i]))},...ids.map((id,k)=>({name:C_(id).short,color:cols[k],values:R_(id).det.y1.memberGross}))];
+  const chart=columnsChart({cats:MONTHS,series,lines:[{name:'Kapacitet',color:'var(--ink)',values:d.C},{name:'+ overarbejde',color:'var(--muted)',values:d.C.map((x,i)=>x+d.O[i]),dash:true}],fmt:v=>h1f(v)+' t',yLabel:'Mekanikertimer pr. måned'});
+  out.innerHTML=`<div class="grid g4" style="margin-top:16px">
+    <div class="tile"><div class="l">Økonomisk DB år 1 samlet</div><div class="v">${tk(totComb)}</div><div class="s">${totComb<totSep?'kapacitetskonflikt koster '+tk(totSep-totComb):'ingen kapacitetskonflikt'}</div></div>
+    <div class="tile"><div class="l">NPV 3 år (sum af P50)</div><div class="v">${tk(npvSep)}</div><div class="s">ekskl. samspil</div></div>
+    <div class="tile"><div class="l">Samlet peak-påvirkning</div><div class="v">${pc1(peakImp)}</div><div class="s">grænse ${ST.gates.maxPeakImpact} %</div></div>
+    <div class="tile"><div class="l">Medlemmer i alt</div><div class="v">${nf0.format(sum(ids.map(id=>R_(id).det.N)))}</div><div class="s">${ids.map(id=>C_(id).short+': '+R_(id).det.N).join(' · ')}</div></div></div>
+   <div class="card" style="margin-top:16px"><h2>Samlet kapacitetsbelastning</h2>
+    <div class="legend">${series.map(s=>`<span><i class="sw" style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}<span><i class="ln" style="border-color:var(--ink)"></i>Kapacitet</span><span><i class="lnd" style="border-color:var(--muted)"></i>+ overarbejde</span></div>${chart}
+    ${tableBlock(['Måned',...series.map(s=>s.name),'Kapacitet'],MONTHS.map((m,i)=>[m,...series.map(s=>h1f(s.values[i])),h1f(d.C[i])]))}</div>
+   <div class="card" style="margin-top:16px"><h2>Tiers i arkitekturen</h2><div class="tblwrap"><table><thead><tr><th>Tier</th><th>Målgruppe & løfte</th><th class="n">Pris inkl./ekskl. moms</th><th class="n">Inkl. timer / loft</th><th class="n">Rabat løn/dele</th><th class="n">Lavsæson</th><th class="n">Økon. DB/medlem</th><th class="n">Maks. medlemmer</th><th>Største risiko</th></tr></thead><tbody>
+    ${ids.map(id=>{ const R=R_(id), c=R.c, y=R.det.y1; return `<tr><td><b>${esc(c.name)}</b></td><td class="small">${esc(c.segment)}<br><i>${esc(c.promise)}</i><br>${esc(c.rules)}</td><td class="n">${kr(c.fee)}<div class="small">${kr(c.fee/d.vat)}</div></td><td class="n">${h1f(y.avg.cover)} / ${h1f(c.E)}</td><td class="n">${c.laborDisc} % / ${c.partsDisc} %</td><td class="n">${c.lowSeason} %</td><td class="n">${kr(y.econ)}</td><td class="n">${nf0.format(R.det.safeN)}</td><td class="small">${redFlags(id)[0]||'–'}</td></tr>`; }).join('')}</tbody></table></div>
+    <p class="small">Tip: Kombinér et adgangsprodukt (A), en lavsæsonpakke (G) og et ikke-abonnement (J). Undgå at to tiers lover den samme højsæsontid.</p></div>`;
+ },
+ vaerksted(){
+  const d=RES.d, sh=ST.shop;
+  const consist=ST.cust.activeCustomers*ST.cust.medianHours*Math.exp(ST.cust.sigma**2/2);
+  const tiles=`<div class="grid g4">
+   <div class="tile"><div class="l">Fakturerbare timer pr. år</div><div class="v">${nf0.format(d.billable)}</div><div class="s">af ${nf0.format(d.paid)} betalte timer</div></div>
+   <div class="tile"><div class="l">Solgte timer (efterspørgsel)</div><div class="v">${nf0.format(d.servedSum)}</div><div class="s">udnyttelse ${pc(d.servedSum/d.billable)}</div></div>
+   <div class="tile"><div class="l">Lønomkostning pr. fakturerbar time</div><div class="v">${kr(d.loadedPerBillable)}</div><div class="s">timepris ekskl. moms ${kr(d.priceEx)}</div></div>
+   <div class="tile"><div class="l">Bidrag pr. solgt time (før løn)</div><div class="v">${kr(d.contribPerBillable)}</div><div class="s">pr. produktiv time: ${kr(d.contribPerProductive)}</div></div>
+   <div class="tile"><div class="l">Værkstedets resultat efter løn</div><div class="v">${tk(d.workshopResult)}</div><div class="s">kun arbejdsløn: ${tk(d.laborResult)}</div></div>
+   <div class="tile"><div class="l">Ledig kapacitet i lavsæson</div><div class="v">${nf0.format(d.lowSpare)} t</div><div class="s">${d.low.map((l,i)=>l?MONTHS[i]:'').filter(Boolean).join(', ')||'ingen lavsæsonmåneder'}</div></div>
+   <div class="tile"><div class="l">Underskud i højsæson</div><div class="v">${nf0.format(d.peakDeficit)} t</div><div class="s">${d.peak.map((l,i)=>l?MONTHS[i]:'').filter(Boolean).join(', ')||'ingen højsæsonmåneder'}</div></div>
+   <div class="tile"><div class="l">Alternativomkostning pr. time</div><div class="v">${kr(d.var)} – ${kr(d.lost)}</div><div class="s">ledig tid → fortrængt fuldpriskunde</div></div></div>`;
+  const chart=columnsChart({cats:MONTHS,series:[{name:'Efterspørgsel i dag',color:'var(--s1)',values:d.B}],lines:[{name:'Kapacitet',color:'var(--ink)',values:d.C},{name:'+ overarbejde',color:'var(--muted)',values:d.C.map((x,i)=>x+d.O[i]),dash:true}],fmt:v=>h1f(v)+' t',yLabel:'Timer pr. måned'});
+  const tbl=`<div class="tblwrap"><table><thead><tr><th>Måned</th>${MONTHS.map(m=>`<th class="n">${m}</th>`).join('')}</tr></thead><tbody>
+   <tr><td>Belastning i dag</td>${d.util.map(u=>`<td class="n">${pc(u)}</td>`).join('')}</tr>
+   <tr><td>Kapacitet (timer)</td>${d.C.map(v=>`<td class="n">${nf0.format(v)}</td>`).join('')}</tr>
+   <tr><td>Efterspørgsel (timer)</td>${d.B.map(v=>`<td class="n">${nf0.format(v)}</td>`).join('')}</tr>
+   <tr><td>Sæson</td>${d.util.map((u,i)=>`<td class="n">${d.peak[i]?'<b>Høj</b>':d.low[i]?'Lav':'Normal'}</td>`).join('')}</tr>
+   <tr><td>Pris for 1 ekstra medlemstime ${helpI('Ledig tid: kun forbrugsstoffer. Fuld: overarbejde. Over overarbejde: tabt dækningsbidrag fra en fuldpriskunde, der må vente eller går.')}</td>${d.marg.map(v=>`<td class="n">${nf0.format(v)}</td>`).join('')}</tr>
+   </tbody></table></div>`;
+  document.getElementById('shopOut').innerHTML=`${tiles}
+   <div class="card" style="margin-top:16px"><h2>Sæsonprofil</h2><p class="desc">Efterspørgsel i dag mod kapacitet. Medlemskaber bør fylde de grå huller om vinteren – ikke presse foråret.</p>
+    <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>Efterspørgsel i dag</span><span><i class="ln" style="border-color:var(--ink)"></i>Kapacitet</span><span><i class="lnd" style="border-color:var(--muted)"></i>+ overarbejde</span></div>${chart}</div>
+   <div class="card" style="margin-top:16px"><h2>Beregnet pr. måned</h2>${tbl}
+    <p class="small">Tjek: kundebase × gennemsnitligt forbrug = <b>${nf0.format(consist)}</b> timer, mens månedstabellen giver <b>${nf0.format(d.Bsum)}</b> timer. ${Math.abs(consist/d.Bsum-1)>0.2?'<b style="color:var(--critText)">Tallene passer ikke sammen (over 20 % forskel) – justér kundebase/forbrug eller efterspørgsel.</b>':'Tallene hænger nogenlunde sammen.'}</p></div>
+   <div class="card" style="margin-top:16px"><h2>Sikre medlemstal pr. koncept</h2><p class="desc">Højeste antal medlemmer før højsæsonen belastes mere end ${ST.gates.maxPeakImpact} %, eller lavsæsonen bliver over 95 % fyldt.</p>
+    <div class="tblwrap"><table><thead><tr><th>Koncept</th><th class="n">Planlagt</th><th class="n">Sikkert maks.</th><th>Begrænset af</th><th class="n">Økonomisk optimum</th><th class="n">Timer pr. medlem</th><th class="n">Peak-påvirkning</th></tr></thead><tbody>
+    ${ST.concepts.map(c=>{ const R=R_(c.id); return `<tr><td>${esc(cname(c.id))}</td><td class="n">${nf0.format(R.det.N)}</td><td class="n"><b>${nf0.format(R.det.safeN)}</b></td><td>${R.det.safeBind===-2?'kundebasen':R.det.safeBind>=0?MONTHS[R.det.safeBind]:'–'}</td><td class="n">${nf0.format(R.det.optN)}</td><td class="n">${h1f(R.det.y1.avg.h1)}</td><td class="n">${pc1(R.det.peakImpact)}</td></tr>`; }).join('')}</tbody></table></div></div>`;
+ },
+ kunder(){
+  const cu=ST.cust, sig=cu.sigma, mu0=Math.log(cu.medianHours);
+  const R=R_(ST.selected), y=R.det.y1;
+  const xs=[]; for(let h=0.05;h<=12;h+=0.1) xs.push(+h.toFixed(2));
+  const pdf=(h,mu)=>Math.exp(-((Math.log(h)-mu)**2)/(2*sig*sig))/(h*sig*Math.sqrt(2*Math.PI));
+  const muM=y.mu - Math.log(R.c.segMult);
+  const chart=lineChart({xs,series:[{name:'Alle kunder',color:'var(--s1)',values:xs.map(h=>pdf(h,mu0)),area:true},{name:'Medlemmer af '+R.c.short,color:'var(--s2)',values:xs.map(h=>pdf(h,muM)),area:true,dy:12}],
+    xLabel:'Værkstedstimer pr. år',yLabel:'Andel af kunder (tæthed)',xfmt:x=>h1f(x)+' timer/år',yfmt:v=>nf2.format(v),endLabels:true,mr:150,
+    vmarks:[{x:Math.exp(mu0+0.6745*sig),label:'Heavy-grænse (P75)'}]});
+  const qs=[['Light',0.2],['Normal',0.575],['Heavy',0.84],['Extreme (P95)',0.95]];
+  const d=RES.d;
+  const archeRows=qs.map(([n,q])=>{ const h=Math.exp(mu0+sig*normInv(q)); return [n,h1f(h),kr(h*(d.priceEx+d.pph)),kr(h*(d.priceEx+d.partsGPh))]; });
+  const mean=cu.medianHours*Math.exp(sig*sig/2);
+  document.getElementById('custOut').innerHTML=`<div class="grid g3">
+    <div class="tile"><div class="l">Gennemsnitligt forbrug</div><div class="v">${h1f(mean)} t/år</div><div class="s">median ${h1f(cu.medianHours)} t</div></div>
+    <div class="tile"><div class="l">De 10 % tungeste bruger mindst</div><div class="v">${h1f(Math.exp(mu0+1.2816*sig))} t/år</div><div class="s">P95: ${h1f(Math.exp(mu0+1.645*sig))} t/år</div></div>
+    <div class="tile"><div class="l">Top 20 %'s andel af timerne</div><div class="v">${pc(1-normCdf(0.8416-sig))}</div><div class="s">skævhed i forbruget</div></div></div>
+   <div class="card" style="margin-top:16px"><h2>Fordeling af serviceforbrug – og hvem der melder sig ind</h2><p class="desc">Blå: alle kunder. Orange: de kunder, der forventes at købe <b>${esc(R.c.short)}</b> (vælg koncept i topmenuen). Jo længere orange ligger til højre, jo mere adverse selection. Heavy users blandt medlemmer: <b>${pc(R.det.heavyShare)}</b>.</p>
+    <div class="legend"><span><i class="sw" style="background:var(--s1)"></i>Alle kunder</span><span><i class="sw" style="background:var(--s2)"></i>Medlemmer</span></div>${chart}</div>
+   <div class="card" style="margin-top:16px"><h2>Kundetyper (uden medlemskab)</h2><table><thead><tr><th>Type</th><th class="n">Timer/år</th><th class="n">Værkstedsomsætning ekskl. moms</th><th class="n">Bidrag før løn</th></tr></thead><tbody>${archeRows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i?'n':''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+   <div class="card" style="margin-top:16px"><h2>Halo-regler</h2><ul class="tight">
+    <li>Base case medtager <b>ingen</b> halo. Halo må kun indregnes som et eksplicit, usikkert scenarie.</li>
+    <li>Kunder, der køber medlemskab, er ofte allerede de mest loyale. Forskellen mellem medlemmer og ikke-medlemmer er derfor <b>ikke</b> automatisk effekten af medlemskabet.</li>
+    <li>Halo skal måles i piloten med en tilfældigt udvalgt kontrolgruppe (se Pilotplan).</li>
+    <li>Et koncept, der kun er rentabelt med halo, markeres "Forkast (kun rentabel med halo)".</li></ul></div>`;
+ },
+ scenarier(){
+  const keys=Object.keys(SCENARIOS); const ids=RES.ranked;
+  const vals=ids.flatMap(id=>keys.map(k=>R_(id).stress[k].npv)); const amax=Math.max(1,...vals.map(Math.abs));
+  const pos=['#cde2fb','#9ec5f4','#6da7ec','#3987e5','#256abf'], neg=['#fbd5d4','#f5aaa9','#ee7f7e','#e34948','#b83434'];
+  const cell=v=>{ const r=Math.min(1,Math.abs(v)/amax); const k=Math.min(4,Math.floor(r*5)); if(Math.abs(v)<amax*0.03) return `background:var(--mid)`; const bg=(v>=0?pos:neg)[k]; return `background:${bg};color:${k>=3?'#fff':'#0b0b0b'}`; };
+  const mat=`<div class="tblwrap"><table class="heat"><thead><tr><th style="text-align:left">Koncept</th>${keys.map(k=>`<th class="n">${esc(SCENARIOS[k].label)}</th>`).join('')}<th class="n">Negativ i</th></tr></thead><tbody>
+   ${ids.map(id=>`<tr><td style="text-align:left">${esc(cname(id))}</td>${keys.map(k=>`<td style="${cell(R_(id).stress[k].npv)}" data-tip="${TIP([cname(id)+' · '+SCENARIOS[k].label,{v:tk(R_(id).stress[k].npv),l:'NPV 3 år'},{v:tk(R_(id).stress[k].y1),l:'DB år 1'}])}">${esc(tk(R_(id).stress[k].npv))}</td>`).join('')}<td class="n">${R_(id).stressNeg}/${STRESS.length}</td></tr>`).join('')}
+   <tr><td style="text-align:left">0 · Ingen ny model</td>${keys.map(()=>`<td style="background:var(--mid)">0 kr</td>`).join('')}<td class="n">–</td></tr></tbody></table></div>`;
+  // tornado
+  const id=ST.selected, base=evalDet(ST,id).npv;
+  const tor=tornado(id).sort((a,b)=>Math.abs(b.hi-b.lo)-Math.abs(a.hi-a.lo));
+  document.getElementById('scenOut').innerHTML=`<div class="card"><h2>Scenarie-matrix: 3-årig NPV</h2><p class="desc">Hvert koncept testet i alle scenarier. Blå = værdiskabende, rød = værditab, grå ≈ 0. Hold musen over en celle for detaljer.</p>
+    <div class="legend"><span><i class="sw" style="background:#256abf"></i>Stærkt positiv</span><span><i class="sw" style="background:#9ec5f4"></i>Svagt positiv</span><span><i class="sw" style="background:var(--mid);border:1px solid var(--border)"></i>≈ 0</span><span><i class="sw" style="background:#f5aaa9"></i>Svagt negativ</span><span><i class="sw" style="background:#b83434"></i>Stærkt negativ</span></div>${mat}
+    <p class="small">Scenarierne: Konservativ (højere forbrug, færre medlemmer, lavere fornyelse, mere selvselektion, ingen halo) · Upside · Adverse selection (stærk selvselektion + 15 % mere forbrug) · Høj kapacitetsbelastning (+15 % efterspørgsel) · Lav fornyelse (−25 %-point) · Høj kannibalisering (95 % eksisterende kunder).</p></div>
+   <div class="card" style="margin-top:16px"><h2>Følsomhed for ${esc(cname(id))}: hvad betyder mest?</h2><p class="desc">Hver antagelse flyttes til et lavt og højt niveau, mens resten holdes fast. De øverste søjler er dem, I skal validere først.</p>
+    <div class="legend"><span><i class="sw" style="background:var(--pos)"></i>Øger NPV</span><span><i class="sw" style="background:var(--neg)"></i>Sænker NPV</span></div>
+    ${tornadoChart(tor,base)}${tableBlock(['Antagelse','Lav','NPV lav','Høj','NPV høj'],tor.map(r=>[r.label,r.loL,tk(r.lo),r.hiL,tk(r.hi)]))}</div>`;
+ },
+ redteam(){
+  const ids=RES.ranked, top=RES.top||ST.selected;
+  const gm=`<div class="tblwrap"><table><thead><tr><th>Koncept</th>${GATES.map(([k,l],i)=>`<th class="n" title="${esc(l)}">G${i+1}</th>`).join('')}<th class="n">Margin</th><th class="n">Payback</th><th class="n">Fornyelse</th><th class="n">Admin</th><th>Resultat</th></tr></thead><tbody>
+   ${ids.map(id=>{ const R=R_(id); return `<tr><td>${esc(cname(id))}</td>${GATES.map(([k])=>`<td class="n" data-tip="${TIP([GATES.find(g=>g[0]===k)[1],{v:R.gates[k].val,l:''}])}">${gchip(R.gates[k])}</td>`).join('')}${['margin','payback','renewal','admin'].map(k=>`<td class="n" data-tip="${TIP([k,{v:R.extra[k].val,l:''}])}">${gchip(R.extra[k])}</td>`).join('')}<td>${chip(R.rec.k,R.rec.t)}</td></tr>`; }).join('')}</tbody></table></div>
+   <p class="small">${GATES.map(([k,l],i)=>`G${i+1}: ${esc(l)}`).join(' · ')}. OK* = bestået med forbehold.</p>`;
+  const T=R_(top), c=T.c;
+  const alt=altCase(top);
+  document.getElementById('redOut').innerHTML=`
+   <div class="card"><h2>Investeringskomitéens beslutning</h2><p class="ic">${chip(RES.ic.k,RES.ic.t)}</p><p>${esc(RES.ic.why)}</p></div>
+   <div class="card" style="margin-top:16px"><h2>Gate-matrix</h2>${gm}</div>
+   <div class="card" style="margin-top:16px"><h2>Challenge af ${esc(c.name)}</h2>
+    <ul class="tight">${redFlags(top).map(f=>`<li>${f}</li>`).join('')||'<li>Ingen alvorlige advarsler med de nuværende antagelser.</li>'}</ul>
+    <h3>Bear case</h3><p>${bearCase(top)}</p>
+    <h3>Stærkeste alternative anbefaling</h3><p>${alt}</p></div>
+   <div class="card" style="margin-top:16px"><h2>Pre-mortem: 15 måder et medlemskab kan fejle</h2><p class="desc">Skrevet før anbefalingen (Agent 10, trin 1).</p><ol class="tight">${PREMORTEM.map(x=>`<li><b>${esc(x[0])}:</b> ${esc(x[1])}</li>`).join('')}</ol></div>
+   <div class="card" style="margin-top:16px"><h2>Kill criteria (stop konceptet hvis…)</h2><ul class="tight">${killCriteria(top).map(x=>`<li>${x}</li>`).join('')}</ul></div>`;
+ },
+ pilot(){
+  const id=ST.selected, R=R_(id), c=R.c, det=R.det, y=det.y1, d=RES.d, G=ST.gates;
+  const n=Math.min(G.pilotN, Math.max(10,det.safeN||G.pilotN));
+  const lowStart=c.lowSeason>=50;
+  const start= lowStart ? 'november 2026' : 'februar 2027';
+  const end= lowStart ? 'september 2027' : 'januar 2028';
+  const peakShare=sum(y.memberGross.map((g,i)=>d.peak[i]?g:0))/Math.max(1e-9,sum(y.memberGross));
+  const invite=Math.round(n/Math.max(0.05,Math.min(0.6,(det.N/Math.max(1,ST.cust.activeCustomers*(c.existing/100||1)))||0.15)));
+  const priceB=Math.round(c.fee*1.2/5)*5;
+  document.getElementById('pilotOut').innerHTML=`
+   <div class="card"><h2>Pilotdesign: ${esc(c.name)}</h2><p class="desc">Genereres ud fra modellens nuværende tal. Vælg et andet koncept i topmenuen for at se dets pilot.</p>
+    <div class="grid g2"><div class="kv">
+     <span>Periode</span><b>Invitation ${start} → måling til ${end} (skal dække mindst én hel højsæson april–august)</b>
+     <span>Målgruppe</span><b>${esc(c.segment)}</b>
+     <span>Invitationskriterier</span><b>${c.nFromBikes?'Alle købere af ny cykel i perioden (tilbydes ved kassen)':'Værkstedskunder med mindst ét besøg de seneste 18 måneder, udtrukket tilfældigt'}</b>
+     <span>Antal medlemmer</span><b>${n} (≈ ${invite} inviterede)</b>
+     <span>Testceller</span><b>Celle A: ${kr(c.fee)} (${Math.ceil(n/2)} medl.) · Celle B: ${kr(priceB)} (+20 %, ${Math.floor(n/2)} medl.)</b>
+     <span>Kontrolgruppe</span><b>${2*n} tilfældigt udvalgte, sammenlignelige kunder, der ikke inviteres (måler reel kannibalisering og halo)</b>
+     <span>Risiko i piloten</span><b>Opstart ${kr(c.setup)} · P10-resultat ${kr(R.mc.y1P10*Math.min(1,n/Math.max(1,det.N)))}</b></div>
+     <div class="note">Vigtigt: En pilot, der kun kører i lavsæsonen, beviser ikke, at modellen holder hele året. Medlemmernes adfærd i april–juni er den kritiske måling.</div></div></div>
+   <div class="card" style="margin-top:16px"><h2>KPI'er med go/no-go-grænser</h2><div class="tblwrap"><table><thead><tr><th>KPI</th><th class="n">Modellens forventning</th><th class="n">Go hvis</th><th class="n">Stop hvis</th><th>Datakilde</th></tr></thead><tbody>
+    ${[
+     ['Konvertering af inviterede','–','≥ 12 %','< 5 % efter 2 udsendelser','Booking/CRM'],
+     ['Timer pr. medlem pr. år',h1f(y.avg.h1)+' t','≤ '+h1f(y.avg.h1*1.15)+' t','> '+h1f(y.avg.h1*1.4)+' t (annualiseret efter 3 mdr.)','Værkstedssystem (medlemstag)'],
+     ['Inkluderede timer pr. medlem',h1f(y.avg.cover)+' t','≤ '+h1f(y.avg.cover*1.15)+' t','> '+h1f(Math.min(c.E,y.avg.cover*1.4)||0)+' t','Værkstedssystem'],
+     ['Andel af medlemstimer i højsæson',pc(peakShare),'≤ '+pc(Math.min(1,peakShare+0.1)),'> '+pc(Math.min(1,peakShare+0.2)),'Værkstedssystem'],
+     ['Ekstra belastning i højsæson',pc1(det.peakImpact),'≤ '+G.maxPeakImpact+' %','> '+(G.maxPeakImpact*1.5)+' %','Kapacitetsplan'],
+     ['Ventetid for ikke-medlemmer (højsæson)','uændret','+ ≤ 1 dag','+ > 3 dage','Bookingsystem'],
+     ['Økonomisk DB pr. medlem',kr(y.econ),'≥ '+kr(Math.max(0,y.econ*0.7)),'< 0 kr','Regnskab + kontrolgruppe'],
+     ['Bidrag pr. mekanikertime',kr(y.contribPerHour),'≥ '+kr(G.minPerHour),'< '+kr(G.minPerHour*0.8),'Regnskab'],
+     ['Kannibalisering (medlemmer vs. kontrol)',det.cannibShare!=null?pc(det.cannibShare):'–','≤ forventet','> forventet + 20 %-point','Kontrolgruppe'],
+     ['Mersalg tilbehør (medlemmer vs. kontrol)','0 kr i base','dokumenteret > 0','–','POS + kontrolgruppe'],
+     ['Fornyelsesintention / fornyelse',c.renew+' %','≥ '+G.minRenewal+' %','< '+(G.minRenewal-15)+' %','Survey mdr. 9 + faktisk fornyelse'],
+     ['NPS / tilfredshed (medlemmer)','–','NPS ≥ +50','NPS < +20 eller klager > 5 %','Survey'],
+     ['Admin-tid pr. medlem','–','≤ 15 min/md.','> 30 min/md.','Tidsregistrering'],
+     ['Heavy users blandt medlemmer',pc(det.heavyShare),'≤ '+G.maxHeavyShare+' %','> '+(G.maxHeavyShare+15)+' %','Historik før indmeldelse']
+    ].map(r=>`<tr>${r.map((x,i)=>`<td class="${i&&i<4?'n':''}">${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>
+   <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h2>Skaleringskriterier</h2><ul class="tight">
+     <li>Alle go-grænser nået efter en fuld højsæson.</li><li>Celle B (+20 %) har mindst 70 % af celle A's konvertering → brug den højere pris.</li>
+     <li>Kontrolgruppen viser, at mindst halvdelen af medlemmernes merforbrug er reelt nyt.</li>
+     <li>Skalér i trin på højst ${nf0.format(Math.max(10,Math.round(det.safeN/3)))} medlemmer pr. sæson op til sikkert maks. ${nf0.format(det.safeN)}.</li></ul></div>
+    <div class="card"><h2>Stopkriterier undervejs</h2><ul class="tight">
+     <li>Timer pr. medlem over ${h1f(y.avg.h1*1.4)} efter 3 måneder.</li><li>Ventetid for ikke-medlemmer stiger mere end 3 dage i højsæsonen.</li>
+     <li>Mere end 5 % klager over, hvad der er "inkluderet".</li><li>En nøglemekaniker er flaskehals for medlemsjobs i over 2 uger.</li></ul></div></div>`;
+ },
+ antagelser(){
+  const id=ST.selected; const tor=tornado(id); const sens={}; tor.forEach(t=>sens[t.key]=Math.abs(t.hi-t.lo));
+  const classes=['Analytisk antagelse','Brugerestimat','Ekstern benchmark','Verificeret intern data'];
+  const rows=ASSUMPTIONS.map(a=>{ const v=a.get(); const cls=ST.cls[a.key]||a.cls||classes[0];
+    return `<tr><td><b>${esc(a.label)}</b></td><td class="n">${esc(v)}</td><td class="n">${esc(a.range)}</td><td><select data-cls="${esc(a.key)}">${classes.map(c=>`<option ${c===cls?'selected':''}>${esc(c)}</option>`).join('')}</select></td><td class="small">${esc(a.src)}</td><td class="n">${sens[a.key]!=null?tk(sens[a.key]):'–'}</td><td class="small">${esc(a.how)}</td></tr>`; }).join('');
+  document.getElementById('assOut').innerHTML=`<div class="card" style="margin-top:16px"><h2>Antagelsesregister</h2><p class="desc">Effekt = hvor meget 3-årig NPV for <b>${esc(cname(id))}</b> svinger mellem lav og høj værdi. Start valideringen med de største tal.</p>
+   <div class="tblwrap"><table><thead><tr><th>Antagelse</th><th class="n">Nu</th><th class="n">Lav / høj</th><th>Klassifikation</th><th>Kilde</th><th class="n">Effekt på NPV</th><th>Sådan valideres den</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+   <div class="card" style="margin-top:16px"><h2>12 spørgsmål, der skal besvares for at erstatte antagelserne</h2><p class="desc">Prioriteret rækkefølge. Har I ikke tallet, så brug et interval – modellen viser usikkerheden.</p><ol class="tight">${QUESTIONS.map(q=>`<li>${esc(q)}</li>`).join('')}</ol></div>`;
+ },
+ marked(){ document.getElementById('mktOut').innerHTML=renderMarket(); }
+};
+
+/* ---------- red team-logik ---------- */
+function evalDet(st,id,haloOverride){ const sc=SCENARIOS[st.scenario]||SCENARIOS.base; const d=derive(st,sc.ov); const c=st.concepts.find(x=>x.id===id); return evalConcept(c,st,sc.ov,d,haloOverride||sc.ov.halo||st.halo,false); }
+function tornado(id){
+  const i=conceptIdx(id), c=ST.concepts[i];
+  const T=[
+   ['fee','Medlemspris',s=>s.concepts[i].fee*=0.8,s=>s.concepts[i].fee*=1.2,'−20 %','+20 %'],
+   ['N','Antal medlemmer',s=>{ if(s.concepts[i].nFromBikes) s.concepts[i].attach*=0.7; else s.concepts[i].N*=0.7; },s=>{ if(s.concepts[i].nFromBikes) s.concepts[i].attach*=1.3; else s.concepts[i].N*=1.3; },'−30 %','+30 %'],
+   ['existing','Andel eksisterende kunder',s=>s.concepts[i].existing=clamp(c.existing-15,0,100),s=>s.concepts[i].existing=clamp(c.existing+15,0,100),`${clamp(c.existing-15,0,100)} %`,`${clamp(c.existing+15,0,100)} %`],
+   ['alpha','Styrke af selvselektion',s=>s.cust.alpha=20,s=>s.cust.alpha=120,'20','120'],
+   ['median','Kundernes serviceforbrug',s=>s.cust.medianHours*=0.8,s=>s.cust.medianHours*=1.25,'−20 %','+25 %'],
+   ['uplift','Ekstra forbrug ved "gratis" service',s=>s.concepts[i].uplift*=0.5,s=>s.concepts[i].uplift*=1.8,'×0,5','×1,8'],
+   ['util','Udnyttelse af planlagte services',s=>s.concepts[i].util=clamp(c.util-10,0,100),s=>s.concepts[i].util=clamp(c.util+10,0,100),'−10 pt','+10 pt'],
+   ['low','Andel i lavsæson',s=>s.concepts[i].lowSeason=clamp(c.lowSeason-20,0,100),s=>s.concepts[i].lowSeason=clamp(c.lowSeason+20,0,100),`${clamp(c.lowSeason-20,0,100)} %`,`${clamp(c.lowSeason+20,0,100)} %`],
+   ['price','Timepris',s=>s.shop.priceIncl*=0.9,s=>s.shop.priceIncl*=1.1,'−10 %','+10 %'],
+   ['demand','Efterspørgsel (alle måneder)',s=>s.shop.demand=s.shop.demand.map(x=>x*0.9),s=>s.shop.demand=s.shop.demand.map(x=>x*1.1),'−10 %','+10 %'],
+   ['renew','Fornyelse',s=>s.concepts[i].renew=clamp(c.renew-15,5,98),s=>s.concepts[i].renew=clamp(c.renew+15,5,98),'−15 pt','+15 pt'],
+   ['cost','Admin + afhentning',s=>{s.concepts[i].admin*=1.4;s.concepts[i].fulfil*=1.4;},s=>{s.concepts[i].admin*=0.8;s.concepts[i].fulfil*=0.8;},'+40 %','−20 %'],
+   ['disc','Rabat på dele/tilbehør',s=>s.concepts[i].partsDisc=c.partsDisc+5,s=>s.concepts[i].partsDisc=Math.max(0,c.partsDisc-5),'+5 pt','−5 pt'],
+   ['halo','Halo-effekt',s=>s.halo='none',s=>s.halo='sands','ingen','sandsynlig'],
+   ['fte','Antal mekanikere',s=>s.shop.fte*=0.9,s=>s.shop.fte*=1.1,'−10 %','+10 %']
+  ];
+  return T.map(([key,label,lo,hi,loL,hiL])=>{ const a=JSON.parse(JSON.stringify(ST)); lo(a); const b=JSON.parse(JSON.stringify(ST)); hi(b);
+    return {key,label,lo:evalDet(a,id).npv,hi:evalDet(b,id).npv,loL,hiL}; });
+}
+function redFlags(id){
+  const R=R_(id); if(!R) return []; const c=R.c, det=R.det, y=det.y1, G=ST.gates, d=RES.d, f=[];
+  if(det.heavyShare>G.maxHeavyShare/100) f.push(`<b>Adverse selection:</b> ${pc(det.heavyShare)} af medlemmerne er heavy users (grænse ${G.maxHeavyShare} %).`);
+  if(det.points.P95.econ<0) f.push(`<b>Storforbrugere koster:</b> P95-medlemmet giver ${kr(det.points.P95.econ)} om året.`);
+  if(det.arche[0].custNet<0 && c.fee>0) f.push(`<b>Light users taber penge</b> (${kr(det.arche[0].custNet)}). De køber ikke eller opsiger – medlemsbasen bliver tungere år for år.`);
+  if(det.peakImpact>G.maxPeakImpact/100) f.push(`<b>Højsæson:</b> medlemmer lægger ${pc1(det.peakImpact)} ekstra på kapaciteten i ${MONTHS[det.peakMonth]||'højsæsonen'} og fortrænger ${h1f(y.displaced)} betalende timer.`);
+  if(y.econDirect<0 && y.econ>=0) f.push(`<b>Afhænger af halo:</b> uden halo er DB ${kr(y.econDirect)} pr. medlem.`);
+  if(det.cannibShare!=null && det.cannibShare>0.5) f.push(`<b>Flytter omsætning:</b> ${pc(det.cannibShare)} af medlemsbetalingen er omsætning, I allerede havde.`);
+  if(det.effPrice!=null && det.effPrice<d.priceEx*0.85) f.push(c.lowSeason>=80 ? `<b>Lav pris pr. inkluderet time:</b> ${kr(det.effPrice)} mod normalt ${kr(d.priceEx)} ekskl. moms. Acceptabelt, fordi timerne ligger i ledig lavsæsontid – men pas på, at prisen ikke bliver kundernes nye forventning.` : `<b>Mekanikertid sælges billigt:</b> reel pris pr. inkluderet time er ${kr(det.effPrice)} mod normalt ${kr(d.priceEx)} ekskl. moms.`);
+  if(c.laborDisc>15) f.push(`<b>Brand:</b> ${c.laborDisc} % rabat på arbejdsløn signalerer discount.`);
+  if(det.points.P50.custNet<0) f.push(`<b>Kundeværdi:</b> median-medlemmet får ${kr(det.points.P50.custNet)} i nettoværdi – salgsargumentet holder ikke.`);
+  if(R.mc.probLoss>0.3) f.push(`<b>Usikkerhed:</b> ${pc(R.mc.probLoss)} sandsynlighed for tab år 1.`);
+  if(R.stressNeg>0) f.push(`<b>Stress:</b> negativ NPV i ${R.stressNeg} af ${STRESS.length} stress-scenarier (${STRESS.filter(k=>R.stress[k].npv<0).map(k=>SCENARIOS[k].label.toLowerCase()).join(', ')}).`);
+  if(c.E>G.fairUseMax) f.push(`<b>Fair use:</b> loft på ${String(c.E).replace('.',',')} timer er reelt ubegrænset for de fleste.`);
+  if(c.cert) f.push(`<b>Kompetence:</b> kræver certificering og systemadgang, før det kan lanceres.`);
+  if(c.renew<G.minRenewal) f.push(`<b>Fornyelse:</b> ${c.renew} % er under minimum ${G.minRenewal} %.`);
+  if(R.c.subscription && RES.bestNonSub && RES.bestNonSub!==id && R_(RES.bestNonSub).mc.npvP50>R.mc.npvP50) f.push(`<b>Ikke-abonnement slår det:</b> ${esc(C_(RES.bestNonSub).short)} har højere NPV (${tk(R_(RES.bestNonSub).mc.npvP50)}).`);
+  return f;
+}
+function bearCase(id){
+  const R=R_(id), c=R.c; const s=R.stress;
+  return `I det konservative scenarie bliver 3-årig NPV ${tk(s.kons.npv)}, ved stærk adverse selection ${tk(s.adverse.npv)} og ved høj kannibalisering ${tk(s.cannibal.npv)}. P10 i simuleringen er ${tk(R.mc.npvP10)}. Det værste realistiske udfald er, at ${c.E>0?'medlemmerne bruger mere tid end forventet i højsæsonen, ':''}de eksisterende kunder blot flytter deres betaling ind i ${esc(c.short)}, og at fornyelsen falder – så butikken har mere administration for samme indtjening.`;
+}
+function altCase(id){
+  const R=R_(id); const nonSub=RES.ranked.filter(x=>x!==id && !R_(x).c.subscription).sort((a,b)=>R_(b).mc.npvP50-R_(a).mc.npvP50)[0];
+  const credits=R_('B'), payg=R_('J');
+  let t='';
+  if(nonSub && nonSub!==id) t+=`<b>${esc(C_(nonSub).name)}</b> giver NPV ${tk(R_(nonSub).mc.npvP50)} uden at love mekanikertid og med negativ NPV i ${R_(nonSub).stressNeg} stress-scenarier. `;
+  if(id!=='B') t+=`Service Credits giver ${tk(credits.mc.npvP50)} (P50) med et fast loft pr. medlem. `;
+  t+= R.mc.npvP50 > Math.max(payg.mc.npvP50, nonSub?R_(nonSub).mc.npvP50:-Infinity) ? 'Den foreslåede model slår alternativerne i base case – men kun hvis guardrails holder.' : 'Red team vurderer, at alternativet er mindst lige så godt – vælg det enkleste.';
+  return t;
+}
+function killCriteria(id){
+  const R=R_(id), y=R.det.y1, G=ST.gates;
+  return [`Timer pr. medlem over ${h1f(y.avg.h1*1.4)} (40 % over plan) efter 3 måneder.`,`Ekstra belastning i højsæson over ${G.maxPeakImpact*1.5} % af kapaciteten.`,`Heavy users over ${G.maxHeavyShare+15} % af medlemmerne.`,`Økonomisk DB pr. medlem under 0 kr målt mod kontrolgruppen.`,`Fornyelse under ${G.minRenewal-15} %.`,`Ventetid for ikke-medlemmer +3 dage i højsæsonen.`,`Klager over vilkår fra mere end 5 % af medlemmerne.`];
+}
+const PREMORTEM=[
+ ['Adverse selection','De tunge brugere melder sig ind, de lette bliver væk – timeforbruget pr. medlem bliver 50-100 % højere end budgetteret.'],
+ ['Højsæsonpres','Medlemmerne booker i april-juni, ventetiden for fuldpriskunder stiger, og de går til konkurrenten.'],
+ ['Kannibalisering','Medlemsbetalingen er blot eksisterende serviceomsætning, der er flyttet – mere arbejde, samme indtjening.'],
+ ['Rabat-lækage','Rabat på tilbehør æder avancen på køb, kunderne alligevel ville have lavet.'],
+ ['Moral hazard','"Gratis" service får kunder til at komme for småjusteringer, de før klarede selv.'],
+ ['Gennemsnitsprisfælden','Prisen sættes efter gennemsnitskunden; P95-kunden koster 3-5 gange medlemsprisen.'],
+ ['Mekanikerkultur','Medlemsjobs opleves som "gratis arbejde" – prioritering og kvalitet skrider.'],
+ ['Administration','Booking, opkrævning, fejlede betalinger og kundeservice koster mere end forventet.'],
+ ['Ubrugte ydelser','Kunder bruger ikke det inkluderede, føler sig snydt og fornyer ikke – dårlige anmeldelser.'],
+ ['Uklare regler','Uenighed ved disken om styrtskader, slid og opgraderinger.'],
+ ['Brand-udvanding','"Service-abonnement" opleves som discount og skader premium-positioneringen.'],
+ ['Lavsæsonregler undergraves','"VIP"-medlemmer forventer at kunne komme i maj – undtagelser bliver reglen.'],
+ ['Forbrugerret','Automatisk fornyelse, binding og opsigelse er ikke tydelige nok – klager og risiko for påtale. Få vilkår juridisk tjekket.'],
+ ['Halo udebliver','Mersalg og genkøb var der i forvejen (korrelation, ikke årsag).'],
+ ['Nøglepersonrisiko','Én mekaniker med Di2/AXS-kompetence bliver flaskehals; sygdom i højsæson bryder løfterne.']
+];
+const QUESTIONS=[
+ 'Hvor mange mekanikere har I (timer pr. uge), og hvor stor en del af tiden står de ved arbejdsbænken?',
+ 'Hvor mange værkstedstimer (eller jobs) sælger I måned for måned, og hvor lang er ventetiden i højsæsonen?',
+ 'Timepris samt pris og tidsforbrug på standardydelser (lille/stor service, Di2/AXS-opsætning, hjul).',
+ 'Værkstedsomsætning fordelt på arbejdsløn og reservedele – og bruttoavance på dele.',
+ 'Antal aktive værkstedskunder pr. år, og hvor stor en andel af timerne de 10 % tungeste kunder står for.',
+ 'Samlet lønomkostning pr. mekaniker inkl. pension, feriepenge, ATP m.m.',
+ 'Antal solgte cykler pr. år fordelt på prisklasser – og andel e-bikes.',
+ 'Andel kunder med landevej, gravel, MTB, e-bike og flere cykler.',
+ 'Gennemsnitligt årligt køb af tilbehør og dele pr. kunde, og bruttoavancen.',
+ 'Hvor ofte køber jeres kunder deres næste cykel hos jer (genkøbsrate)?',
+ 'Mulighed for overarbejde eller sæsonhjælp i højsæsonen – og pris pr. time.',
+ 'Strategiske mål og grænser: minimum margin, acceptabel kompleksitet, maks. tab i en pilot.'
+];
+const ASSUMPTIONS=[
+ {key:'fte',label:'Antal mekanikere',get:()=>h1f(ST.shop.fte)+' FTE',range:'±10 %',src:'Antagelse',how:'Lønliste'},
+ {key:'price',label:'Timepris inkl. moms',get:()=>kr(ST.shop.priceIncl),range:'±10 %',cls:'Ekstern benchmark',src:'High-end i Kbh: 800–900 kr/t (Palmarès, Copenhagen Bike Fit, Velohouse – set 7/10-2026)',how:'Byman prisliste'},
+ {key:'demand',label:'Efterspørgsel pr. måned',get:()=>Math.round(sum(ST.shop.demand)/12)+' % i snit',range:'±10 %',src:'Antagelse (typisk dansk sæsonprofil)',how:'Timer solgt pr. måned fra værkstedssystem, 24 mdr.'},
+ {key:'median',label:'Median-kundens timer pr. år',get:()=>h1f(ST.cust.medianHours)+' t',range:'−20 % / +25 %',src:'Antagelse',how:'Udtræk af timer pr. kunde de seneste 12 mdr.'},
+ {key:'sigma',label:'Spredning i forbrug',get:()=>nf2.format(ST.cust.sigma),range:'0,6–1,0',src:'Antagelse',how:'Samme udtræk – andel af timer fra top 10 %'},
+ {key:'alpha',label:'Styrke af selvselektion',get:()=>String(ST.cust.alpha),range:'20–120',src:'Analytisk antagelse',how:'Pilot: historisk forbrug for medlemmer vs. inviterede'},
+ {key:'N',label:'Antal medlemmer (valgt koncept)',get:()=>nf0.format(R_(ST.selected).det.N),range:'−30 % / +30 %',src:'Hypotese',how:'Konvertering i pilot'},
+ {key:'existing',label:'Andel eksisterende kunder',get:()=>C_(ST.selected).existing+' %',range:'±15 pt',src:'Antagelse',how:'CRM-match ved indmeldelse'},
+ {key:'uplift',label:'Ekstra forbrug ved inkluderet service',get:()=>C_(ST.selected).uplift+' %',range:'×0,5 / ×1,8',src:'Analytisk antagelse',how:'Pilot vs. kontrolgruppe'},
+ {key:'util',label:'Udnyttelse af planlagte services',get:()=>C_(ST.selected).util+' %',range:'±10 pt',src:'Antagelse',how:'Pilot'},
+ {key:'low',label:'Andel inkluderet tid i lavsæson',get:()=>C_(ST.selected).lowSeason+' %',range:'±20 pt',src:'Designvalg',how:'Bookingdata i pilot'},
+ {key:'renew',label:'Fornyelse',get:()=>C_(ST.selected).renew+' %',range:'±15 pt',src:'Antagelse',how:'Faktisk fornyelse efter pilotår'},
+ {key:'cost',label:'Admin og afhentning pr. medlem',get:()=>kr(C_(ST.selected).admin+C_(ST.selected).fulfil),range:'−20 % / +40 %',src:'Antagelse',how:'Tidsregistrering i pilot'},
+ {key:'disc',label:'Rabat på dele/tilbehør',get:()=>C_(ST.selected).partsDisc+' %',range:'±5 pt',src:'Designvalg',how:'–'},
+ {key:'halo',label:'Halo-effekt',get:()=>({none:'ingen',kons:'konservativ',sands:'sandsynlig',maks:'maksimal'}[ST.halo]),range:'ingen / sandsynlig',src:'Hypotese – ikke dokumenteret',how:'Kontrolgruppe i pilot'},
+ {key:'fee',label:'Medlemspris',get:()=>kr(C_(ST.selected).fee),range:'±20 %',src:'Designvalg',how:'Prisceller i pilot + Van Westendorp'},
+ {key:'loaded',label:'Lønomkostning pr. mekaniker',get:()=>kr(ST.shop.loadedCost),range:'±10 %',src:'Antagelse',how:'Lønregnskab'},
+ {key:'parts',label:'Reservedele pr. værkstedstime',get:()=>kr(ST.shop.partsPerHour),range:'±25 %',src:'Antagelse',how:'Omsætning dele/timer fra regnskab'}
+];
+
+/* ---------- markedsbenchmark ---------- */
+const BENCH={
+ accessed:'7. oktober 2026',
+ prices:[
+  ['Palmarès','Kbh Ø / Frb.',800,599,999,'High-end racer, bikefit. PRO-service 2.099 kr. Pr. kvarter, dele ekstra','https://palmares.dk/pages/cykelvaerksted',true],
+  ['Copenhagen Bike Fit','Kbh Ø (nabo)',800,450,800,'200 kr pr. påbegyndt kvarter. Bremseudluftning 400/600 kr','https://copenhagenbikefit.dk/pages/vaerksted',true],
+  ['Velohouse','Valby',900,850,null,'Racer/MTB 850 kr, elcykel 1.050 kr. Pr. kvarter','https://velohouse.dk/pages/service-reparationer',true],
+  ['Bings BikeStore','Aarhus',800,595,1395,'Specialized. Mester 800, lærling 700 kr/t','https://bikestore.dk/collections/cykelservice',true],
+  ['BikeLab CPH','Kbh V',null,699,null,'Racer/gravel/MTB 699 kr. Klar samme dag før kl. 10','https://bikelabcph.dk/',true],
+  ['BikeDoctor (mobil)','Storkøbenhavn',null,799,2999,'Kommer hjem. Master-service 3.499 kr (el)','https://bikedoctor.dk/priser',true],
+  ['Jupiter Cykler','Storkøbenhavn',700,399,null,'175 kr pr. kvarter. Gratis eftersyn inden 3 mdr.','https://www.jupiter.dk/vaerkstedet',true],
+  ['Ren Cykel','Kbh (6 værksteder)',649,null,null,'Hent & bring 49 kr. Profilerer sig på Specialized Turbo','https://www.rencykel.dk/',true],
+  ['Cykelcenter Midtjylland','Aarhus/Brande',649,399,null,'Shimano Service Center','https://cykelcentermidtjylland.dk/vaerksted/',true],
+  ['CykelDoktoren','Malling',650,350,500,'Lille enkeltmandsværksted','https://cykeldoktoren.dk/priser/',true],
+  ['Ritter Cykler','Birkerød',600,400,null,'Fra 600 kr/t. Lille service kun løn','https://www.rittercykler.net/vrksted-og-priser',true],
+  ['Cykelshoppen','Skanderborg',595,399,null,'Racer-specialist','https://cykelshoppen.dk/cykelvaerksted',true],
+  ['CykelShoppen Hedehusene','Hedehusene',500,399,null,'Sælger klippekort','https://www.cykelshoppen-hedehusene.dk/cykelservice-og-reparation',true],
+  ['Cykelexperten','Vanløse',null,null,null,'Specialized-forhandler. Priser ikke offentliggjort','https://cykelexperten.dk/cykel-vaerksted/',true]
+ ],
+ models:[
+  ['BikeDoctor – Serviceaftale','DK','Abonnement, mobil mekaniker','2.499 kr/år (eller 450 kr/md – uklart på siden)','2 services/år, prioriteret booking, rabat på dele','12 mdr. binding','Ja','C · Vedligeholdelse','https://bikedoctor.dk/priser',true],
+  ['Copenhagen Cycling Club','DK (Hellerup)','Klubmedlemskab i high-end-butik','1.000 kr/år','10 % i butik, 20 % bikefit, events – ingen værkstedsfordele','Auto-fornyelse, opsig 48 t før','Ja','A · Access Club','https://copenhagencyclingclub.com/en/products/membership-copenhagen-cycling-club',true],
+  ['Jupiter – GO+','DK','Forudbetalt all-inclusive 3 år','1.800 / 2.500 / 3.500 kr efter cykelværdi','Alle reparationer, timer og dele. 5 eftersyn over 40 mdr.','Kan delbetales','Formentlig kun nykøb','E · Ny cykel-plan','https://www.jupiter.dk/jupiter-go',true],
+  ['Fri BikeShop – BikeSmart','DK','Serviceabonnement 36 mdr.','fx 292 kr/md (cykel 10.000 kr)','Al service, reparation og dele, lånecykel','Min. 5 mdr., derefter 1 mdr.','Nej','E · Ny cykel-plan','https://www.fribikeshop.dk/fordele/bikesmart',true],
+  ['Design Cykler – Total Service','DK','Forudbetalt aftale 3 år (el)','3.499 kr/3 år','6 eftersyn, løn, sliddele, lånecykel','Forudbetalt','Uverificeret','H · E-bike','https://www.designcykler.dk/shop/serviceaftaler--eftersyn-410c1.html',true],
+  ['CykelShoppen Hedehusene – klippekort','DK','Klippekort','798 kr/3 klip · 1.245 kr/5 klip','Eftersyn pr. klip (normalt 399 kr) – 24-29 % rabat','Gyldighed ikke angivet','Ikke angivet','B · Credits','https://www.cykelshoppen-hedehusene.dk/cykelservice-og-reparation',true],
+  ['CPH Bike Shop – vinterservice','DK','Gratis vintereftersyn ved køb','Inkl. i cykelpris','Årligt eftersyn 1/10–30/11 i 10 år','Kræver alle eftersyn hos dem','Nej','G · Vinterklargøring','https://www.cphbikeshop.dk/pages/vinterservice',true],
+  ['Sykkelpikene – 5 års service','NO','Fri service i lavsæson','Inkl. i cykelpris','1 service/år, kun 1/10–31/3','Ingen','Nej','G · Vinterklargøring','https://sykkelpikene.zendesk.com/hc/no/articles/360014328939-Verksted-og-service',true],
+  ['Bike Fixx – Fast Track','NO (Oslo)','Prioritetstillæg pr. opgave','+499 NOK','Klar samme dag eller inden 48 t','Ingen','Ja','J · PAYG Plus','https://bikefixx.no/sykkelservice/',true],
+  ['Cykelstyrken – Guldkunde','DK','Gratis kundeklub','Gratis','Spring køen over, vintertjek, medlemstilbud. Carbon undtaget','Ingen','Nej','I · Loyalitet','https://cykelstyrken.dk/medlemsfordele/',true],
+  ['Cykelgruppen – serviceaftale','DK','Planlagte eftersyn med rabat','1. og 5. gratis, resten nedsat','5 eftersyn over 26 mdr.','Ikke angivet','Nej','C · Vedligeholdelse','https://cykelgruppen.dk/pages/serviceaftale',true],
+  ['Jupiter / Fri / Cykelstyrken – livstidsjustering','DK','Engangskøb ved nykøb','299–899 kr engangs','Ubegrænset justering, ingen dele','Ingen','Nej','(undgå – devaluerer service)','https://www.fribikeshop.dk/cykelvaerksted/service',true],
+  ['Swapfiets','DK (Kbh)','Cykelabonnement inkl. reparation','199–599 kr/md','Reparation, bytte hvis ikke fikset på 10 min','1 mdr. opsigelse','Nej (egne cykler)','–','https://swapfiets.dk/',true],
+  ['Rebiking','DK (Kbh)','Elcykelabonnement','ca. 229–795 kr/md','Reparation, vedligehold, basisforsikring','Uverificeret','Nej','–','https://www.dba.dk/shop/rebiking',false]
+ ],
+ patterns:[
+  'High-end-værksteder i København tager 800–900 kr/t. Mellemsegmentet ligger på 595–700 kr/t.',
+  'Afregning pr. påbegyndt kvarter er normen. Dele er altid ekstra.',
+  'Racer-basisservice koster 450–850 kr i København, fuld/PRO-service 999–2.999 kr.',
+  'Di2/AXS prissættes næsten aldrig separat – det ligger i timeprisen eller de store pakker.',
+  'Kæderne binder service til nykøb (livstidsjustering 299–899 kr uden dele).',
+  'All-inclusive med dele findes kun ved nykøb, og prisen skaleres efter cykelværdi (Jupiter GO+).',
+  'Gratis vinter-/lavsæsonservice bruges til at fylde værkstedet om vinteren (CPH Bike Shop, Sykkelpikene).',
+  'Hverdagscykler er klar samme eller næste dag, racer/high-end tager 3–5 hverdage.'
+ ],
+ whitespace:[
+  'Intet premium-serviceabonnement til racer/gravel i København, der også tager cykler købt andre steder.',
+  'Ingen københavnsk high-end-butik sælger betalt prioritet/fast track (Oslo: +499 NOK).',
+  'Mangler en fast, gennemsigtig pakke for Di2/AXS, firmware og bremseudluftning.',
+  'Klubmedlemskaber (CCC 1.000 kr/år) giver ingen værkstedsfordele – klub og service kan kombineres.',
+  'Prisbånd efter cykelværdi stopper ved 20.000+ kr – der mangler trin for cykler til 40–100.000 kr.',
+  'Forudbetalt vinteroverhaling til racer (nov–feb) med garanteret tid inden foråret.'
+ ],
+ intl:{
+  bikes:[
+   ['Rapha Cycling Club','UK/globalt','Fællesskab/adgang (brand)','£70/år','Klubture, events, tidlig adgang, kaffe, forsikring – ingen værkstedsydelser','12 mdr., auto-fornyelse','Billig at drive, stærk identitet','Ingen værkstedsværdi','https://www.rapha.cc/gb/en/product/rcc-membership/RCCSUB2025XXX'],
+   ['Halfords CycleCare','UK/Irland','Forudbetalt plan i 4 niveauer','£15–65/år · 3 år £70–130','Punkteringer, justeringer, sundhedstjek; 10–15 % på dele. Lave niveauer med antalsloft','1 eller 3 år forudbetalt','Åben for alle cykler – skaber ny trafik','Massemarked, kræver volumen','https://halfords.ie/cycling/bike-maintenance/cyclecare/enhanced-cyclecare---1-year-860694.html'],
+   ["Mike's Bikes 5-Year Plan",'USA','Forudbetalt arbejdsløn 5 år','$300 / $750 (ekskl. moms)','Ubegrænsede tune-ups; Pro: 1 stort eftersyn/år. Kun løn','Engangs, købes ≤ 90 dage efter cykelkøb','Simpelt, binder kunden i 5 år','"Ubegrænset" presser højsæsonen','https://mikesbikes.com/pages/maintenance-plans'],
+   ['Trek Charleston – Palmetto Care Plus','USA','Plejeplan ved cykelkøb','10 % af cykelpris (min. $50, maks. $350)','Rabat 50 % montage, 25 % dele, lånecykel, prioritet','Engangs, købes ≤ 60 dage','Pris følger cykelværdi; rabat frem for gratis','Rabat også ved styrt kan blive dyrt','https://www.trekbikesofmountpleasant.com/about/palmetto-care-plus-pg453.htm'],
+   ["ERIK'S Care",'USA','1-2-årig arbejdslønsplan','Ikke offentlig','Justering, firmware; Performance: bremseluftning, affjedring','Forudbetalt','Tunge ydelser kun okt–feb, 1×/år','Ingen prioritet','https://www.eriksbikeshop.com/pages/bike-service-plans'],
+   ['99 Bikes – Service Plan','Australien','Arbejdslønskredit ved cykelkøb','AU$99 for 12 mdr.','AU$500 kredit + 10 % på dele','Engangs, kan ikke fornyes','Kreditloft gør risikoen kendt','Ingen løbende indtægt','https://99bikes.com.au/pages/new-bike-service-plan'],
+   ['MIOO Premium','Sverige','Årligt serviceabonnement','1.188 SEK/år','2 service/år, punkteringer, dækopbevaring, 25 % på reparationer','12 mdr., auto-fornyelse','Nordisk prisanker, klare lofter','Lavprisniveau; modellen er strammet','https://www.mioo.se/'],
+   ['The New Wheel','USA','Servicemedlemskab e-cykler','$249 / $349 pr. år','Ubegrænset tune, punktering; afhentning 2×/år, maks. 30 miles','Årlig','Afhentning med hårde lofter','Højt prisniveau','https://newwheel.net/pages/service-plan-extended-warranty'],
+   ['JobRad Servicepakker','Tyskland','Service bundtet med leasing','€7,90–19,90/md','Årligt eftersyn med budget; slidbudget','Vælges kun ved kontraktstart','Valg ved start fjerner adverse selection','Kræver leasingkanal','https://vww.jobrad.org/dam/media/merkblaetter-und-formulare/merkblatt-servicepakete.pdf'],
+   ['Bike Totaal – Zorgeloos','Holland','Alt-inklusive e-cykelabonnement','Ikke offentlig','Al service, dele, forsikring, vejhjælp','Månedlig opsigelse efter 1. md.','Km-loft (5.000/år) og prisindeksering','Åbner for "brug og stop"','https://biketotaal.dynamoretailgroup.com/en/subscription-terms-of-service'],
+   ['Cowboy Care','EU (13 byer)','Brand-abonnement, mobil service','€20/md','Ubegrænset booking, service på adresse, sliddele','12 mdr., auto-fornyelse','Høj convenience','Dyr pr. besøg','https://cowboy.com/products/cowboy-care'],
+   ['The Electric Bike Shop','UK','Forudbetalt e-cykelplan','£200 (2 år) / £260 (3 år)','Årlig fuld service, ubegrænsede tjek, firmware; mål om 48 t','Engangs, ikke-refunderbar','48 t-løfte + tydelig besparelse','Kun egne kunder','https://www.theelectricbikeshop.co.uk/service-plans/']
+  ],
+  cross:[
+   ['Bil','Mercedes-Benz ServiceCare (UK)','Månedlig betaling for planlagte services','Sliddele ekskl.; tidlig exit afregnes efter forbrug','Afregning efter faktisk forbrug ved tidlig opsigelse','Digitale serviceintervaller','https://tools.mercedes-benz.co.uk/current/passenger-cars/owners-area/pdfs/service-care-terms-conditions/service-care.pdf?owda=misc'],
+   ['Bil','Volkswagen All-in (UK)','Bundt for brugte biler: services, syn, garanti','Krav til alder/km; 30 dages karens','Indgangstjek og karens for cykler købt andre steder','Lovpligtigt syn','https://www.volkswagen.co.uk/owners/servicing/service-plan-cars-over-1-year-old'],
+   ['Bil','Toyota Relax','Hver service forlænger garantien','Maks. 15 år; karens ved overskredet interval','Butiksgaranti der fornyes ved årligt eftersyn','Kræver leverandørfinansiering','https://de.toyota.ch/content/dam/toyota/nmsc/switzerland/documents/warranty/TOY_Relax_Garantiebestimmungen26_210x297_de.pdf'],
+   ['Motorcykel','Honda UK Fixed Price Service','Fast pris for de første 3 services','Kun ved nykøb (≤ 60 dage); udløber efter 27 mdr.','Prisbånd efter type/værdi; salg ved nykøb','Nationalt prissystem','https://www.honda.co.uk/motorcycles/range/adventure/crf450l/your-service-plan.html'],
+   ['Dækhotel','BestDrive (Norge)','Sæsonabonnement: skift, opbevaring, kontrol','Planlagte sæsonbookinger udjævner kapacitet','Vinteropbevaring + forårsklargøring; tilstandsrapport → mersalg','Intet tvunget sæsonskift for cykler','https://www.bestdrive.no/dekkhotell'],
+   ['Marine','BoatUS Towing','Årligt medlemskab for bugsering','Zone og pris efter risiko','Afhentning med geografisk zone og antalsloft','Tredjepartsnetværk','https://www.boatus.com/boat-towing'],
+   ['Ski','Willi\'s Season Tuning Pass','Sæsonkort med ubegrænset slibning/voks','Ét par pr. kort; reparationer ekskl.','Sæsonkort for rutinevedligehold, skader ekskl.','Skiservice er kortere og maskinel','https://www.willisskiandboard.com/pages/season-tuning-pass'],
+   ['Elektronik','AppleCare One','Månedligt abonnement for flere enheder','Gebyr pr. skade; indgangstjek','Selvrisiko pr. hændelse (co-pay); husstandsplan','Tyveri er forsikring','https://www.apple.com/legal/sales-support/applecare/applecareplus/2507/250723_applecareone_us_disclosures_non-ny.pdf'],
+   ['VVS/klima','ChampionCare (USA)','2 eftersyn/år før sæson, prioritet','Rabat i stedet for gratis reparation','Opsparet kredit mod ny cykel driver nysalg','24 t-garanti er for dyr i højsæson','https://www.championair.com/maintenance-plan']
+  ],
+  principles:[
+   'Sælg planen ved cykelkøb. Cykler købt andre steder kræver betalt indgangstjek og karens (fx 30 dage).',
+   'Inkludér arbejdsløn, ikke dele – giv hellere 10–25 % delerabat.',
+   'Brug kreditloft, antal besøg eller km-loft frem for ægte "ubegrænset".',
+   'Læg tunge ydelser (luftning, affjedring, totaleftersyn) i planlagte besøg i lavsæson okt–feb.',
+   'Én registreret cykel pr. plan (stelnummer); prisbånd efter cykeltype og -værdi.',
+   '12 mdr. med årlig fornyelse; ubrugte ydelser overføres ikke; tidlig exit afregnes efter forbrug.',
+   'Ekskludér styrt, misbrug, racing/udlejning, motor/batteri. Afvist nødvendig reparation stopper dækning.',
+   'Prioritet og hurtig levering er premiumkernen – men med loft i højsæson.',
+   'Fællesskab og events er billig loyalitet – som tilvalg, ikke som erstatning for værkstedsværdi.'
+  ]
+ }
+};
+function hbarChart(rows, ref, refLabel){
+  const W=720,rowH=22,ml=190,mr=70,mt=16,H=mt+rows.length*rowH+22,iw=W-ml-mr;
+  const mx=Math.max(ref,...rows.map(r=>r[1])); const {hi,ticks}=niceTicks(0,mx*1.05,5); const sx=v=>ml+iw*v/hi;
+  let g=svgOpen(W,H);
+  ticks.forEach(t=>{ g+=`<line x1="${sx(t)}" x2="${sx(t)}" y1="${mt}" y2="${H-18}" stroke="var(--grid)"/><text x="${sx(t)}" y="${H-5}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${axfmt(t)}</text>`; });
+  rows.forEach((r,i)=>{ const y=mt+i*rowH+4,h=rowH-8; g+=`<text x="${ml-8}" y="${y+h/2+4}" text-anchor="end" font-size="11.5" fill="var(--ink2)">${esc(r[0])}</text><rect x="${ml}" y="${y}" width="${Math.max(1,sx(r[1])-ml)}" height="${h}" rx="3" fill="var(--s1)"/><text x="${sx(r[1])+6}" y="${y+h/2+4}" font-size="11" fill="var(--ink)">${esc(nf0.format(r[1]))}</text><rect x="0" y="${y-4}" width="${W}" height="${rowH}" fill="transparent" data-tip="${TIP([r[0],{v:kr(r[1]),l:'pr. time inkl. moms'}])}"/>`; });
+  g+=`<line x1="${sx(ref)}" x2="${sx(ref)}" y1="${mt-6}" y2="${H-18}" stroke="var(--s2)" stroke-width="2"/><text x="${sx(ref)}" y="${mt-6}" text-anchor="middle" font-size="11" fill="var(--ink)" font-weight="600">${esc(refLabel)}</text>`;
+  return g+'</svg>';
+}
+const link=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${esc(t||'kilde')}</a>`;
+function renderMarket(){
+  const B=BENCH; const vchip=v=>v?chip('good','Aktiv'):chip('warn','Uverificeret');
+  const rates=B.prices.filter(r=>r[2]).map(r=>[r[0],r[2]]).sort((a,b)=>b[1]-a[1]);
+  let h=`<div class="note">Research udført ${esc(B.accessed)} af research-agenter (Agent 1 og 2). Priser er inkl. moms, medmindre andet står. Kilder er officielle butikssider – tjek altid den aktuelle side, før I bruger et tal. Tallene er ikke kopieret ind som "facit" i modellen; de bruges som pejlemærker.</div>
+  <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Timepriser i danske værksteder</h2><p class="desc">Orange linje = Bymans timepris i modellen lige nu.</p>${hbarChart(rates,ST.shop.priceIncl,'Byman (model): '+kr(ST.shop.priceIncl))}</div>
+  <div class="card"><h2>Hvad betyder det for modellen?</h2><ul class="tight">
+   <li><b>Timepris:</b> standard sat til 800 kr inkl. moms – samme niveau som Palmarès og Copenhagen Bike Fit (naboen).</li>
+   <li><b>A · Access Club (995 kr):</b> Copenhagen Cycling Club tager 1.000 kr/år for klub uden værkstedsfordele. Prioritet på værkstedet er et hul i markedet.</li>
+   <li><b>C · Vedligeholdelse (1.995 kr):</b> BikeDoctor tager 2.499 kr/år for 2 services + prioritet (mobil). Byman ligger lavere, men uden udkørsel.</li>
+   <li><b>G · Vinterklargøring:</b> flere aktører bruger gratis vinterservice til at fylde lavsæsonen – ingen sælger en <i>betalt</i> premium-vinteroverhaling til racer.</li>
+   <li><b>J · PAYG Plus (349 kr ekspres):</b> Bike Fixx i Oslo tager +499 NOK for fast track. Ingen i København gør det.</li>
+   <li><b>E · Ny cykel-plan:</b> Jupiter GO+ skalerer pris efter cykelværdi, men stopper ved 20.000 kr. Byman kan lave trin for 40–100.000 kr.</li>
+   <li><b>Undgå:</b> livstidsjustering for 299–899 kr – det lærer kunden, at service er næsten gratis.</li></ul></div></div>
+  <div class="card" style="margin-top:16px"><h2>Værkstedspriser (inkl. moms)</h2><div class="tblwrap"><table><thead><tr><th>Værksted</th><th>Område</th><th class="n">Timepris</th><th class="n">Basis-service</th><th class="n">Stor service</th><th>Note</th><th>Status</th><th>Kilde</th></tr></thead><tbody>
+   ${B.prices.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td class="n">${r[2]?kr(r[2]):'–'}</td><td class="n">${r[3]?kr(r[3]):'–'}</td><td class="n">${r[4]?kr(r[4]):'–'}</td><td class="small">${esc(r[5])}</td><td>${vchip(r[7])}</td><td class="small">${link(r[6])}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="card" style="margin-top:16px"><h2>Serviceplaner, klippekort og klubber (Danmark og Norden)</h2><div class="tblwrap"><table><thead><tr><th>Udbyder</th><th>Land</th><th>Model</th><th>Pris</th><th>Indhold</th><th>Binding</th><th>Andre mærker</th><th>Svarer til</th><th>Status</th><th>Kilde</th></tr></thead><tbody>
+   ${B.models.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td class="small">${esc(r[2])}</td><td class="small">${esc(r[3])}</td><td class="small">${esc(r[4])}</td><td class="small">${esc(r[5])}</td><td class="small">${esc(r[6])}</td><td class="small">${esc(r[7])}</td><td>${vchip(r[9])}</td><td class="small">${link(r[8])}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Markedsmønstre</h2><ul class="tight">${B.patterns.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+   <div class="card"><h2>Huller i markedet (white spaces)</h2><ul class="tight">${B.whitespace.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div></div>`;
+  h+= B.intl ? renderIntl(B.intl) : `<div class="card" style="margin-top:16px"><h2>Internationale koncepter og andre brancher</h2><p class="muted">Research kører stadig – tilføjes, når den er færdig.</p></div>`;
+  return h;
+}
+function renderIntl(I){
+  return `<div class="card" style="margin-top:16px"><h2>Internationale cykelkoncepter</h2><p class="desc">Priser i lokal valuta. Alle set aktive på officielle sider 7. oktober 2026.</p><div class="tblwrap"><table><thead><tr><th>Udbyder</th><th>Land</th><th>Model</th><th>Pris</th><th>Indhold og lofter</th><th>Binding</th><th>Styrke</th><th>Svaghed</th><th>Kilde</th></tr></thead><tbody>
+   ${I.bikes.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td class="small">${esc(r[2])}</td><td class="small">${esc(r[3])}</td><td class="small">${esc(r[4])}</td><td class="small">${esc(r[5])}</td><td class="small">${esc(r[6])}</td><td class="small">${esc(r[7])}</td><td class="small">${link(r[8])}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="card" style="margin-top:16px"><h2>Andre brancher med værksted (Agent 2)</h2><div class="tblwrap"><table><thead><tr><th>Branche</th><th>Eksempel</th><th>Mekanisme</th><th>Guardrail</th><th>Kan overføres</th><th>Kan ikke overføres</th><th>Kilde</th></tr></thead><tbody>
+   ${I.cross.map(r=>`<tr><td>${esc(r[0])}</td><td><b>${esc(r[1])}</b></td><td class="small">${esc(r[2])}</td><td class="small">${esc(r[3])}</td><td class="small">${esc(r[4])}</td><td class="small">${esc(r[5])}</td><td class="small">${link(r[6])}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="grid g2" style="margin-top:16px"><div class="card"><h2>Guardrails fra andre brancher</h2><ul class="tight">${I.principles.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+   <div class="card"><h2>Bekræfter eller udfordrer det modellen?</h2><ul class="tight">
+    <li><b>Bekræfter G (Vinterklargøring):</b> ERIK'S lægger tunge ydelser i okt–feb, og dækhoteller bruger planlagte sæsonbookinger til at udjævne kapacitet.</li>
+    <li><b>Bekræfter B (Credits):</b> 99 Bikes bruger et fast kreditloft, så risikoen pr. kunde er kendt på forhånd.</li>
+    <li><b>Styrker E (Ny cykel-plan):</b> Honda, JobRad og Mike's Bikes sælger kun ved nykøb – det fjerner meget af den adverse selection.</li>
+    <li><b>Advarer mod K (Fri service):</b> Mike's Bikes' "ubegrænset" og MIOO, der har strammet sine vilkår, viser presset fra storforbrugere.</li>
+    <li><b>Co-pay virker:</b> AppleCare og ChampionCare giver rabat eller selvrisiko i stedet for gratis – samme logik som feltet "Egenbetaling pr. besøg".</li>
+    <li><b>Access Club:</b> Rapha viser, at fællesskab kan bære et medlemskab – men kun med et stærkt brand og eventkapacitet.</li></ul></div></div>`;
+}
+
+/* ---------- start ---------- */
+function init(){
+  document.querySelectorAll('section.tab').forEach(s=>{ delete s.dataset.built; s.innerHTML=''; });
+  buildTop(); RES=computeAll(ST); showTab();
+}
+init();
+</script>
+</body>
+</html>
