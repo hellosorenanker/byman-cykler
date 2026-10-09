@@ -58,6 +58,12 @@ Sanity check: retrieved on Friday 2026-10-09, and the quick overview panel said 
 
 ## "Live hours later" — how this could work (unverified against theme files, nothing built)
 
+> **Orchestrator update (2026-10-09):**
+> - **This plan was not built.** Google's Places API policies forbid storing or caching Places content (only `place_id` is exempt), so a cached or stored copy of the hours isn't allowed.
+> - **What was built instead:** a daily *comparison* that never stores Google's data, with an email alert. See `guide/HOURS-CHECK.md` and `tools/check-google-hours.mjs`.
+> - **The cost note below is outdated.** Since 2025 Google uses free monthly caps per SKU instead of a $200 credit; opening hours are Place Details **Enterprise**, with 1,000 free a month.
+> - **The `api/` folder idea also no longer fits.** The page is a separate Vercel project with root `placeholder/build`.
+
 Right now `business.json` has hours typed in by hand from today's Google Maps check. Over time these will drift out of date (shops change hours seasonally, add holiday closures, etc.). A small, optional upgrade later would be to fetch the hours live from Google instead of hand-editing a file.
 
 **How it would work, in plain terms:**

@@ -1,0 +1,61 @@
+# Daily check: do the opening hours on the placeholder page still match Google?
+# If not, this opens a GitHub issue (which emails the repo owner).
+# Setup and explanation: placeholder/guide/HOURS-CHECK.md
+name: Check opening hours on Google
+
+on:
+  schedule:
+    - cron: "0 5 * * *" # every day at 05:00 UTC = 07:00 Danish summer time, 06:00 winter time
+  workflow_dispatch: # adds a "Run workflow" button in the Actions tab
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: opening-hours-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Compare the page's hours with Google
+        id: compare
+        env:
+          GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: node placeholder/tools/check-google-hours.mjs --report "$RUNNER_TEMP/report.md" --github-output "$GITHUB_OUTPUT"
+
+      - name: Open, update or close the alert issue
+        if: steps.compare.outputs.status == 'different' || steps.compare.outputs.status == 'same'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS: ${{ steps.compare.outputs.status }}
+          REPORT: ${{ runner.temp }}/report.md
+        run: |
+          LABEL="opening-hours"
+          TITLE="Opening hours on Google differ from the page"
+          gh label create "$LABEL" --color FF2E00 --description "Daily check of opening hours against Google" --force > /dev/null
+          NUM=$(gh issue list --label "$LABEL" --state open --json number --jq '.[0].number // empty')
+
+          if [ "$STATUS" = "different" ]; then
+            if [ -z "$NUM" ]; then
+              gh issue create --title "$TITLE" --label "$LABEL" --body-file "$REPORT"
+            else
+              # Only comment when the differences changed, so there's no daily repeat.
+              LAST=$(gh issue view "$NUM" --json body,comments --jq '([.body] + [.comments[].body]) | last' | tr -d '\r')
+              if [ "$LAST" != "$(tr -d '\r' < "$REPORT")" ]; then
+                gh issue comment "$NUM" --body-file "$REPORT"
+              fi
+            fi
+          elif [ -n "$NUM" ]; then
+            gh issue close "$NUM" --comment "The page and Google match again, so this closes automatically."
+          fi

@@ -368,24 +368,15 @@ In `business.json`, `"specialHours"` is a list. Add one entry per date:
 4. Rebuild **on the Mac**, check, commit and push.
    → A photo of at least 2400 px wide, in landscape, fills the full width by itself.
 
-### "Live hours later" (an idea, nothing built)
+### Daily check of the hours against Google (built)
 
-Today the hours are typed in by hand. Later they could come straight from Google:
+Every morning a GitHub job compares the page's hours with Google's. If they differ, you get an email (a GitHub issue), and the page is updated by you or by Claude.
 
-- **How:** Google's **Places API** can send a shop's normal and holiday hours. A small piece of server code on Vercel would ask Google, and the page would ask that code.
-- **Where the code would live:** with the new project's root directory set to `placeholder/build`, it would have to sit inside that folder, not next to the scanner's `api/lookup.js` (which must not be touched) *(ikke bekræftet)*.
-- **The secret key** would be kept in Vercel's settings, never in a file, because the repo is public. The code would keep the answer for 1–24 hours, so you'd normally stay inside Google's free monthly allowance.
-- **What you'd need to do:**
-  - create a Google Cloud account with a payment card;
-  - make an API key and restrict it to the Places API;
-  - put the key in Vercel's environment variables;
-  - choose how fresh the hours must be (once a day is plenty).
+- **Why it doesn't update by itself:** Google's terms don't allow storing its data.
+- **Cost:** free in practice, about 30 requests a month.
+- **Setup:** about 15 minutes, once. You make a Google key and store it as a GitHub secret.
 
-  The standard Google place ID also still has to be looked up, because we only have the map code.
-- **Pros:** the hours always match Google, holidays included.
-- **Cons:** a paid Google account to look after, and one more thing that can break. The page would then fall back to the typed hours.
-
-The full explanation is in [`research/data-sources.md`, section "Live hours later"](../research/data-sources.md#live-hours-later--how-this-could-work-unverified-against-theme-files-nothing-built).
+Step by step: [`guide/HOURS-CHECK.md`](HOURS-CHECK.md).
 
 ---
 
