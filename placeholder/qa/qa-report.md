@@ -4,6 +4,7 @@
 > - **S6:** keep "Vi er specialister i Specialized". Søren confirmed the wording.
 > - **M1:** the shop owns the temporary photo, so it may be published. It is still low resolution, so replacing it with a ≥ 2400 px photo stays recommended (`PHOTO_FILE` in `build.mjs`).
 > - **Path:** standalone page on Vercel at https://www.byman-cykler.dk/, committed and pushed to `main`.
+> - **Later the same day (Søren's request):** Vercel Web Analytics was added. It is cookieless and served from the site's own address (`/_vercel/insights/script.js`), and it never loads on localhost. So it is still "no third-party requests", but the page now counts visits.
 
 
 Written by A9 QA, 2026-10-09 (Wave 4). Reviewed: `placeholder/build/` (index.html generated 2026-10-09, styles.css, app.js, tokens.css, img/) against `design/ui-spec.md`, `design/section-map.md`, `design/tokens.css`, `research/theme-analysis.md`, `research/ux-research.md`, `research/data-sources.md` and `data/business.json`.

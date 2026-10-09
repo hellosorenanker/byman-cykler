@@ -24,6 +24,13 @@
 <link rel="icon" href="data:,">
 <link rel="preload" href="fonts/instrument-serif-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/space-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script>/* Vercel Web Analytics (VERCEL_ANALYTICS_SCRIPT in build.mjs): no cookies, anonymous counts. Only on the live site. */
+window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+(function (h) {
+  if (location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || /\.localhost$/.test(h)) return;
+  var s = document.createElement('script'); s.defer = true; s.src = "/_vercel/insights/script.js"; document.head.appendChild(s);
+})(location.hostname);
+</script>
 <script>/* no-js -> js; ?nojs=1 previews the page without JavaScript */ if (!/[?&]nojs=1(&|$)/.test(location.search)) document.documentElement.classList.replace('no-js', 'js');</script>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="styles.css">
@@ -175,9 +182,11 @@
     </div>
   </section>
 
-  <!-- A6 wordmark (on Shopify this slot is the theme's password section with the newsletter) -->
-  <div class="sec wordmark-row">
-    <p class="wordmark" translate="no">Byman Cykler</p>
+  <!-- A6 name band: "Byman Cykler." runs like the banner on the photo (Søren, 2026-10-09). With LOGO_FILE set, the logo stands still here instead.
+       On Shopify this slot is the theme's password section with the newsletter. -->
+  <div class="sec name-scroll name-scroll--contained" id="name-scroll">
+    <div class="name-scroll__text" aria-hidden="true" translate="no"><div class="hero__track"><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span></div></div>
+    <button class="hero__pause name-scroll__pause" type="button" aria-pressed="false" aria-label="Sæt rulleteksten nederst på siden på pause"><i aria-hidden="true"></i></button>
   </div>
 </main>
 
@@ -189,7 +198,7 @@
     <div class="cell"><ul><li><a class="inline-link" href="tel:+4535425156">35 42 51 56</a></li><li><a class="inline-link" href="mailto:bymancykler@gmail.com">bymancykler@gmail.com</a></li></ul></div>
     <div class="cell"><ul><li><a class="menu-link" href="https://www.instagram.com/byman.cykler/">Instagram</a></li><li><a class="menu-link" href="https://www.facebook.com/byman.cykler.dk/">Facebook</a></li></ul></div>
   </div>
-  <p class="small legal">BYMAN CYKLER I/S · CVR 14579656</p>
+  <p class="small legal">BYMAN CYKLER I/S · CVR 14579656 · Vi tæller besøg anonymt og uden cookies.</p>
 </footer>
 
 <script type="application/json" id="hours-data">{"timeZone":"Europe/Copenhagen","noticeDays":14,"special":[],"strings":{"open":"Åbent nu · lukker {close}","opensLater":"Lukket · åbner i dag {open}","opensTomorrow":"Lukket · åbner i morgen {open}","opensOn":"Lukket · åbner {day} {open}","closedToday":"Lukket i dag","notice":"Bemærk: ændrede åbningstider {date}: {hours}","specialHeading":"Særlige åbningstider","closed":"Lukket","today":"i dag","days":["søndag","mandag","tirsdag","onsdag","torsdag","fredag","lørdag"],"months":["januar","februar","marts","april","maj","juni","juli","august","september","oktober","november","december"]}}</script>

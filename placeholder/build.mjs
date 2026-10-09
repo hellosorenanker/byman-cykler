@@ -121,6 +121,12 @@ const LOGO_FILE = null;
 // og:url and the share picture. While null, the build warns and leaves the picture out.
 const PAGE_URL = 'https://www.byman-cykler.dk/';   // Søren, 2026-10-09: the standalone page goes live here (www is primary)
 
+// Vercel Web Analytics (Søren, 2026-10-09): anonymous visitor counts without cookies.
+// It must ALSO be switched on in the Vercel project: Analytics -> Enable (then redeploy).
+// The script only exists on Vercel, so the page never loads it on localhost or from a file.
+// If Vercel shows a project-specific script path, you may paste it here instead. null = no analytics.
+const VERCEL_ANALYTICS_SCRIPT = '/_vercel/insights/script.js';
+
 // Web fonts: the real Press fonts, stored in assets/fonts/ (no Google request; Søren approved the files).
 // Every file in assets/fonts/ (also the OFL licence .txt files) is copied to build/fonts/.
 // preload: true = the browser fetches it straight away (used for most of the text).
@@ -279,7 +285,7 @@ const S = {};
 }
 // Every key the page needs, with the {placeholders} it must contain.
 const REQUIRED_STRINGS = {
-  'meta.title': [], 'meta.description': [], 'hero.eyebrow': [], 'hero.headline': [], 'hero.scroll.pause': [], 'hero.intro': [],
+  'meta.title': [], 'meta.description': [], 'hero.eyebrow': [], 'hero.headline': [], 'hero.scroll.pause': [], 'band.scroll.pause': [], 'footer.privacy': [], 'hero.intro': [],
   'hours.heading': [], 'hours.special.heading': [], 'hours.status.open': ['close'], 'hours.status.opensLater': ['open'],
   'hours.status.opensTomorrow': ['open'], 'hours.status.opensOn': ['day', 'open'], 'hours.status.closedToday': [],
   'hours.notice.special': ['date', 'hours'], 'hours.source': [], 'hours.closed': [], 'hours.today': [],
@@ -656,6 +662,17 @@ const heroHtml = photo
   </section>`
   : `<div class="sec name-band" aria-hidden="true" translate="no">${esc(scrollText)}</div>`;
 
+// Bottom of the page: the same moving name as on the photo, same size and speed, edge to edge.
+// It has its own pause button (WCAG 2.2.2). A logo file (LOGO_FILE) is shown still instead.
+const wordmarkRow = LOGO_FILE
+  ? `<div class="sec wordmark-row">
+    ${wordmark}
+  </div>`
+  : `<div class="sec name-scroll${photo && photo.mode === 'contained' ? ' name-scroll--contained' : ''}" id="name-scroll">
+    <div class="name-scroll__text" aria-hidden="true" translate="no"><div class="hero__track">${`<span>${esc(scrollText)}</span>`.repeat(12)}</div></div>
+    <button class="hero__pause name-scroll__pause" type="button" aria-pressed="false" aria-label="${esc(S['band.scroll.pause'])}"><i aria-hidden="true"></i></button>
+  </div>`;
+
 const ctas = [
   tel ? `<div class="cell"><a class="btn btn--primary" href="${esc(tel)}">${esc(S['cta.call'])}</a></div>` : '',
   `<div class="cell"><a class="btn" href="${esc(mapsUrl)}">${esc(S['cta.directions'])}</a></div>`,
@@ -678,6 +695,13 @@ const head = [
   photo && PAGE_URL ? `<meta property="og:image" content="${esc(abs(photo.og.url))}">\n<meta property="og:image:width" content="${photo.og.w}">\n<meta property="og:image:height" content="${photo.og.h}">\n<meta property="og:image:alt" content="${esc(S['photo.alt'])}">` : '',
   `<link rel="icon" href="data:,">`,
   ...FONTS.filter((f) => f.preload).map((f) => `<link rel="preload" href="fonts/${f.file}" as="font" type="font/woff2" crossorigin>`),
+  VERCEL_ANALYTICS_SCRIPT ? `<script>/* Vercel Web Analytics (VERCEL_ANALYTICS_SCRIPT in build.mjs): no cookies, anonymous counts. Only on the live site. */
+window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+(function (h) {
+  if (location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || /\\.localhost$/.test(h)) return;
+  var s = document.createElement('script'); s.defer = true; s.src = ${JSON.stringify(VERCEL_ANALYTICS_SCRIPT)}; document.head.appendChild(s);
+})(location.hostname);
+</script>` : '',
   `<script>/* no-js -> js; ?nojs=1 previews the page without JavaScript */ if (!/[?&]nojs=1(&|$)/.test(location.search)) document.documentElement.classList.replace('no-js', 'js');</script>`,
   `<link rel="stylesheet" href="tokens.css">`,
   `<link rel="stylesheet" href="styles.css">`,
@@ -685,6 +709,12 @@ const head = [
     `@font-face { font-family: "${f.family}"; src: url(fonts/${f.file}) format("woff2"); font-weight: ${f.weight}; font-style: normal; font-display: swap; }`).join('\n')}\n</style>` : '',
   `<script type="application/ld+json">\n${scriptJson(ld, true)}\n</script>`,
 ].filter(Boolean).join('\n');
+
+if (VERCEL_ANALYTICS_SCRIPT !== null && !/^\/[\w\/.-]+\.js$/.test(VERCEL_ANALYTICS_SCRIPT)) {
+  fail('VERCEL_ANALYTICS_SCRIPT i build.mjs skal være en sti på siden, fx /_vercel/insights/script.js (eller null).',
+       'VERCEL_ANALYTICS_SCRIPT must be a path on the site like /_vercel/insights/script.js (or null).');
+}
+stopIfErrors();
 
 const html = `<!doctype html>
 <!--
@@ -759,10 +789,9 @@ ${head}
     </div>
   </section>
 
-  <!-- A6 wordmark (on Shopify this slot is the theme's password section with the newsletter) -->
-  <div class="sec wordmark-row">
-    ${wordmark}
-  </div>
+  <!-- A6 name band: "Byman Cykler." runs like the banner on the photo (Søren, 2026-10-09). With LOGO_FILE set, the logo stands still here instead.
+       On Shopify this slot is the theme's password section with the newsletter. -->
+  ${wordmarkRow}
 </main>
 
 <!-- A7 footer -->
@@ -773,7 +802,7 @@ ${head}
     <div class="cell"><ul><li>${phoneLink('inline-link')}</li>${email ? `<li>${mailLink('inline-link')}</li>` : ''}</ul></div>
     <div class="cell"><ul>${socials.map(([k, u]) => `<li><a class="menu-link" href="${esc(u)}">${SOCIAL_LABELS[k]}</a></li>`).join('')}</ul></div>
   </div>
-  <p class="small legal">${esc(b.legalName || name)}${b.cvr ? ` · CVR ${esc(b.cvr)}` : ''}</p>
+  <p class="small legal">${esc(b.legalName || name)}${b.cvr ? ` · CVR ${esc(b.cvr)}` : ''}${VERCEL_ANALYTICS_SCRIPT ? ` · ${esc(S['footer.privacy'])}` : ''}</p>
 </footer>
 
 <script type="application/json" id="hours-data">${scriptJson(hoursData)}</script>

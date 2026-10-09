@@ -5,7 +5,7 @@
      1. the status strip at the top ("Åbent nu · lukker 16.00", ui-spec §6.4)
      2. today's row in the hours table (bold, a dot, hidden "(i dag)", §6.3)
      3. the special-hours notice, from 14 days before the date (§6.5)
-     4. the pause button for the scrolling name (§4.6)
+     4. the pause buttons for the scrolling name on the photo and the name band (§4.6)
    The clock is always Copenhagen time (Intl, time zone Europe/Copenhagen), never
    the visitor's own time zone. Weekly hours are read from the hours table (as on
    the Shopify page); special hours and texts come from <script id="hours-data">,
@@ -25,16 +25,17 @@
   var html = document.documentElement;
   if (!html.classList.contains('js')) return;   // ?nojs=1 preview
 
-  /* ---------- 4. Pause button ---------- */
-  var hero = document.getElementById('hero');
-  var pause = hero && hero.querySelector('.hero__pause');
-  if (pause) {
+  /* ---------- 4. Pause buttons: the name on the photo, and the name band at the bottom ---------- */
+  ['hero', 'name-scroll'].forEach(function (id) {
+    var box = document.getElementById(id);
+    var pause = box && box.querySelector('.hero__pause');
+    if (!pause) return;
     pause.addEventListener('click', function () {
       var paused = pause.getAttribute('aria-pressed') !== 'true';
       pause.setAttribute('aria-pressed', String(paused));
-      hero.classList.toggle('is-paused', paused);
+      box.classList.toggle('is-paused', paused);
     });
-  }
+  });
 
   /* ---------- Setup for the hours ---------- */
   var status = document.getElementById('status');

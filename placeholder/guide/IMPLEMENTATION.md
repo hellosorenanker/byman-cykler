@@ -32,6 +32,7 @@ Written by A10 on 2026-10-09 for Søren. Simple English, with the Danish menu na
   - [Step 6. In Shopify, make the myshopify.com address primary](#step-6-in-shopify-make-the-myshopifycom-address-primary)
   - [Step 7. Change the DNS at One.com](#step-7-change-the-dns-at-onecom)
   - [Step 8. Wait, then check](#step-8-wait-then-check)
+  - [Step 9. Turn on visitor statistics (Vercel Web Analytics)](#step-9-turn-on-visitor-statistics-vercel-web-analytics)
   - [If something goes wrong: the rollback](#if-something-goes-wrong-the-rollback)
   - [Launch day: give the domain back to Shopify](#launch-day-give-the-domain-back-to-shopify)
 - [The two paths compared, in plain words](#the-two-paths-compared-in-plain-words)
@@ -225,6 +226,20 @@ About 10 minutes.
    - the hours table, the logos and the moving name.
 4. **Check Google later:** your Google Business Profile's website link (`byman-cykler.dk`) now lands on the new page.
 
+### Step 9. Turn on visitor statistics (Vercel Web Analytics)
+
+The page already contains the counting script. It only starts counting once you switch it on in Vercel:
+
+1. In Vercel, open the **new** project (the one with root directory `placeholder/build`) → **Analytics** in the left menu → **Enable**.
+2. Make one new deployment so Vercel adds the counting addresses. Either go to **Deployments → ⋯ → Redeploy** on the latest one, or ask Claude to push any small change.
+3. Open https://www.byman-cykler.dk on your phone, then look at **Analytics** in Vercel. Visits show up within a few minutes.
+
+Good to know:
+- **No cookies:** Vercel counts anonymously and keeps no cookies or IDs on visitors' devices, so the page still needs no cookie banner. Vercel describes this in its privacy notes: https://vercel.com/docs/analytics/privacy-policy
+- **Free plan:** 50,000 page views a month are included. If that's ever exceeded, counting pauses, and nothing is charged. You can see one month back. https://vercel.com/docs/analytics/limits-and-pricing
+- **Your Mac preview never counts:** the script only loads on the live site.
+- **Turning it off:** click **Disable** under Analytics in Vercel. To remove the script as well, set `VERCEL_ANALYTICS_SCRIPT = null` in `build.mjs` and rebuild.
+
 ### If something goes wrong: the rollback
 
 Put the old values back. Visitors then see the Shopify password page again within about an hour.
@@ -382,6 +397,7 @@ Step by step: [`guide/HOURS-CHECK.md`](HOURS-CHECK.md).
 
 ## Checklist before going live
 
+- [ ] Visitor statistics switched on in Vercel (Step 9), and a visit shows up under Analytics.
 - [ ] **Swap in the real photo.** The temporary one is low resolution and must be replaced before going live.
   - **The photo:**
     - landscape, in daylight;

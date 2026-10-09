@@ -70,6 +70,7 @@ hero.headline = Butik og værksted er åbne. Webshoppen er på vej.
 hero.headline.alt1 = Kom forbi butikken – webshoppen er på vej
 hero.headline.alt2 = Webshoppen er på vej. Indtil da: kom forbi, ring eller skriv.
 hero.scroll.pause = Sæt rulleteksten på pause
+band.scroll.pause = Sæt rulleteksten nederst på siden på pause
 hero.intro = Vi er i gang med at bygge en ny webshop. Indtil den åbner, er butikken og værkstedet klar til at hjælpe dig med køb, rådgivning og service.
 hours.heading = Åbningstider
 hours.special.heading = Særlige åbningstider
@@ -105,5 +106,6 @@ newsletter.text = Efterlad din e-mail, så skriver vi til dig, den dag webshoppe
 newsletter.button = Giv mig besked
 newsletter.email.label = Din e-mail
 footer.text = Byman Cykler – personlig rådgivning, salg og værksted for cykelentusiaster i København.
+footer.privacy = Vi tæller besøg anonymt og uden cookies.
 photo.alt = Mørkegrå butiksfacade med et hvidt BYMAN-logo i en rund ramme og teksten CYKLER i mindre bogstaver under – indgangen til Byman Cykler på Øster Farimagsgade.
 ```

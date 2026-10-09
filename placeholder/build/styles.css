@@ -290,6 +290,27 @@ img, svg, picture { display: block; }
 .wordmark__logo { margin: 0 auto; max-width: 100%; max-height: 40vh; width: auto; height: auto; color: var(--color-text); }
 svg.wordmark__logo { width: 100%; }
 
+/* ---------- A6 name band (Søren, 2026-10-09): "Byman Cykler." runs like the banner on the photo ---------- */
+/* Same font, size and speed as .hero__scroll (it reuses .hero__track), but edge to edge and with its own
+   pause button. Still and centred without JS or with reduced motion, like the photo banner. */
+.name-scroll {
+  position: relative; overflow: hidden; white-space: nowrap;
+  --name-scroll-pad: var(--space-md);                             /* 28px; 56px on desktop (below) */
+  padding: var(--name-scroll-pad) 0 calc(var(--name-scroll-pad) + 0.15em);   /* the extra 0.15em keeps the "y" descenders visible */
+  color: var(--color-text); font-family: var(--font-heading); font-weight: var(--font-weight-heading);
+  font-size: var(--hero-scroll-text-size); line-height: var(--line-height-heading); letter-spacing: var(--letter-spacing-heading);
+}
+@media (min-width: 1024px) {
+  .name-scroll { --name-scroll-pad: var(--space-lg); }
+  .name-scroll--contained { font-size: var(--hero-scroll-size-contained); }
+}
+.js .name-scroll.is-paused .hero__track { animation-play-state: paused; }
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .js .name-scroll:hover .hero__track { animation-play-state: paused; }
+}
+/* The pause button sits at the left, centred in the band (the rest of its look comes from .hero__pause) */
+.js .name-scroll__pause { top: 50%; left: calc(var(--page-padding) - 5.5px); transform: translateY(-50%); }
+
 /* ---------- A7 footer ---------- */
 .foot { grid-template-columns: 1fr; border-bottom: var(--border-width) solid var(--color-line); }
 @media (min-width: 768px) { .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
