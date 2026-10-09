@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="da" data-fonts="fallback" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI test: Layout A styled (A7)</title>
+<!--
+  A7 UI test, NOT the build. A visual reference for ui-spec.md: if this page and the spec
+  disagree, the spec wins. Data is copied by hand from data/business.json and the
+  ## Strings block in design/copy-da.md.
+
+  Open over http://localhost:3002/design/ui-tests/page.html  Test switches (combine with &):
+    ?photo=temp (default, contained) | full (full-bleed layout, simulated with the temp photo) | none
+    ?email=0              no email
+    ?n=7|12|25            number of logos (real logos repeated)
+    ?special=soon|long|today   special hours in 5 days / several long lines / today
+    ?now=2026-10-09T10:30 simulated Copenhagen time (also: 2026-10-11T12:00 = Sunday)
+    ?nojs=1               the page without its script (no-JS state)
+    ?reduce=1             behave as prefers-reduced-motion: reduce
+    ?small=b|a            preview contrast option B (#e02800) or A (#000000) from ui-spec §10
+    ?focus=1              show the focus ring on every link and button at once
+-->
+<script>
+  /* Test harness flag: skip the page script with ?nojs=1. The real build always does this swap. */
+  if (!/[?&]nojs=1/.test(location.search)) document.documentElement.classList.replace('no-js', 'js');
+</script>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* =====================================================================
+   Spec CSS (ui-spec.md). Section numbers = ui-spec sections.
+   ===================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--color-bg); color: var(--color-text-small);
+  font-family: var(--font-body); font-size: var(--font-size-base); font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body); letter-spacing: var(--letter-spacing-body);
+  -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+}
+::selection { background: var(--color-selection-bg); color: var(--color-selection-text); }
+p, figure, address, ul { margin: 0; }
+address { font-style: normal; }
+h1, h2 {
+  margin: 0; color: var(--color-text);
+  font-family: var(--font-heading); font-weight: var(--font-weight-heading);
+  line-height: var(--line-height-heading); letter-spacing: var(--letter-spacing-heading);
+  text-transform: var(--text-transform-heading);
+}
+a { color: inherit; }
+img, svg { display: block; }
+/* §10 Headings are "large text" (>= 24px) only from 1024px. Below that, the 21.88px ones count as small text. */
+@media (max-width: 1023.98px) { .info h2, .title-row h2, .brand--more p { color: var(--color-text-small); } }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+/* §3 Every section: a 1px pink bottom line, no margin between sections */
+.sec { border-bottom: var(--border-width) solid var(--color-line); }
+/* §3 Grid look: the container is pink, 1px gaps, white cells */
+.grid { display: grid; gap: var(--grid-gap); background: var(--color-line); }
+.grid > .cell { background: var(--color-bg); min-width: 0; }
+
+/* §8 Focus: 2px red ring, 3px away from the element */
+:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+
+/* ---------- §1 Labels shared by eyebrow and status ---------- */
+.label {
+  font-family: var(--font-label); font-size: var(--subheading-size); line-height: var(--line-height-subheading);
+  letter-spacing: var(--letter-spacing-label); text-transform: var(--text-transform-label);
+}
+.dot::before {
+  content: ""; flex: none; width: var(--subheading-dot-size); height: var(--subheading-dot-size);
+  border-radius: 50%; background: currentColor;
+}
+
+/* ---------- A1 status strip (§6) ---------- */
+.strip { display: flex; justify-content: center; padding: 0 var(--page-padding); text-align: center; }
+.status {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2xs);
+  min-height: var(--tap-target); text-decoration: none;
+}
+@media (pointer: fine) { .status { min-height: var(--announcement-height); } }
+.status::after { content: "\00a0\2193"; }
+.status:focus-visible { outline-offset: calc(var(--focus-ring-width) * -1); }   /* ring inside: the strip touches the top of the window */                       /* " ↓": the hours are further down */
+.status[data-state]::before {
+  content: ""; flex: none; width: var(--status-dot-size); height: var(--status-dot-size); border-radius: 50%;
+}
+.status[data-state="open"]::before { background: currentColor; }
+.status[data-state="closed"]::before { box-shadow: inset 0 0 0 var(--status-ring-width) currentColor; }
+
+/* ---------- A2 hero photo (§4) ---------- */
+.hero { padding: var(--media-padding); }
+.hero__frame {
+  position: relative; margin: 0 auto; overflow: hidden; isolation: isolate;
+  border-radius: var(--radius-media); background: var(--color-media-placeholder);
+}
+.hero__frame img { width: 100%; height: 100%; object-fit: cover; object-position: var(--photo-focus); }
+/* Full-bleed (source >= 2400px wide, landscape): natural shape on mobile (max 3:2), 16:9 from 1024px */
+.hero--full .hero__frame { aspect-ratio: var(--photo-ratio-mobile); }
+@media (min-width: 1024px) { .hero--full .hero__frame { aspect-ratio: var(--hero-aspect); } }
+/* Contained (anything smaller): never wider than 1.5x the file, never taller than 75vh, never cropped */
+.hero--contained .hero__frame {
+  aspect-ratio: var(--photo-ratio);
+  width: min(100%, var(--photo-cap), calc(var(--photo-contained-max-h) * var(--photo-ratio)));
+}
+/* Scrolling name (Press "Image with scrolling text"): decorative, aria-hidden */
+.hero__scroll {
+  position: absolute; left: 0; right: 0; bottom: var(--hero-scroll-bottom); z-index: 1;
+  overflow: hidden; pointer-events: none; white-space: nowrap;
+  color: var(--color-text); font-family: var(--font-heading); font-weight: var(--font-weight-heading);
+  font-size: var(--hero-scroll-text-size); line-height: var(--line-height-heading); letter-spacing: var(--letter-spacing-heading);
+}
+@media (min-width: 1024px) { .hero--contained .hero__scroll { font-size: var(--hero-scroll-size-contained); } }
+.hero__track { display: flex; justify-content: center; }
+.hero__track span { flex: none; padding-right: 0.3em; }
+.hero__track span + span { display: none; }                  /* no JS / reduced motion: one copy, centred */
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero__track { justify-content: flex-start; width: max-content; animation: hero-scroll calc(var(--hero-scroll-unit) * 6) linear infinite; }
+  .js .hero__track span + span { display: block; }
+  .js .hero.is-paused .hero__track { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .js .hero__frame:hover .hero__track { animation-play-state: paused; }
+}
+@keyframes hero-scroll { to { transform: translateX(-50%); } }
+/* Pause button (WCAG 2.2.2). Only when the text moves. */
+.hero__pause { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero__pause {
+    position: absolute; top: calc(var(--media-content-padding) - 5.5px); left: calc(var(--media-content-padding) - 5.5px); z-index: 2;
+    display: grid; place-items: center; width: var(--tap-target); height: var(--tap-target); padding: 0;
+    border: 0; border-radius: var(--radius-button); background: none; color: var(--color-text); cursor: pointer;
+  }
+}
+/* the visible circle is 33px (Press button height); the button itself is 44px to tap */
+.hero__pause::before { content: ""; position: absolute; inset: calc((var(--tap-target) - var(--button-height)) / 2);
+  border: var(--border-width) solid currentColor; border-radius: var(--radius-button); background: var(--color-bg); }
+.hero__pause i { position: relative; display: block; width: 10px; height: 12px; border-left: 3px solid currentColor; border-right: 3px solid currentColor; }
+.hero__pause[aria-pressed="true"] i { width: 0; height: 0; border-style: solid; border-width: 6px 0 6px 10px; border-color: transparent transparent transparent currentColor; margin-left: 3px; }
+/* No photo: the name as a static Press "Scrolling text" band */
+.name-band { padding: var(--space-sm) var(--page-padding); text-align: center; overflow: hidden; white-space: nowrap;
+  color: var(--color-text); font: var(--font-weight-heading) var(--hero-scroll-text-size)/var(--line-height-heading) var(--font-heading); letter-spacing: var(--letter-spacing-heading); }
+
+/* ---------- A3 eyebrow, h1, intro ---------- */
+.intro { text-align: center; padding: var(--space-md) var(--page-padding); }
+.eyebrow { display: inline-flex; align-items: center; gap: var(--space-2xs); margin-bottom: var(--subheading-margin-bottom); }
+.intro h1 { font-size: var(--heading-feature-size); margin: 0 auto; text-wrap: balance; }
+.intro .lede, .title-row .lede { margin: var(--space-sm) auto 0; max-width: 75ch; }
+@media (min-width: 1024px) {
+  .intro h1 { max-width: var(--text-width-feature); }
+  .intro .lede, .title-row .lede { max-width: min(var(--text-width-page), 75ch); }
+}
+
+/* ---------- A4 buttons ---------- */
+.ctas { grid-template-columns: 1fr; border-bottom: var(--border-width) solid var(--color-line); }
+.ctas > .cell { padding: var(--space-xs) var(--page-padding); }
+@media (min-width: 768px) { .ctas { grid-template-columns: repeat(var(--cta-count, 3), minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .ctas > .cell { padding: var(--space-sm) var(--page-padding); } }
+.btn {
+  display: flex; align-items: center; justify-content: center; width: 100%; min-height: var(--tap-target);
+  padding: var(--button-padding-y) var(--button-padding-x); text-align: center; text-decoration: none;
+  font-family: var(--button-font); font-size: var(--button-font-size); line-height: var(--button-line-height);
+  letter-spacing: var(--button-letter-spacing); text-transform: var(--button-text-transform);
+  color: var(--color-text-small); background: var(--color-button-secondary-bg);
+  border: var(--button-border-width) solid currentColor; border-radius: var(--button-radius);
+}
+.btn::after { content: var(--button-arrow); }
+.btn--primary { color: var(--color-button-text-primary); background: var(--color-button-bg-primary); border-color: var(--color-button-bg-primary); }
+@media (min-width: 1024px) and (pointer: fine) { .btn { min-height: var(--button-height); } }
+
+/* ---------- A4 info cells: hours, contact, address ---------- */
+.info { grid-template-columns: 1fr; }
+.info > .cell { padding: var(--space-md) var(--page-padding); }
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .info { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .info > .cell--hours { grid-row: span 2; }
+}
+@media (min-width: 1024px) { .info { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.info h2 { font-size: var(--heading-secondary-size); margin-bottom: var(--space-sm); scroll-margin-top: var(--space-sm); }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td {
+  padding: var(--hours-cell-pad-y) 0; border-top: var(--border-width) solid var(--color-line);
+  text-align: left; vertical-align: top; font-weight: inherit;
+}
+.table tr:last-child > * { border-bottom: var(--border-width) solid var(--color-line); }
+.hours td { text-align: right; white-space: nowrap; padding-left: var(--space-sm); }
+.hours tr.is-today { font-weight: var(--today-weight); }
+.hours tr.is-today th::before {
+  content: ""; display: inline-block; width: var(--subheading-dot-size); height: var(--subheading-dot-size);
+  border-radius: 50%; background: currentColor; margin-right: var(--space-2xs); vertical-align: 0.05em;
+}
+.details th { width: var(--hours-label-width); padding-right: var(--space-xs); }
+.details td { overflow-wrap: anywhere; }
+@media (pointer: coarse) { .details th, .details td { padding-block: calc((var(--tap-target) - 1em * var(--line-height-body)) / 2); } }
+.small { font-size: var(--font-size-sm); line-height: var(--line-height-body); }
+.hours-source { margin-top: var(--space-xs); }
+.notice {
+  border: var(--notice-border-width) solid currentColor; padding: var(--notice-padding);
+  margin-bottom: var(--space-sm);
+}
+.notice__title { margin-bottom: var(--space-xs); }
+.notice__table td { text-align: right; white-space: nowrap; padding-left: var(--space-sm); }
+.notice__table tr:last-child > * { border-bottom: 0; }
+.notice__table .notice__note td { border-top: 0; padding-top: 0; text-align: left; white-space: normal; padding-left: 0; }
+.inline-link { text-decoration-line: underline; text-decoration-thickness: var(--text-border-width); text-underline-offset: 0.2em; }
+.textlink { position: relative; display: inline-block; text-decoration: none; text-transform: var(--link-text-transform); }
+/* §8 bigger tap area without moving anything: an invisible 44px-tall layer over the link */
+.hit { position: relative; }
+.hit::before { content: ""; position: absolute; left: 0; right: 0; top: calc((100% - var(--tap-target)) / 2); bottom: calc((100% - var(--tap-target)) / 2); }
+.textlink span { border-bottom: var(--link-border-width) solid currentColor; padding-bottom: var(--link-padding-bottom); }
+.textlink span::after { content: var(--link-arrow); }
+.stack > * + * { margin-top: var(--space-sm); }
+.stack > .textlink-wrap { margin-top: var(--space-xs); }
+
+/* ---------- A5 brands (§5) ---------- */
+.title-row { text-align: center; padding: var(--section-header-padding-top) var(--page-padding) var(--section-header-padding-bottom); }
+.title-row h2 { font-size: var(--heading-standard-size); }
+.brand-grid { list-style: none; padding: 0; grid-template-columns: repeat(var(--brand-cols), minmax(0, 1fr)); }
+.brand { height: var(--brand-cell-h); padding: var(--brand-cell-pad); display: flex; align-items: center; justify-content: center; }
+.logo {
+  --h: calc(var(--brand-logo-h) * var(--scale, 1) * var(--badge, 1));
+  flex: none; width: min(calc(var(--h) * var(--ratio)), var(--brand-logo-max-w)); height: auto; aspect-ratio: var(--ratio);
+  color: var(--color-text);
+}
+.logo--badge { --badge: var(--brand-badge-factor); }
+.logo--png { background-color: currentColor;
+  -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center; }
+.logo--png img { display: none; }
+@supports not ((-webkit-mask-image: none) or (mask-image: none)) {
+  .logo--png { background: none; }
+  .logo--png img { display: block; width: 100%; height: 100%; object-fit: contain; filter: brightness(0); }
+}
+.brand--more { grid-column: span var(--span-2); }
+.brand--more p { text-align: center; text-wrap: balance; color: var(--color-text);
+  font: var(--font-weight-heading) var(--brand-more-size)/var(--line-height-heading) var(--font-heading); letter-spacing: var(--letter-spacing-heading); }
+@media (min-width: 768px) { .brand--more { grid-column: span var(--span-4); } }
+@media (min-width: 1024px) { .brand-grid--many { --brand-cell-h: var(--brand-cell-h-many); --brand-logo-h: var(--brand-logo-h-many); } }
+@media (min-width: 1280px) {
+  .brand-grid--many { --brand-cols: var(--brand-cols-many); }
+  .brand-grid--many .brand--more { grid-column: span var(--span-6); }
+}
+
+/* ---------- A6 wordmark (standalone; Shopify shows main-password here) ---------- */
+.wordmark-row { container-type: inline-size; padding: var(--space-sm) var(--page-padding); }
+.wordmark {
+  text-align: center; color: var(--color-text); text-wrap: balance;
+  font-family: var(--font-heading); font-weight: var(--font-weight-heading); line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-heading); padding-bottom: 0.2em;   /* room for the y descenders */
+  font-size: calc(100vw / (var(--wordmark-divisor) + 0.4));      /* fallback without container units */
+  font-size: calc(100cqi / var(--wordmark-divisor));
+}
+
+/* ---------- A7 footer ---------- */
+.foot { grid-template-columns: 1fr; border-bottom: var(--border-width) solid var(--color-line); }
+@media (min-width: 768px) { .foot { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .foot { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.foot > .cell { padding: var(--space-sm) var(--page-padding) var(--space-md); }
+.foot ul { list-style: none; padding: 0; }
+.menu-link { display: inline-flex; align-items: center; min-height: var(--tap-target); text-decoration: none; text-transform: var(--link-text-transform); }
+@media (pointer: fine) { .menu-link { min-height: 0; } }
+.foot .inline-link { display: inline-flex; align-items: center; min-height: var(--tap-target); }
+@media (pointer: fine) { .foot .inline-link { display: inline; min-height: 0; } }
+.legal { padding: var(--space-sm) var(--page-padding); }
+
+/* ---------- test-only helpers ---------- */
+html.force-reduce .hero__track { animation: none !important; width: auto !important; justify-content: center !important; }
+html.force-reduce .hero__track span + span { display: none !important; }
+html.force-reduce .hero__pause { display: none !important; }
+html.small-b { --color-text-small: #e02800; --color-button-bg-primary: #e02800; }
+/* ?focus=1 draws the focus ring on every link and button at once (headless Chrome can't Tab) */
+html.show-focus a, html.show-focus button { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+html.show-focus .status { outline-offset: calc(var(--focus-ring-width) * -1); }
+html.small-a { --color-text-small: #000000; --color-button-text-primary: #000000; }
+</style>
+</head>
+<body>
+
+<!-- A1 status strip. No-JS / before JS: a neutral link to the hours, never "Åbent nu". -->
+<div class="sec strip">
+  <a class="status label" id="status" href="#aabningstider">Åbningstider</a>
+</div>
+
+<main>
+  <!-- A2 hero. The build picks hero--contained or hero--full from the file's pixel size (§4). -->
+  <section class="sec hero hero--contained" id="hero" style="--photo-ratio: 515 / 388; --photo-ratio-mobile: 515 / 388; --photo-cap: 772px">
+    <figure class="hero__frame">
+      <img src="../../assets/img/facade-placeholder.png" srcset="../../assets/img/facade-placeholder.png 515w"
+           sizes="(min-width: 1024px) min(calc(100vw - 28px), 772px), calc(100vw - 14px)"
+           width="515" height="388" fetchpriority="high" decoding="async"
+           alt="Mørkegrå butiksfacade med et hvidt BYMAN-logo i en rund ramme og teksten CYKLER i mindre bogstaver under – indgangen til Byman Cykler på Øster Farimagsgade.">
+      <div class="hero__scroll" aria-hidden="true"><div class="hero__track"><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span><span>Byman Cykler.</span></div></div>
+      <button class="hero__pause" type="button" aria-pressed="false" aria-label="Sæt rulleteksten på pause"><i aria-hidden="true"></i></button>
+    </figure>
+  </section>
+
+  <!-- A3 -->
+  <section class="sec intro" aria-labelledby="h1">
+    <p class="eyebrow label dot">Ny webshop på vej</p>
+    <h1 id="h1">Butik og værksted er åbne. Webshoppen er på vej.</h1>
+    <p class="lede">Vi er i gang med at bygge en ny webshop. Indtil den åbner, er butikken og værkstedet klar til at hjælpe dig med køb, rådgivning og service.</p>
+  </section>
+
+  <!-- A4 buttons -->
+  <div class="grid ctas" id="ctas" style="--cta-count: 3">
+    <div class="cell"><a class="btn btn--primary" href="tel:+4535425156">Ring til os</a></div>
+    <div class="cell"><a class="btn" href="https://www.google.com/maps/search/?api=1&amp;query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98">Find vej</a></div>
+    <div class="cell" data-email><a class="btn" href="mailto:bymancykler@gmail.com">Skriv til os</a></div>
+  </div>
+
+  <!-- A4 info -->
+  <div class="sec grid info">
+    <section class="cell cell--hours" aria-labelledby="aabningstider">
+      <h2 id="aabningstider">Åbningstider</h2>
+      <div class="notice" id="notice" role="note" hidden></div>
+      <table class="table hours" id="hours" aria-labelledby="aabningstider">
+        <tbody>
+          <tr data-day="1" data-open="09:00" data-close="16:00"><th scope="row">Mandag</th><td><time>09.00</time>–<time>16.00</time></td></tr>
+          <tr data-day="2" data-open="09:00" data-close="16:00"><th scope="row">Tirsdag</th><td><time>09.00</time>–<time>16.00</time></td></tr>
+          <tr data-day="3" data-open="11:00" data-close="17:00"><th scope="row">Onsdag</th><td><time>11.00</time>–<time>17.00</time></td></tr>
+          <tr data-day="4" data-open="09:00" data-close="16:00"><th scope="row">Torsdag</th><td><time>09.00</time>–<time>16.00</time></td></tr>
+          <tr data-day="5" data-open="09:00" data-close="16:00"><th scope="row">Fredag</th><td><time>09.00</time>–<time>16.00</time></td></tr>
+          <tr data-day="6" data-open="11:00" data-close="14:00"><th scope="row">Lørdag</th><td><time>11.00</time>–<time>14.00</time></td></tr>
+          <tr data-day="0" data-closed><th scope="row">Søndag</th><td>Lukket</td></tr>
+        </tbody>
+      </table>
+      <p class="small hours-source">Åbningstider fra Google</p>
+    </section>
+    <section class="cell" aria-labelledby="kontakt">
+      <h2 id="kontakt">Kontakt</h2>
+      <table class="table details" id="details">
+        <tbody>
+          <tr><th scope="row">Telefon</th><td><a class="inline-link" href="tel:+4535425156">35 42 51 56</a></td></tr>
+          <tr data-email><th scope="row">E-mail</th><td><a class="inline-link" href="mailto:bymancykler@gmail.com">bymancykler@gmail.com</a></td></tr>
+        </tbody>
+      </table>
+      <p class="email-missing" hidden>E-mailen er på vej hertil – ring til os i mellemtiden, så hjælper vi dig med det samme.</p>
+    </section>
+    <section class="cell stack" aria-labelledby="findos">
+      <h2 id="findos">Find os</h2>
+      <address>Øster Farimagsgade 32<br>2100 København Ø</address>
+      <p class="textlink-wrap"><a class="textlink hit" href="https://www.google.com/maps/search/?api=1&amp;query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98"><span>Find vej</span></a></p>
+    </section>
+  </div>
+
+  <!-- A5 -->
+  <section aria-labelledby="maerker">
+    <div class="sec title-row">
+      <h2 id="maerker">Mærker vi forhandler</h2>
+      <p class="lede">Vi er specialister i Specialized og har stor erfaring med landevejscykler og elektroniske gearsystemer. Værkstedet servicerer cykler på tværs af mærker.</p>
+    </div>
+    <div class="sec">
+      <ul class="grid brand-grid" id="brands"></ul>
+    </div>
+  </section>
+
+  <!-- A6 standalone: wordmark only (no newsletter, ui-spec §1.6). site.logo set = an <img>/<svg> here instead. -->
+  <div class="sec wordmark-row">
+    <p class="wordmark" translate="no">Byman Cykler</p>
+  </div>
+</main>
+
+<!-- A7 -->
+<footer>
+  <div class="grid foot">
+    <div class="cell"><p>Byman Cykler – personlig rådgivning, salg og værksted for cykelentusiaster i København.</p></div>
+    <div class="cell"><address>Byman Cykler<br>Øster Farimagsgade 32<br>2100 København Ø</address></div>
+    <div class="cell"><ul><li><a class="inline-link" href="tel:+4535425156">35 42 51 56</a></li><li data-email><a class="inline-link" href="mailto:bymancykler@gmail.com">bymancykler@gmail.com</a></li></ul></div>
+    <div class="cell"><ul><li><a class="menu-link" href="https://www.instagram.com/byman.cykler/">Instagram</a></li><li><a class="menu-link" href="https://www.facebook.com/byman.cykler.dk/">Facebook</a></li></ul></div>
+  </div>
+  <p class="small legal">BYMAN CYKLER I/S · CVR 14579656</p>
+</footer>
+
+<!-- ===================== Test harness (not part of the spec) ===================== -->
+<script>
+(async function harness() {
+  var p = new URLSearchParams(location.search), html = document.documentElement;
+  if (p.get('reduce')) html.classList.add('force-reduce');
+  if (p.get('small')) html.classList.add('small-' + p.get('small'));
+  if (p.get('focus')) html.classList.add('show-focus');
+  var photo = p.get('photo') || 'temp', hero = document.getElementById('hero');
+  if (photo === 'full') { hero.classList.replace('hero--contained', 'hero--full'); hero.querySelector('img').sizes = '(min-width: 1024px) calc(100vw - 28px), calc(100vw - 14px)'; }
+  if (photo === 'none') { hero.outerHTML = '<div class="sec name-band" aria-hidden="true">Byman Cykler.</div>'; }
+  if (p.get('email') === '0') {
+    document.querySelectorAll('[data-email]').forEach(function (el) { el.remove(); });
+    document.getElementById('ctas').style.setProperty('--cta-count', 2);
+    document.querySelector('.email-missing').hidden = false;
+  }
+  // brands
+  var n = +(p.get('n') || 7), list = await (await fetch('/data/brands.json')).json();
+  for (var b of list) {
+    var path = '/' + b.logo;
+    if (/\.svg$/.test(path)) { var t = await (await fetch(path)).text(); var vb = t.match(/viewBox="([^"]+)"/)[1].split(/[\s,]+/).map(Number); b._svg = t; b._r = vb[2] / vb[3]; }
+    else { var im = new Image(); im.src = path; await im.decode(); b._png = path; b._r = im.naturalWidth / im.naturalHeight; }
+  }
+  var ul = document.getElementById('brands'); if (n >= 12) ul.classList.add('brand-grid--many');
+  for (var i = 0; i < n; i++) {
+    var b = list[i % list.length], li = document.createElement('li'); li.className = 'cell brand';
+    var cls = 'logo' + (b._r < 1.6 ? ' logo--badge' : ''), st = '--scale:' + b.scale + ';--ratio:' + b._r.toFixed(4);
+    li.innerHTML = b._svg ? b._svg.replace('<svg', '<svg class="' + cls + '" style="' + st + '" aria-label="' + b.name + '" focusable="false"')
+      : '<span class="' + cls + ' logo--png" role="img" aria-label="' + b.name + '" style="' + st + ';-webkit-mask-image:url(' + b._png + ');mask-image:url(' + b._png + ')"><img src="' + b._png + '" alt=""></span>';
+    ul.appendChild(li);
+  }
+  var sp = function (c) { return c - (n % c); };
+  ul.insertAdjacentHTML('beforeend', '<li class="cell brand brand--more" style="--span-2:' + sp(2) + ';--span-4:' + sp(4) + ';--span-6:' + sp(6) + '"><p>…og mange flere</p></li>');
+  // special hours (test data, relative to the simulated "now")
+  var sim = p.get('now'), base = sim ? sim.slice(0, 10) : new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen' }).format(new Date());
+  var add = function (d, k) { var x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + k); return x.toISOString().slice(0, 10); };
+  var special = [];
+  if (p.get('special') === 'soon') special = [{ date: add(base, 5), open: '10:00', close: '13:00', closed: false }];
+  if (p.get('special') === 'today') special = [{ date: base, open: '10:00', close: '12:00', closed: false }];
+  if (p.get('special') === 'long') special = [
+    { date: add(base, 3), open: '10:00', close: '13:00', closed: false },
+    { date: add(base, 4), closed: true },
+    { date: add(base, 5), closed: true, note: 'Butikken holder lukket, men værkstedet tager imod akutte reparationer efter aftale på telefon.' },
+    { date: add(base, 12), open: '11:00', close: '15:00', closed: false },
+    { date: add(base, 30), closed: true }];
+  window.__SPECIAL = special; window.__NOW = sim;
+  if (html.classList.contains('js')) window.bymanHours && window.bymanHours();
+  window.__ready = true;
+})();
+</script>
+
+<!-- ===================== Page script (reference for A8, ui-spec §6) ===================== -->
+<script>
+window.bymanHours = function () {
+  var TZ = 'Europe/Copenhagen';
+  var T = {                                     // copy-da.md ## Strings
+    open: 'Åbent nu · lukker {close}', opensLater: 'Lukket · åbner i dag {open}',
+    opensTomorrow: 'Lukket · åbner i morgen {open}', opensOn: 'Lukket · åbner {day} {open}',
+    closedToday: 'Lukket i dag', special: 'Bemærk: ændrede åbningstider {date}: {hours}', specialHeading: 'Særlige åbningstider', closed: 'Lukket',
+    days: ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'],
+    today: 'i dag'                              // NEW string hours.today, to be added to copy-da.md
+  };
+  var MONTHS = ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december'];
+  var special = window.__SPECIAL || [];          // the build writes business.json specialHours here
+  var fill = function (s, o) { return s.replace(/\{(\w+)\}/g, function (_, k) { return o[k]; }); };
+  var dk = function (hhmm) { return hhmm.replace(':', '.'); };              // 09:00 -> 09.00
+  var rows = [].slice.call(document.querySelectorAll('#hours tr[data-day]'));
+  var week = {};                                  // the table is the single source of the weekly hours
+  rows.forEach(function (r) { week[r.dataset.day] = r.hasAttribute('data-closed') ? null : { open: r.dataset.open, close: r.dataset.close }; });
+
+  function nowCph() {                             // { ymd: "2026-10-09", hm: "10:30" } in Copenhagen
+    if (window.__NOW) return { ymd: window.__NOW.slice(0, 10), hm: window.__NOW.slice(11, 16) };
+    var o = {}; new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+      .formatToParts(new Date()).forEach(function (x) { o[x.type] = x.value; });
+    return { ymd: o.year + '-' + o.month + '-' + o.day, hm: o.hour + ':' + o.minute };
+  }
+  var utc = function (ymd) { return new Date(ymd + 'T12:00:00Z'); };          // calendar maths in UTC: no DST surprises
+  var addDays = function (ymd, k) { var d = utc(ymd); d.setUTCDate(d.getUTCDate() + k); return d.toISOString().slice(0, 10); };
+  var dow = function (ymd) { return utc(ymd).getUTCDay(); };
+  var longDate = function (ymd) { var d = utc(ymd); return T.days[d.getUTCDay()] + ' ' + d.getUTCDate() + '. ' + MONTHS[d.getUTCMonth()]; };
+  function hoursOn(ymd) {
+    var s = special.filter(function (x) { return x.date === ymd; })[0];
+    if (s) return s.closed ? null : { open: s.open, close: s.close, special: true };
+    return week[dow(ymd)];
+  }
+
+  function render() {
+    var now = nowCph(), today = hoursOn(now.ymd), text, state = 'closed';
+    if (today && now.hm >= today.open && now.hm < today.close) { text = fill(T.open, { close: dk(today.close) }); state = 'open'; }
+    else if (today && now.hm < today.open) text = fill(T.opensLater, { open: dk(today.open) });
+    else {
+      text = T.closedToday;
+      for (var i = 1; i <= 14; i++) {
+        var d = addDays(now.ymd, i), h = hoursOn(d);
+        if (!h) continue;
+        text = i === 1 ? fill(T.opensTomorrow, { open: dk(h.open) })
+             : fill(T.opensOn, { day: i <= 6 ? T.days[dow(d)] : longDate(d), open: dk(h.open) });
+        break;
+      }
+    }
+    var st = document.getElementById('status');
+    st.textContent = text; st.dataset.state = state;
+
+    // today's row: bold + dot + hidden "(i dag)"; on a special day it shows today's real hours
+    rows.forEach(function (r) {
+      var isToday = +r.dataset.day === dow(now.ymd);
+      r.classList.toggle('is-today', isToday);
+      var old = r.querySelector('.today-sr'); if (old) old.remove();
+      var td = r.querySelector('td');
+      if (!td.dataset.regular) td.dataset.regular = td.innerHTML;
+      td.innerHTML = td.dataset.regular;
+      if (isToday) {
+        if (hoursOn(now.ymd) !== week[r.dataset.day]) td.textContent = today ? dk(today.open) + '–' + dk(today.close) : T.closed;
+        r.querySelector('th').insertAdjacentHTML('beforeend', '<span class="visually-hidden today-sr"> (' + T.today + ')</span>');
+      }
+    });
+
+    // special-hours notice: every special day from today to 14 days ahead, in date order
+    var soon = special.filter(function (x) { return x.date >= now.ymd && x.date <= addDays(now.ymd, 14); })
+      .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    var box = document.getElementById('notice');
+    var hrs = function (x) { return x.closed ? T.closed : dk(x.open) + '–' + dk(x.close); };
+    var cap = function (t) { return t.charAt(0).toUpperCase() + t.slice(1); };
+    if (soon.length === 1) {                      // one date: one sentence (hours.notice.special)
+      var x = soon[0];
+      box.innerHTML = '<p>' + fill(T.special, { date: longDate(x.date), hours: hrs(x) }) + (x.note ? ' ' + x.note : '') + '</p>';
+    } else if (soon.length > 1) {                 // several: a title (hours.special.heading) and a small table
+      box.innerHTML = '<p class="label notice__title">' + T.specialHeading + '</p><table class="table notice__table"><tbody>' +
+        soon.map(function (x) {
+          return '<tr><th scope="row">' + cap(longDate(x.date)) + '</th><td>' + hrs(x) + '</td></tr>' +
+            (x.note ? '<tr class="notice__note"><td colspan="2">' + x.note + '</td></tr>' : '');
+        }).join('') + '</tbody></table>';
+    }
+    box.hidden = soon.length === 0;
+  }
+  render();
+  setInterval(render, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+
+  // pause button for the scrolling name (WCAG 2.2.2)
+  var hero = document.getElementById('hero'), btn = hero && hero.querySelector('.hero__pause');
+  if (btn) btn.addEventListener('click', function () {
+    var paused = btn.getAttribute('aria-pressed') !== 'true';
+    btn.setAttribute('aria-pressed', String(paused)); hero.classList.toggle('is-paused', paused);
+  });
+};
+</script>
+</body>
+</html>

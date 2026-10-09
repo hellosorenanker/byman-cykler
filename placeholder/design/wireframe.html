@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="da" data-show="a" data-brands="7">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe A/B – Byman Cykler midlertidig forside</title>
+<script>
+  /* Wireframe switches (read before the page draws):
+     ?layout=a | ?layout=b   (default a)
+     &brands=25              test the brand grid with 25 logos
+     &tags=0                 hide the grey section tags */
+  (function () {
+    var p = new URLSearchParams(location.search);
+    var d = document.documentElement;
+    d.dataset.show = (p.get('layout') || 'a').toLowerCase() === 'b' ? 'b' : 'a';
+    d.dataset.brands = p.get('brands') === '25' ? '25' : '7';
+    if (p.get('tags') === '0') d.dataset.tags = 'off';
+  })();
+</script>
+<!-- Measured Press sizes, spacing and radii. Colours are overridden with greys below. -->
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* ---------- Wireframe greys (stand-ins for Press red #FF2E00 and pink lines #FFBFBF) ---------- */
+  :root {
+    --color-text: #1f1f1f;
+    --color-line: #c2c2c2;
+    --color-bg: #ffffff;
+    --color-button-bg: #1f1f1f;
+    --color-button-text: #ffffff;
+    --color-button-border: #1f1f1f;
+    --g-muted: #6b6b6b;
+    --g-fill: #eeeeee;
+    --g-today: #e4e4e4;
+    --logo-base: 26px;         /* logo height before brands.json "scale" (mobile) */
+    --cell-h: 104px;           /* brand cell height (mobile) */
+    --cols: 2;                 /* brand grid columns (mobile) */
+  }
+  @media (min-width: 1024px) {
+    :root { --logo-base: 36px; }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-body);
+  }
+  a { color: inherit; }
+  p { margin: 0; }
+
+  /* Only one layout is shown at a time */
+  html[data-show="a"] .only-b,
+  html[data-show="b"] .only-a { display: none !important; }
+
+  /* ---------- Wireframe chrome (not part of the page) ---------- */
+  .wf-bar {
+    background: #3a3a3a; color: #fff; font-size: 11px; line-height: 1.4;
+    padding: 5px var(--page-padding); display: flex; flex-wrap: wrap; gap: 4px 14px;
+  }
+  .wf-bar b { font-weight: 700; }
+  .wf-bar a { color: #fff; }
+  .tag {
+    position: absolute; top: 0; left: 4px; z-index: 6; transform: translateY(-50%);
+    font: 9px/1.25 var(--font-body); text-transform: none; letter-spacing: 0;
+    background: #e3e3e3; color: #3d3d3d; border: 1px dashed #8a8a8a; border-radius: 2px;
+    padding: 1px 5px; pointer-events: none; white-space: nowrap;
+  }
+  .tag--r { left: auto; right: 4px; }
+  @media (min-width: 768px) { .tag { font-size: 10px; } }
+  .wf-hide-m { display: none; }
+  @media (min-width: 768px) { .wf-hide-m { display: inline; } }
+  html[data-tags="off"] .tag, html[data-tags="off"] .wf-annot { display: none; }
+  .wf-annot {
+    font: 10px/1.35 var(--font-body); color: #4a4a4a; text-transform: none;
+    background: rgba(255,255,255,.9); border: 1px dashed #9a9a9a; padding: 3px 6px;
+  }
+  .mangler {
+    display: inline-block; font: 11px/1.3 var(--font-body); text-transform: none; letter-spacing: 0;
+    background: #fff; color: #1f1f1f; border: 1px solid #1f1f1f; padding: 2px 6px; vertical-align: middle;
+  }
+  .wf-notes {
+    margin: 28px var(--page-padding) 40px; padding: 14px; border: 1px dashed #8a8a8a;
+    font-size: 11.2px; line-height: 1.45; color: #333; background: #fafafa;
+  }
+  .wf-notes h2 { font-family: var(--font-body); font-size: 12px; text-transform: uppercase; margin: 0 0 6px; letter-spacing: 0; line-height: 1.3; }
+  .wf-notes ul { margin: 0 0 10px; padding-left: 18px; }
+  .wf-notes li { margin: 2px 0; }
+
+  /* ---------- Press building blocks (sizes from tokens.css) ---------- */
+  .sec { position: relative; border-bottom: 1px solid var(--color-line); }
+  h1, h2, h3 {
+    font-family: var(--font-heading); font-weight: 400; margin: 0;
+    line-height: var(--line-height-heading); letter-spacing: var(--letter-spacing-heading);
+  }
+  .h-feature   { font-size: var(--heading-feature-size); }
+  .h-standard  { font-size: var(--heading-standard-size); }
+  .h-secondary { font-size: var(--heading-secondary-size); }
+  .subheading, .status {
+    display: inline-flex; align-items: center; gap: var(--space-2xs);
+    text-transform: uppercase; font-size: var(--subheading-size); line-height: 1.2;
+  }
+  .subheading { margin-bottom: var(--space-xs); }
+  .subheading::before, .status::before {
+    content: ""; width: var(--subheading-dot-size); height: var(--subheading-dot-size);
+    border-radius: 50%; background: currentColor; flex: none;
+  }
+  .small { font-size: var(--font-size-sm); color: var(--g-muted); }
+  .btn {
+    display: flex; align-items: center; justify-content: center; width: 100%;
+    min-height: 44px;                          /* mobile tap target (ux-research) */
+    padding: var(--button-padding-y) var(--button-padding-x);
+    font: inherit; font-size: var(--button-size); text-transform: uppercase; text-decoration: none;
+    color: var(--color-text); background: transparent;
+    border: 1px solid var(--color-button-border); border-radius: var(--radius-button);
+  }
+  .btn::after { content: var(--button-arrow); }
+  .btn--primary { background: var(--color-button-bg); color: var(--color-button-text); }
+  @media (min-width: 1024px) { .btn { min-height: var(--button-height); } }
+  .textlink {
+    display: inline-block; text-transform: uppercase; text-decoration: none;
+    border-bottom: 1px solid currentColor; padding-bottom: var(--link-padding-bottom);
+  }
+  .textlink::after { content: var(--link-arrow); }
+  .grid { display: grid; gap: var(--grid-gap); background: var(--color-line); }
+  .grid > .cell { background: var(--color-bg); padding: var(--space-sm) var(--page-padding); }
+
+  /* Tables: same idea as the Press "Featured collection table" and product detail table */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl td { padding: var(--space-xs) 0; border-top: 1px solid var(--color-line); vertical-align: top; }
+  .tbl tr:last-child td { border-bottom: 1px solid var(--color-line); }
+  .hours td:first-child { text-transform: capitalize; }
+  .hours td:last-child { text-align: right; }
+  .hours tr.today td { background: var(--g-today); font-weight: 700; }
+  .hours tr.today td:first-child { padding-left: var(--space-xs); }
+  .hours tr.today td:last-child { padding-right: var(--space-xs); }
+  .hours tr.today .daydot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: currentColor; margin-right: var(--space-2xs); vertical-align: 1px;
+  }
+  .details td:first-child { width: 38%; color: var(--g-muted); }
+  .hours-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: var(--space-xs); }
+
+  /* ---------- Status strip (Layout A) ---------- */
+  .strip { min-height: var(--announcement-height); display: flex; align-items: center; justify-content: center; padding: 0 var(--page-padding); }
+
+  /* ---------- Photo ---------- */
+  .media { position: relative; border-radius: var(--radius-media); overflow: hidden; background: var(--g-fill); }
+  .media img { display: block; width: 100%; height: auto; filter: grayscale(1); }
+  .photo-note { display: block; margin-top: var(--space-xs); }
+  @media (min-width: 1024px) {
+    .photo-note { position: absolute; top: calc(var(--media-padding) + 8px); right: calc(var(--media-padding) + 8px); max-width: 52%; margin: 0; z-index: 4; }
+  }
+
+  /* Layout A hero = "Image with scrolling text". Mobile: natural ratio. Desktop: 16:9. */
+  .hero { padding: var(--media-padding); }
+  .scrolltext {
+    position: absolute; left: 0; right: 0; bottom: 5%; white-space: nowrap; overflow: hidden;
+    font-family: var(--font-heading); font-size: var(--hero-scroll-text-size);
+    line-height: .9; letter-spacing: -.025em; color: #fff;
+    text-shadow: 0 0 2px rgba(0,0,0,.35);
+  }
+  @media (min-width: 1024px) {
+    .hero .media { aspect-ratio: 16 / 9; }
+    .hero .media img { height: 100%; object-fit: cover; }
+  }
+
+  /* ---------- Intro / title rows ---------- */
+  .intro { text-align: center; padding: var(--space-md) var(--page-padding); }
+  .intro h1, .intro h2 { margin: 0 auto; }
+  .intro .lede { margin: var(--space-sm) auto 0; max-width: 34em; }
+  @media (min-width: 1024px) {
+    .intro h1 { width: var(--text-width-feature); }
+    .intro .lede { max-width: var(--text-width-page); }
+  }
+
+  /* ---------- Layout A info block ---------- */
+  .cols3 { grid-template-columns: 1fr; }
+  @media (min-width: 1024px) { .cols3 { grid-template-columns: repeat(3, 1fr); } }
+  .btnrow { border-bottom: 1px solid var(--color-line); }
+  .btnrow > .cell { padding-top: var(--space-xs); padding-bottom: var(--space-xs); }
+  @media (min-width: 1024px) { .btnrow > .cell { padding-top: var(--space-sm); padding-bottom: var(--space-sm); } }
+  .info-a .cell h2 { margin-bottom: var(--space-sm); }
+  .info-a .cell { padding-top: var(--space-md); padding-bottom: var(--space-md); }
+  .stack > * + * { margin-top: var(--space-xs); }
+
+  /* ---------- Layout B split: Press "Image with text" 8/12 + 4/12 ---------- */
+  .topbar {
+    min-height: var(--header-height); display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 4px 10px; padding: var(--space-xs) var(--page-padding);
+  }
+  .wordmark { font-family: var(--font-heading); font-size: var(--font-size-2xl); line-height: 1; letter-spacing: -.025em; white-space: nowrap; }
+  .split { grid-template-columns: 1fr; }
+  .split .media-cell { padding: var(--media-padding); position: relative; }
+  @media (min-width: 1024px) {
+    .split { grid-template-columns: 8fr 4fr; }
+    .split .media-cell .media { height: 100%; }
+    .split .media-cell .media img { height: 100%; object-fit: cover; }
+  }
+  .info-b { padding-top: var(--space-sm); padding-bottom: var(--space-md); }
+  .info-b .btns { display: grid; gap: var(--space-xs); margin: var(--space-sm) 0 var(--space-md); }
+  .info-b h2 { margin: var(--space-md) 0 var(--space-xs); }
+  .info-b h2:first-of-type { margin-top: 0; }
+
+  /* ---------- Brand grid (equal cells, 1px lines) ---------- */
+  .brand-head { padding-bottom: var(--space-sm); }
+  .brand-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--grid-gap); background: var(--color-line);
+    grid-template-columns: repeat(var(--cols), 1fr);
+  }
+  .brand-grid > li {
+    background: var(--color-bg); height: var(--cell-h);
+    display: flex; align-items: center; justify-content: center; padding: var(--space-sm);
+  }
+  .brand-grid img {
+    height: calc(var(--logo-base) * var(--s, 1)); width: auto; max-width: 72%;
+    object-fit: contain;                       /* never stretched: letterboxed if the width cap kicks in */
+    filter: brightness(0) opacity(.72);        /* every logo in one grey (white PNGs become dark too) */
+  }
+  .brand-grid .more {
+    font-family: var(--font-heading); font-size: var(--heading-secondary-size);
+    line-height: .9; letter-spacing: -.025em; text-align: center;
+  }
+  .brand-grid .ph span {
+    display: flex; align-items: center; justify-content: center;
+    width: 64%; height: 26px; background: var(--g-fill); border: 1px dashed #b5b5b5;
+    font-size: 10px; color: var(--g-muted);
+  }
+  /* The last row must always be closed (the grid background IS the line colour).
+     "…og mange flere" is the last child, so nth-child tells which column it lands in,
+     and it stretches over whatever is left of that row. CSS only, works for any count. */
+  .brand-grid .more:nth-child(2n+1) { grid-column: span 2; }
+  .brand-grid .more:nth-child(2n)   { grid-column: span 1; }
+  @media (min-width: 768px) {
+    :root { --cols: 4; --cell-h: 132px; }
+    .brand-grid .more:nth-child(4n+1) { grid-column: span 4; }
+    .brand-grid .more:nth-child(4n+2) { grid-column: span 3; }
+    .brand-grid .more:nth-child(4n+3) { grid-column: span 2; }
+    .brand-grid .more:nth-child(4n)   { grid-column: span 1; }
+  }
+  @media (min-width: 1024px) {
+    :root { --cell-h: 160px; }
+    /* Layout B always uses the denser 6-per-row option.
+       Layout A switches to 6 per row by itself once there are 12+ logos
+       (13+ cells incl. the tile), so a long list doesn't become a tower. */
+    .grid-6, .brand-grid:has(> li:nth-child(13)) { --cols: 6; --cell-h: 136px; }
+    .grid-6 .more:nth-child(6n+1), .brand-grid:has(> li:nth-child(13)) .more:nth-child(6n+1) { grid-column: span 6; }
+    .grid-6 .more:nth-child(6n+2), .brand-grid:has(> li:nth-child(13)) .more:nth-child(6n+2) { grid-column: span 5; }
+    .grid-6 .more:nth-child(6n+3), .brand-grid:has(> li:nth-child(13)) .more:nth-child(6n+3) { grid-column: span 4; }
+    .grid-6 .more:nth-child(6n+4), .brand-grid:has(> li:nth-child(13)) .more:nth-child(6n+4) { grid-column: span 3; }
+    .grid-6 .more:nth-child(6n+5), .brand-grid:has(> li:nth-child(13)) .more:nth-child(6n+5) { grid-column: span 2; }
+    .grid-6 .more:nth-child(6n),   .brand-grid:has(> li:nth-child(13)) .more:nth-child(6n)   { grid-column: span 1; }
+  }
+  .brands { position: relative; }
+  .brands > .wf-annot { display: block; margin: 0 var(--page-padding) var(--space-xs); }
+  @media (min-width: 1024px) { .brands > .wf-annot { position: absolute; right: 4px; top: 6px; z-index: 6; margin: 0; } }
+
+  /* ---------- Newsletter ---------- */
+  .field { display: block; flex: 1; }
+  .field span { display: block; margin-bottom: var(--space-3xs); }
+  .field input {
+    width: 100%; border: 0; border-bottom: 1px solid currentColor; border-radius: 0;
+    background: transparent; font: inherit; color: inherit; padding: var(--input-padding-y) 0;
+  }
+  .nl-form { display: flex; align-items: flex-end; gap: var(--space-sm); }
+  .nl-form button { background: none; border: 0; border-bottom: 1px solid currentColor; padding: 0 0 var(--link-padding-bottom); font: inherit; color: inherit; text-transform: uppercase; cursor: default; }
+  .nl-form button::after { content: var(--link-arrow); }
+  /* Layout A: main-password at the bottom, drawn as a centred stack (its real inner layout is unknown) */
+  .mp { text-align: center; padding: var(--space-lg) var(--page-padding) var(--space-md); }
+  .mp .wordmark-big { font-family: var(--font-heading); font-size: var(--heading-feature-size); line-height: .9; letter-spacing: -.025em; }
+  .mp h2 { margin: var(--space-md) auto var(--space-xs); }
+  .mp .nl-text { max-width: 34em; margin: 0 auto var(--space-sm); }
+  .mp .nl-form { max-width: 480px; margin: 0 auto; text-align: left; }
+  .mp .wf-annot { display: inline-block; margin-top: var(--space-md); }
+  /* Layout B: Newsletter section drawn like the Press footer "Join the club" row */
+  .nl-row { display: grid; gap: var(--space-sm); padding: var(--space-md) var(--page-padding) var(--space-sm); }
+  .nl-row .nl-text { margin-top: var(--space-xs); }
+  @media (min-width: 1024px) { .nl-row { grid-template-columns: 1fr 1fr; align-items: end; } }
+
+  /* ---------- Footer (Text columns with images, no images) ---------- */
+  .foot { grid-template-columns: 1fr; }
+  @media (min-width: 768px) { .foot { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .foot { grid-template-columns: repeat(4, 1fr); } }
+  .foot .cell { padding-top: var(--space-sm); padding-bottom: var(--space-md); }
+  .legal { padding: var(--space-xs) var(--page-padding); }
+</style>
+</head>
+<body>
+
+<div class="wf-bar">
+  <span><b>WIREFRAME</b> <span class="only-a">Layout A: Foto først</span><span class="only-b">Layout B: Foto og info side om side</span></span>
+  <span><a href="?layout=a">A</a> · <a href="?layout=b">B</a></span>
+  <span>Mærker: <a href="?layout=a">A 7</a> / <a href="?layout=a&amp;brands=25">A 25</a> · <a href="?layout=b">B 7</a> / <a href="?layout=b&amp;brands=25">B 25</a></span>
+  <span class="wf-hide-m">Grey tag = Shopify section on the password page · ? = unverified · <a href="?tags=0">hide tags</a></span>
+</div>
+
+<!-- =====================================================================
+     LAYOUT A — "Foto først": stacked full-width rows, like the Press home page
+     ===================================================================== -->
+<div class="only-a" id="layout-a">
+
+  <!-- A1. Status strip: sits where Press has its 32px announcement bar -->
+  <section class="sec strip" aria-label="Status">
+    <span class="tag">[Custom liquid?] ① JS</span>
+    <p class="status">Åbent nu · lukker 16:00</p>
+  </section>
+
+  <!-- A2. Hero photo -->
+  <section class="sec hero">
+    <span class="tag">[Image with scrolling text?]</span>
+    <div class="media">
+      <img src="../assets/img/facade-placeholder.png" width="515" height="388"
+           alt="Mørkegrå butiksfacade med et hvidt BYMAN-logo i en rund ramme og teksten CYKLER i mindre bogstaver under – indgangen til Byman Cykler på Øster Farimagsgade.">
+      <div class="scrolltext" aria-hidden="true">Byman Cykler. Byman Cykler. Byman Cykler. Byman Cykler. Byman Cykler.</div>
+    </div>
+    <span class="wf-annot photo-note">Temp photo 515×388. Desktop shows it ~2.4× (soft). Mobile: natural ratio, not 4:5. Real photo: ≥2400 px wide, ideally 3600×2025 (16:9), daylight.</span>
+  </section>
+
+  <!-- A3. Headline -->
+  <section class="sec intro">
+    <span class="tag">[Rich text?]</span>
+    <p class="subheading">Ny webshop på vej</p>
+    <h1 class="h-feature">Butik og værksted er åbne. Webshoppen er på vej.</h1>
+    <p class="lede">Vi er i gang med at bygge en ny webshop. Indtil den åbner, er butikken og værkstedet klar til at hjælpe dig med køb, rådgivning og service.</p>
+  </section>
+
+  <!-- A4. Buttons + hours + contact + address: one custom block -->
+  <section class="sec">
+    <span class="tag">[Custom liquid?] ② JS</span>
+    <div class="grid cols3 btnrow">
+      <div class="cell"><a class="btn btn--primary" href="tel:+4535425156">Ring til os</a></div>
+      <div class="cell"><a class="btn" href="https://www.google.com/maps/search/?api=1&amp;query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98">Find vej</a></div>
+      <div class="cell"><a class="btn" href="mailto:bymancykler@gmail.com">Skriv til os</a></div>
+    </div>
+    <div class="grid cols3 info-a">
+      <div class="cell">
+        <h2 class="h-secondary">Åbningstider</h2>
+        <table class="tbl hours">
+          <tr><td>mandag</td><td>09:00–16:00</td></tr>
+          <tr><td>tirsdag</td><td>09:00–16:00</td></tr>
+          <tr><td>onsdag</td><td>11:00–17:00</td></tr>
+          <tr><td>torsdag</td><td>09:00–16:00</td></tr>
+          <tr class="today"><td><span class="daydot"></span>fredag</td><td>09:00–16:00</td></tr>
+          <tr><td>lørdag</td><td>11:00–14:00</td></tr>
+          <tr><td>søndag</td><td>Lukket</td></tr>
+        </table>
+        <div class="hours-meta"><span class="small">Åbningstider fra Google</span></div>
+      </div>
+      <div class="cell">
+        <h2 class="h-secondary">Kontakt</h2>
+        <table class="tbl details">
+          <tr><td>Telefon</td><td><a href="tel:+4535425156">35 42 51 56</a></td></tr>
+          <tr><td>E-mail</td><td><a href="mailto:bymancykler@gmail.com">bymancykler@gmail.com</a></td></tr>
+        </table>
+      </div>
+      <div class="cell stack">
+        <h2 class="h-secondary">Find os</h2>
+        <p>Øster Farimagsgade 32<br>2100 København Ø</p>
+        <p><a class="textlink" href="https://www.google.com/maps/search/?api=1&amp;query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98">Find vej</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- A5. Brands -->
+  <section class="sec intro brand-head">
+    <span class="tag">[Rich text?]</span>
+    <h2 class="h-standard">Mærker vi forhandler</h2>
+    <p class="lede">Vi er specialister i Specialized og har stor erfaring med landevejscykler og elektroniske gearsystemer. Værkstedet servicerer cykler på tværs af mærker.</p>
+  </section>
+  <section class="sec brands">
+    <span class="tag">[Logo list? · Static]</span>
+    <span class="wf-annot">4 per row (2 on mobile); 6 per row from 12 logos. Last row not full → "…og mange flere" fills it.</span>
+    <ul class="brand-grid">
+      <li><img src="../assets/logos/enve.png" alt="ENVE" style="--s:1.2"></li>
+      <li><img src="../assets/logos/specialized.svg" alt="Specialized" style="--s:.85"></li>
+      <li><img src="../assets/logos/silca.svg" alt="Silca" style="--s:1.05"></li>
+      <li><img src="../assets/logos/met.svg" alt="MET" style="--s:1.4"></li>
+      <li><img src="../assets/logos/polymer.svg" alt="Polymer Workshop" style="--s:1.3"></li>
+      <li><img src="../assets/logos/gripgrab-original.png" alt="GripGrab" style="--s:1"></li>
+      <li><img src="../assets/logos/dt-swiss.svg" alt="DT Swiss" style="--s:.85"></li>
+      <li class="more">…og mange flere</li>
+    </ul>
+  </section>
+
+  <!-- A6. main-password at the bottom: logo + newsletter + the theme's own password entry -->
+  <section class="sec mp">
+    <span class="tag">[main-password]</span>
+    <div class="wordmark-big">Byman Cykler</div>
+    <div style="margin-top:7px"><span class="mangler">[MANGLER: Byman-logo som fil]</span></div>
+    <h2 class="h-standard">Få besked, når webshoppen åbner</h2>
+    <p class="nl-text">Efterlad din e-mail, så skriver vi til dig, den dag webshoppen går i luften.</p>
+    <div class="nl-form">
+      <label class="field"><span>Din e-mail</span><input type="email" disabled></label>
+      <button type="button" disabled>Giv mig besked</button>
+    </div>
+    <span class="wf-annot">Built-in section: logo, heading, newsletter, theme's password entry. Its inner layout is unknown (no live Baseline password page to measure).</span>
+  </section>
+
+  <!-- A7. Footer (the password page has no theme footer) -->
+  <footer>
+    <div class="sec">
+      <span class="tag">[Text columns with images?] no images</span>
+      <div class="grid foot">
+        <div class="cell"><p>Byman Cykler – personlig rådgivning, salg og værksted for cykelentusiaster i København.</p></div>
+        <div class="cell"><p>Byman Cykler<br>Øster Farimagsgade 32<br>2100 København Ø</p></div>
+        <div class="cell"><p><a href="tel:+4535425156">35 42 51 56</a><br><a href="mailto:bymancykler@gmail.com">bymancykler@gmail.com</a></p></div>
+        <div class="cell"><p><a href="https://www.instagram.com/byman.cykler/">Instagram</a><br><a href="https://www.facebook.com/byman.cykler.dk/">Facebook</a></p></div>
+      </div>
+    </div>
+    <div class="legal small">BYMAN CYKLER I/S · CVR 14579656</div>
+  </footer>
+</div>
+
+<!-- =====================================================================
+     LAYOUT B — "Foto og info side om side": Press "Image with text" split
+     ===================================================================== -->
+<div class="only-b" id="layout-b">
+
+  <!-- B1. main-password at the top, used as the logo bar (newsletter switched off here) -->
+  <section class="sec topbar">
+    <span class="tag">[main-password] newsletter off</span>
+    <span class="wordmark">Byman Cykler</span>
+    <span class="mangler">[MANGLER: Byman-logo som fil]</span>
+  </section>
+
+  <!-- B2. Headline -->
+  <section class="sec intro">
+    <span class="tag">[Rich text?]</span>
+    <p class="subheading">Ny webshop på vej</p>
+    <h1 class="h-feature">Butik og værksted er åbne. Webshoppen er på vej.</h1>
+    <p class="lede">Vi er i gang med at bygge en ny webshop. Indtil den åbner, er butikken og værkstedet klar til at hjælpe dig med køb, rådgivning og service.</p>
+  </section>
+
+  <!-- B3. Photo 8/12 + info 4/12 -->
+  <section class="sec">
+    <span class="tag">[Custom liquid?] ① photo + info · JS</span>
+    <div class="grid split">
+      <div class="cell media-cell">
+        <div class="media">
+          <img src="../assets/img/facade-placeholder.png" width="515" height="388"
+               alt="Mørkegrå butiksfacade med et hvidt BYMAN-logo i en rund ramme og teksten CYKLER i mindre bogstaver under – indgangen til Byman Cykler på Øster Farimagsgade.">
+        </div>
+        <span class="wf-annot photo-note">Temp photo 515×388, shown ~1.8× on desktop, cropped to fill the column height ("fit image to text"). Real photo: ≥2400 px wide.</span>
+      </div>
+      <div class="cell info-b">
+        <p class="status">Åbent nu · lukker 16:00</p>
+        <div class="btns">
+          <a class="btn btn--primary" href="tel:+4535425156">Ring til os</a>
+          <a class="btn" href="https://www.google.com/maps/search/?api=1&amp;query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98">Find vej</a>
+          <a class="btn" href="mailto:bymancykler@gmail.com">Skriv til os</a>
+        </div>
+        <h2 class="h-secondary">Åbningstider</h2>
+        <table class="tbl hours">
+          <tr><td>mandag</td><td>09:00–16:00</td></tr>
+          <tr><td>tirsdag</td><td>09:00–16:00</td></tr>
+          <tr><td>onsdag</td><td>11:00–17:00</td></tr>
+          <tr><td>torsdag</td><td>09:00–16:00</td></tr>
+          <tr class="today"><td><span class="daydot"></span>fredag</td><td>09:00–16:00</td></tr>
+          <tr><td>lørdag</td><td>11:00–14:00</td></tr>
+          <tr><td>søndag</td><td>Lukket</td></tr>
+        </table>
+        <div class="hours-meta"><span class="small">Åbningstider fra Google</span></div>
+        <h2 class="h-secondary">Kontakt</h2>
+        <table class="tbl details">
+          <tr><td>Telefon</td><td><a href="tel:+4535425156">35 42 51 56</a></td></tr>
+          <tr><td>E-mail</td><td><a href="mailto:bymancykler@gmail.com">bymancykler@gmail.com</a></td></tr>
+        </table>
+        <h2 class="h-secondary">Find os</h2>
+        <p>Øster Farimagsgade 32<br>2100 København Ø</p>
+        <p style="margin-top:7px"><a class="textlink" href="https://www.google.com/maps/search/?api=1&amp;query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98">Find vej</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- B4. Brands -->
+  <section class="sec intro brand-head">
+    <span class="tag">[Rich text?]</span>
+    <h2 class="h-standard">Mærker vi forhandler</h2>
+    <p class="lede">Vi er specialister i Specialized og har stor erfaring med landevejscykler og elektroniske gearsystemer. Værkstedet servicerer cykler på tværs af mærker.</p>
+  </section>
+  <section class="sec brands">
+    <span class="tag">[Logo list? · Static]</span>
+    <span class="wf-annot">6 per row on desktop (4 tablet, 2 mobile). Row 2 not full → "…og mange flere" fills it.</span>
+    <ul class="brand-grid grid-6">
+      <li><img src="../assets/logos/enve.png" alt="ENVE" style="--s:1.2"></li>
+      <li><img src="../assets/logos/specialized.svg" alt="Specialized" style="--s:.85"></li>
+      <li><img src="../assets/logos/silca.svg" alt="Silca" style="--s:1.05"></li>
+      <li><img src="../assets/logos/met.svg" alt="MET" style="--s:1.4"></li>
+      <li><img src="../assets/logos/polymer.svg" alt="Polymer Workshop" style="--s:1.3"></li>
+      <li><img src="../assets/logos/gripgrab-original.png" alt="GripGrab" style="--s:1"></li>
+      <li><img src="../assets/logos/dt-swiss.svg" alt="DT Swiss" style="--s:.85"></li>
+      <li class="more">…og mange flere</li>
+    </ul>
+  </section>
+
+  <!-- B5. Newsletter as its own section (Press footer "Join the club" row) -->
+  <section class="sec">
+    <span class="tag">[Newsletter?]</span>
+    <div class="nl-row">
+      <div>
+        <h2 class="h-standard">Få besked, når webshoppen åbner</h2>
+        <p class="nl-text">Efterlad din e-mail, så skriver vi til dig, den dag webshoppen går i luften.</p>
+      </div>
+      <div class="nl-form">
+        <label class="field"><span>Din e-mail</span><input type="email" disabled></label>
+        <button type="button" disabled>Giv mig besked</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- B6. Footer -->
+  <footer>
+    <div class="sec">
+      <span class="tag">[Text columns with images?] no images</span>
+      <div class="grid foot">
+        <div class="cell"><p>Byman Cykler – personlig rådgivning, salg og værksted for cykelentusiaster i København.</p></div>
+        <div class="cell"><p>Byman Cykler<br>Øster Farimagsgade 32<br>2100 København Ø</p></div>
+        <div class="cell"><p><a href="tel:+4535425156">35 42 51 56</a><br><a href="mailto:bymancykler@gmail.com">bymancykler@gmail.com</a></p></div>
+        <div class="cell"><p><a href="https://www.instagram.com/byman.cykler/">Instagram</a><br><a href="https://www.facebook.com/byman.cykler.dk/">Facebook</a></p></div>
+      </div>
+    </div>
+    <div class="legal small">BYMAN CYKLER I/S · CVR 14579656</div>
+  </footer>
+</div>
+
+<!-- ===================== Wireframe notes (not part of the page) ===================== -->
+<aside class="wf-notes">
+  <div class="only-a">
+    <h2>Layout A: Foto først</h2>
+    <ul>
+      <li>Idea: stacked rows like the Press home page. Status strip where Press has its announcement bar, then a full-width photo, headline, buttons + practical info, brands, newsletter, footer.</li>
+      <li>Mobile order: 1 status · 2 photo · 3 headline + intro · 4 three buttons (≥44 px) · 5 hours (today highlighted) · 6 contact · 7 address · 8 brands · 9 newsletter + logo · 10 footer.</li>
+      <li>Password page code: ① status strip, ② buttons + hours + contact + address. Photo, headline, brands, newsletter and footer are theme sections.</li>
+      <li>Brands: 7 logos + tile = exactly 2 rows of 4. From 12 logos the grid switches to 6 per row by itself (try A 25), otherwise 25 logos become 7 rows.</li>
+      <li>Weak spot: the desktop photo is full width, so the 515 px temp photo looks soft until the real one arrives. On desktop the hours table sits below the first screen (the status strip answers "open now?" at the top).</li>
+    </ul>
+  </div>
+  <div class="only-b">
+    <h2>Layout B: Foto og info side om side</h2>
+    <ul>
+      <li>Idea: the Press "Image with text" split (8/12 photo + 4/12 info). On desktop, photo, status, buttons and hours are all in the first screen.</li>
+      <li>Mobile order: 1 logo bar · 2 headline + intro · 3 photo · 4 status · 5 three buttons · 6 hours · 7 contact + address · 8 brands · 9 newsletter · 10 footer.</li>
+      <li>Password page code: ① one big block holding the photo and all info, because Image with text can't hold a table, three buttons or a live status. The photo then lives in code, not in the theme's image picker.</li>
+      <li>The logo bar is main-password at the top, so the newsletter needs the separate Newsletter section (unverified on the password page). 6 per row makes the wide Specialized wordmark small.</li>
+    </ul>
+  </div>
+  <h2>Both</h2>
+  <ul>
+    <li>Greys stand in for Press red #FF2E00 and pink lines #FFBFBF. The photo is greyscale only to keep the wireframe colour-neutral (colour vs. B/W is A7's call).</li>
+    <li>Fonts: fallback fonts (Times New Roman / Menlo). Real Instrument Serif is much narrower, so headings will take fewer lines.</li>
+    <li>Logos: height = base × "scale" from brands.json (36 px desktop, 26 px mobile), capped at 72% of the cell width, never stretched. MET is an almost square solid badge: at scale 1.4 it is ~50 px tall on desktop, never hits the width cap and sits centred with air around it. That is intended; do not enlarge it to fill the cell.</li>
+    <li>Static example: today = fredag 9 Oct 2026, status "Åbent nu · lukker 16:00". The live version needs JS.</li>
+  </ul>
+</aside>
+
+<script>
+  /* &brands=25: add 18 placeholder cells before "…og mange flere" to test the grid */
+  if (document.documentElement.dataset.brands === '25') {
+    document.querySelectorAll('.brand-grid').forEach(function (grid) {
+      var more = grid.querySelector('.more');
+      for (var i = 8; i <= 25; i++) {
+        var li = document.createElement('li');
+        li.className = 'ph';
+        li.innerHTML = '<span>[logo ' + i + ']</span>';
+        grid.insertBefore(li, more);
+      }
+    });
+  }
+</script>
+</body>
+</html>

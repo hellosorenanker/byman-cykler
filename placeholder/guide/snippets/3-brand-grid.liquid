@@ -1,0 +1,117 @@
+{%- comment -%}
+  =====================================================================
+  BYMAN CYKLER - SNIPPET 3 OF 3: BRAND GRID (only if Logo list can't do it)
+  =====================================================================
+  WHERE IT GOES
+    Password page, right under the "Mærker vi forhandler" Rich text section.
+    Add section -> Custom liquid -> paste ALL of this file into the
+    "Custom Liquid" box. Leave Subheading, Heading and Text empty.
+
+  BEFORE YOU PASTE
+    Upload the logo files to Content -> Files (Indhold -> Filer), from
+    placeholder/assets/logos/ on your Mac:
+      enve.png  specialized.svg  silca.svg  met.svg  polymer.svg
+      gripgrab-original.png  dt-swiss.svg
+    The file names in the list below must match the names in Files exactly.
+
+  THE ONLY LINES YOU NORMALLY CHANGE: the brand list just below.
+    One line per brand, in the order they should appear:
+      Name | file name in Content -> Files | size
+    "size" is the same number as "scale" in data/brands.json (1 = normal,
+    bigger = bigger). Square badges like MET get scale x 1.2 here
+    (1.4 x 1.2 = 1.68), which the standalone page does by itself.
+    The "…og mange flere" box always comes last and fills the last row.
+    From 12 brands the grid switches to 6 per row on wide screens.
+
+  IF THE LOGOS DON'T SHOW (empty white boxes)
+    Change  data-logos="red"  to  data-logos="black"  further down. The
+    logos are then shown as plain black images (black is allowed by the
+    logo rule). Also check that the file names match.
+
+  HOW THE COLOUR WORKS
+    Each logo file is used as a stencil ("CSS mask") and filled with the
+    theme's text colour (Press red), like the standalone page. Shopify's
+    file server allows this (checked on other Shopify stores' files on
+    2026-10-09). Copied from build/index.html + build/styles.css
+    (ui-spec.md section 5). Theme variables were seen on the Press demo
+    (theme 5.0.0), not yet in your theme files; the value after each
+    comma is used if a variable doesn't exist.
+  Comments like this one are not sent to visitors.
+{%- endcomment -%}
+{%- capture bc_brands -%}
+ENVE             | enve.png              | 1.2
+Specialized      | specialized.svg       | 0.85
+Silca            | silca.svg             | 1.05
+MET              | met.svg               | 1.68
+Polymer Workshop | polymer.svg           | 1.3
+GripGrab         | gripgrab-original.png | 1
+DT Swiss         | dt-swiss.svg          | 0.85
+{%- endcapture -%}
+
+{%- comment -%} ===== Nothing below needs changing (except "red" -> "black", see above). ===== {%- endcomment -%}
+{%- assign bc_n = 0 -%}
+{%- capture bc_items -%}
+{%- assign bc_lines = bc_brands | strip | newline_to_br | split: '<br />' -%}
+{%- for bc_line in bc_lines -%}
+  {%- assign bc_test = bc_line | strip -%}
+  {%- if bc_test == blank -%}{%- continue -%}{%- endif -%}
+  {%- assign bc_p = bc_line | split: '|' -%}
+  {%- assign bc_name = bc_p[0] | strip -%}
+  {%- assign bc_file = bc_p[1] | strip -%}
+  {%- assign bc_size = bc_p[2] | strip | replace: ',', '.' | default: '1' -%}
+  {%- assign bc_url = bc_file | file_url -%}
+  {%- assign bc_n = bc_n | plus: 1 %}
+  <li class="bc-brand"><span class="bc-logo" role="img" aria-label="{{ bc_name | escape }}" style="--scale: {{ bc_size }}; -webkit-mask-image: url('{{ bc_url }}'); mask-image: url('{{ bc_url }}')"><img src="{{ bc_url }}" alt="" decoding="async"></span></li>
+{%- endfor -%}
+{%- endcapture -%}
+{%- assign bc_m2 = bc_n | modulo: 2 -%}{%- assign bc_s2 = 2 | minus: bc_m2 -%}
+{%- assign bc_m4 = bc_n | modulo: 4 -%}{%- assign bc_s4 = 4 | minus: bc_m4 -%}
+{%- assign bc_m6 = bc_n | modulo: 6 -%}{%- assign bc_s6 = 6 | minus: bc_m6 -%}
+<ul class="bc-brands{% if bc_n >= 12 %} bc-brands--many{% endif %}" data-logos="red">
+  {{- bc_items }}
+  <li class="bc-brand bc-more" style="--bc-span-2: {{ bc_s2 }}; --bc-span-4: {{ bc_s4 }}; --bc-span-6: {{ bc_s6 }}"><p>…og mange flere</p></li>
+</ul>
+<style>
+  .bc-brands {
+    --bc-cols: 2; --bc-cell-h: 104px; --bc-cell-pad: 0.5rem; --bc-logo-h: 28px; --bc-logo-max: 85%;
+    --bc-more-size: var(--secondary-heading-size, 1.563rem);
+    display: grid; grid-template-columns: repeat(var(--bc-cols), minmax(0, 1fr));
+    gap: var(--gridline-width, 1px); background: rgb(var(--color-gridline, 255 191 191));
+    list-style: none; margin: 0; padding: 0;
+    color: rgb(var(--color-scheme-text, 255 46 0));
+  }
+  @media (min-width: 768px) { .bc-brands { --bc-cols: 4; --bc-cell-h: 120px; } }
+  @media (min-width: 1024px) {
+    .bc-brands { --bc-cell-h: 160px; --bc-cell-pad: 1rem; --bc-logo-h: 36px; --bc-logo-max: 80%;
+      --bc-more-size: var(--secondary-heading-size, 2.441rem); }
+    .bc-brands--many { --bc-cell-h: 136px; --bc-logo-h: 32px; }
+  }
+  @media (min-width: 1280px) { .bc-brands--many { --bc-cols: 6; } }
+  .bc-brands *, .bc-brands *::before, .bc-brands *::after { box-sizing: border-box; }
+  .bc-brand {
+    display: flex; align-items: center; justify-content: center; min-width: 0; margin: 0;
+    height: var(--bc-cell-h); padding: var(--bc-cell-pad); background: rgb(var(--color-scheme-background, 255 255 255));
+  }
+  /* The invisible <img> gives each logo its own shape; the mask paints it in the text colour. Never stretched. */
+  .bc-logo {
+    display: block; flex: 0 1 auto; min-width: 0; max-width: var(--bc-logo-max); background-color: currentColor;
+    -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+  }
+  .bc-logo img { display: block; width: auto; max-width: 100%; height: calc(var(--bc-logo-h) * var(--scale, 1)); opacity: 0; }
+  .bc-brands[data-logos="black"] .bc-logo { background: none; -webkit-mask-image: none !important; mask-image: none !important; }
+  .bc-brands[data-logos="black"] .bc-logo img { opacity: 1; object-fit: contain; filter: brightness(0); }
+  @supports not ((-webkit-mask-image: none) or (mask-image: none)) {
+    .bc-logo { background: none; }
+    .bc-logo img { opacity: 1; object-fit: contain; filter: brightness(0); }
+  }
+  /* "…og mange flere" fills the rest of the last row */
+  .bc-more { grid-column: span var(--bc-span-2); }
+  @media (min-width: 768px) { .bc-more { grid-column: span var(--bc-span-4); } }
+  @media (min-width: 1280px) { .bc-brands--many .bc-more { grid-column: span var(--bc-span-6); } }
+  .bc-more p {
+    margin: 0; text-align: center; text-wrap: balance;
+    font-family: var(--heading-font-stack, "Instrument Serif", serif); font-weight: var(--heading-font-weight, 400);
+    font-size: var(--bc-more-size); line-height: var(--heading-line-height, 0.9); letter-spacing: var(--heading-letterspacing, -0.025em);
+  }
+</style>

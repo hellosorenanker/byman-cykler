@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI test: fallback fonts (A7)</title>
+<!--
+  A7 UI test, not part of the build.
+  Compares local fallback fonts with Instrument Serif / Space Mono.
+  Reference widths were measured from qa/screenshots/press-demo-1280.png
+  (Press "Feature text", Instrument Serif 53.41px, letter-spacing -0.025em):
+    line 1 829px, line 2 846px, line 3 846px, line 4 857px (ink width).
+  Space Mono body text: 0.612em per character (14px -> 8.57px).
+  Open over http://localhost:3002/design/ui-tests/fonts.html
+-->
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  body { margin: 0; padding: 14px; color: var(--color-text); background: var(--color-bg); font-family: var(--font-body-fallback); font-size: 14px; line-height: 1.2; }
+  h1 { font: 400 14px/1.2 var(--font-body-fallback); text-transform: uppercase; margin: 0 0 14px; }
+  .row { border-top: 1px solid var(--color-line); padding: 7px 0 14px; }
+  .label { font-size: 11.2px; text-transform: uppercase; margin-bottom: 7px; }
+  .h { font-family: var(--font-heading-fallback); font-weight: 400; line-height: .9; letter-spacing: -.025em; }
+  .fs-feature { font-size: var(--heading-feature-size); }
+  .demo375 { width: 361px; border: 1px dashed var(--color-line); text-align: center; }
+  table { border-collapse: collapse; font-size: 12px; }
+  td, th { border-top: 1px solid var(--color-line); padding: 4px 10px 4px 0; text-align: left; }
+</style>
+</head>
+<body data-fonts="fallback">
+<h1>Fallback font test</h1>
+
+<div class="row">
+  <div class="label">h1 at 375px (heading-feature-size, fallback stack)</div>
+  <div class="demo375"><p class="h" style="font-size:34.17px;margin:0">Butik og værksted er åbne. Webshoppen er på vej.</p></div>
+</div>
+<div class="row">
+  <div class="label">h1 at 320px</div>
+  <div class="demo375" style="width:306px"><p class="h" style="font-size:34.17px;margin:0">Butik og værksted er åbne. Webshoppen er på vej.</p></div>
+</div>
+<div class="row">
+  <div class="label">Body (fallback mono) 14px</div>
+  <p style="margin:0;max-width:60ch">Vi er i gang med at bygge en ny webshop. Indtil den åbner, er butikken og værkstedet klar til at hjælpe dig med køb, rådgivning og service. ÆØÅ æøå 09.00–16.00</p>
+</div>
+<div class="row" id="compare">
+  <div class="label">Look-alike check at 53.41px (compare with "Hot off the Roaster" in qa/screenshots/press-demo-1280.png)</div>
+  <div class="cmp" style="font-family:'Times New Roman'">Hot off the Roaster · Mærker vi forhandler <small>Times New Roman</small></div>
+  <div class="cmp" style="font-family:'Bodoni 72'">Hot off the Roaster · Mærker vi forhandler <small>Bodoni 72</small></div>
+  <div class="cmp" style="font-family:'Big Caslon'">Hot off the Roaster · Mærker vi forhandler <small>Big Caslon</small></div>
+  <div class="cmp" style="font-family:'Baskerville'">Hot off the Roaster · Mærker vi forhandler <small>Baskerville</small></div>
+  <div class="cmp" style="font-family:'Didot'">Hot off the Roaster · Mærker vi forhandler <small>Didot</small></div>
+  <div class="cmp" style="font-family:Georgia">Hot off the Roaster · Mærker vi forhandler <small>Georgia</small></div>
+  <style>.cmp{font-size:53.41px;line-height:.9;letter-spacing:-.025em;white-space:nowrap;padding:4px 0}.cmp small{font:11.2px var(--font-body-fallback);letter-spacing:0;text-transform:uppercase}</style>
+</div>
+<div class="row">
+  <div class="label">Measured candidates (ratio = fallback width / Instrument Serif width)</div>
+  <table id="out"><tr><th>font</th><th>available</th><th>ratio</th><th>size-adjust to match</th></tr></table>
+</div>
+
+<script>
+  var REF = [
+    ['Sunrise Coffee Co started with a simple idea: great', 829],
+    ['mornings begin with great coffee. We believe coffee', 846],
+    ['should be fresh, approachable, and something you', 846],
+    ['actually look forward to drinking—every single day.', 857]
+  ];
+  var SERIFS = ['Instrument Serif', 'Times New Roman', 'Times', 'Didot', 'Bodoni 72', 'Big Caslon', 'Baskerville',
+    'Hoefler Text', 'Iowan Old Style', 'Charter', 'Georgia', 'PT Serif', 'New York', 'Athelas', 'Cochin', 'Palatino', 'serif'];
+  var MONOS = ['Space Mono', 'ui-monospace', 'SF Mono', 'Menlo', 'Monaco', 'Courier New', 'PT Mono', 'Andale Mono', 'monospace'];
+  var c = document.createElement('canvas').getContext('2d');
+  function ink(font, size, text, ls) {
+    c.font = '400 ' + size + 'px ' + font;
+    c.letterSpacing = ls || '0px';
+    var m = c.measureText(text);
+    return m.actualBoundingBoxLeft + m.actualBoundingBoxRight;
+  }
+  function avail(font) {
+    if (/^(serif|monospace|ui-monospace)$/.test(font)) return true;
+    var t = 'mmmmmmmmmmlli WWW';
+    return ink('"' + font + '", monospace', 40, t) !== ink('monospace', 40, t) ||
+           ink('"' + font + '", serif', 40, t) !== ink('serif', 40, t);
+  }
+  var results = { serif: {}, mono: {} };
+  var out = document.getElementById('out');
+  SERIFS.forEach(function (f) {
+    var fam = /^(serif)$/.test(f) ? f : '"' + f + '"';
+    var sum = 0, ref = 0;
+    REF.forEach(function (r) { sum += ink(fam, 53.41, r[0], '-1.335px'); ref += r[1]; });
+    var ratio = sum / ref, a = avail(f);
+    results.serif[f] = { available: a, ratio: +ratio.toFixed(3) };
+    out.insertAdjacentHTML('beforeend', '<tr><td>' + f + '</td><td>' + a + '</td><td>' + ratio.toFixed(3) + '</td><td>' + (100 / ratio).toFixed(1) + '%</td></tr>');
+  });
+  MONOS.forEach(function (f) {
+    var fam = /^(monospace|ui-monospace)$/.test(f) ? f : '"' + f + '"';
+    c.font = '400 14px ' + fam; c.letterSpacing = '0px';
+    var w = c.measureText('MMMMMMMMMM').width / 10;   // advance per character
+    var ratio = w / (14 * 0.612), a = avail(f);
+    results.mono[f] = { available: a, ratio: +ratio.toFixed(3) };
+    out.insertAdjacentHTML('beforeend', '<tr><td>' + f + ' (mono)</td><td>' + a + '</td><td>' + ratio.toFixed(3) + '</td><td>' + (100 / ratio).toFixed(1) + '%</td></tr>');
+  });
+  window.__fontResults = results;
+</script>
+</body>
+</html>

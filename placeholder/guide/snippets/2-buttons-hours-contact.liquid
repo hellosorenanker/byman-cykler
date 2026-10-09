@@ -1,0 +1,381 @@
+{%- comment -%}
+  =====================================================================
+  BYMAN CYKLER - SNIPPET 2 OF 3: BUTTONS, OPENING HOURS, CONTACT, ADDRESS
+  =====================================================================
+  WHERE IT GOES
+    Password page, right under the headline (Rich text) section.
+    Add section -> Custom liquid -> paste ALL of this file into the
+    "Custom Liquid" box. Leave Subheading, Heading and Text empty.
+
+  THE ONLY LINES YOU NORMALLY CHANGE (all of them are just below)
+    A. Weekly opening hours: the 7 lines between "capture bc_hours" and
+       the next "endcapture". One line per day, Monday first.
+    B. Special or holiday hours: the lines between "capture bc_special"
+       and the next "endcapture". Empty today.
+    C. Phone, email and address: the "assign" lines under C.
+    Change Google too! Google Business Profile and this box must always
+    show the same hours.
+
+  WHAT IT DOES
+    Three round buttons (Ring til os / Find vej / Skriv til os), then three
+    cells: Åbningstider (today in bold with a dot), Kontakt, Find os.
+    Its script also fills in the status strip from snippet 1, shows a
+    notice from 14 days before any special hours, and uses Copenhagen time
+    whatever the visitor's phone is set to. With JavaScript off, the
+    table still shows the normal week; only the live parts are missing.
+    Test switch: add ?now=2026-10-10T13:30 to the page address to pretend
+    it is that time in Copenhagen.
+
+  WHERE THIS CAME FROM
+    build/index.html, build/styles.css and build/app.js (ui-spec.md
+    sections 6 and 8). All class names start with "bc-". Theme variables
+    (--color-scheme-text, --color-gridline, --heading-font-stack, ...)
+    were seen on the Press demo store (theme 5.0.0) on 2026-10-09, not yet
+    in your own theme files. The value after each comma is the measured
+    Press value, used if the variable doesn't exist.
+  Comments like this one are not sent to visitors.
+{%- endcomment -%}
+
+{%- comment -%}
+  A. WEEKLY OPENING HOURS. Keep the order Monday to Sunday.
+     Format:      day | opens | closes     times as HH:MM, e.g. 09:00
+     Closed day:  day | lukket
+     Source: Google Business Profile, checked 2026-10-09 (data/business.json).
+{%- endcomment -%}
+{%- capture bc_hours -%}
+mandag  | 09:00 | 16:00
+tirsdag | 09:00 | 16:00
+onsdag  | 11:00 | 17:00
+torsdag | 09:00 | 16:00
+fredag  | 09:00 | 16:00
+lørdag  | 11:00 | 14:00
+søndag  | lukket
+{%- endcapture -%}
+
+{%- comment -%}
+  B. SPECIAL OR HOLIDAY HOURS. One line per date, between the two lines
+     below. Leave it empty when there are none. Examples (copy, then change):
+       2026-12-23 | 10:00 | 13:00
+       2026-12-24 | lukket | God jul.
+     Date = YEAR-MONTH-DAY. A short Danish note at the end is optional.
+     Old dates are ignored by the page, but you can delete them.
+{%- endcomment -%}
+{%- capture bc_special -%}
+{%- endcapture -%}
+
+{%- comment -%}
+  C. CONTACT. Source: data/business.json (Google Maps, Krak, CVR register,
+     the shop's own website). If there is no email, set bc_email to ''
+     and the "Skriv til os" button disappears by itself.
+{%- endcomment -%}
+{%- assign bc_phone_display = '35 42 51 56' -%}
+{%- assign bc_phone_link = '+4535425156' -%}
+{%- assign bc_email = 'bymancykler@gmail.com' -%}
+{%- assign bc_street = 'Øster Farimagsgade 32' -%}
+{%- assign bc_city = '2100 København Ø' -%}
+{%- assign bc_maps = 'https://www.google.com/maps/search/?api=1&query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98' -%}
+
+{%- comment -%} ===== Nothing below needs changing. ===== {%- endcomment -%}
+{%- assign bc_cta_count = 3 -%}
+{%- if bc_email == blank -%}{%- assign bc_cta_count = 2 -%}{%- endif -%}
+<div class="bc">
+  <div class="bc-grid bc-ctas" style="--bc-cta-count: {{ bc_cta_count }}">
+    <div class="bc-cell"><a class="bc-btn bc-btn--primary" href="tel:{{ bc_phone_link }}">Ring til os</a></div>
+    <div class="bc-cell"><a class="bc-btn" href="{{ bc_maps | escape }}">Find vej</a></div>
+    {%- if bc_email != blank %}
+    <div class="bc-cell"><a class="bc-btn" href="mailto:{{ bc_email | escape }}">Skriv til os</a></div>
+    {%- endif %}
+  </div>
+  <div class="bc-grid bc-info">
+    <section class="bc-cell bc-cell--hours" aria-labelledby="bc-aabningstider">
+      <h2 class="bc-h2" id="bc-aabningstider">Åbningstider</h2>
+      <div class="bc-notice" id="bc-notice" role="note" hidden></div>
+      <table class="bc-table bc-hours" id="bc-hours" aria-labelledby="bc-aabningstider">
+        <tbody>
+        {%- assign bc_i = 0 -%}
+        {%- assign bc_lines = bc_hours | strip | newline_to_br | split: '<br />' -%}
+        {%- for bc_line in bc_lines -%}
+          {%- assign bc_test = bc_line | strip -%}
+          {%- if bc_test == blank -%}{%- continue -%}{%- endif -%}
+          {%- assign bc_i = bc_i | plus: 1 -%}
+          {%- assign bc_num = bc_i | modulo: 7 -%}
+          {%- assign bc_p = bc_line | split: '|' -%}
+          {%- assign bc_day = bc_p[0] | strip | capitalize -%}
+          {%- assign bc_open = bc_p[1] | strip -%}
+          {%- assign bc_close = bc_p[2] | strip -%}
+          {%- assign bc_open_lc = bc_open | downcase -%}
+          {%- if bc_open == blank or bc_open_lc == 'lukket' %}
+          <tr data-day="{{ bc_num }}" data-closed><th scope="row">{{ bc_day }}</th><td>Lukket</td></tr>
+          {%- else %}
+          <tr data-day="{{ bc_num }}" data-open="{{ bc_open }}" data-close="{{ bc_close }}"><th scope="row">{{ bc_day }}</th><td><time datetime="{{ bc_open }}">{{ bc_open | replace: ':', '.' }}</time>–<time datetime="{{ bc_close }}">{{ bc_close | replace: ':', '.' }}</time></td></tr>
+          {%- endif -%}
+        {%- endfor %}
+        </tbody>
+      </table>
+      <p class="bc-small bc-source">Åbningstider fra Google</p>
+      <script type="text/plain" id="bc-special">{{ bc_special | strip }}</script>
+    </section>
+    <section class="bc-cell" aria-labelledby="bc-kontakt">
+      <h2 class="bc-h2" id="bc-kontakt">Kontakt</h2>
+      <table class="bc-table bc-details" aria-labelledby="bc-kontakt">
+        <tbody>
+          <tr><th scope="row">Telefon</th><td><a class="bc-link" href="tel:{{ bc_phone_link }}">{{ bc_phone_display }}</a></td></tr>
+          {%- if bc_email != blank %}
+          <tr><th scope="row">E-mail</th><td><a class="bc-link" href="mailto:{{ bc_email | escape }}">{{ bc_email }}</a></td></tr>
+          {%- endif %}
+        </tbody>
+      </table>
+      {%- if bc_email == blank %}
+      <p class="bc-email-missing">E-mailen er på vej hertil – ring til os i mellemtiden, så hjælper vi dig med det samme.</p>
+      {%- endif %}
+    </section>
+    <section class="bc-cell bc-stack" aria-labelledby="bc-findos">
+      <h2 class="bc-h2" id="bc-findos">Find os</h2>
+      <address>{{ bc_street }}<br>{{ bc_city }}</address>
+      <p class="bc-textlink-wrap"><a class="bc-textlink bc-hit" href="{{ bc_maps | escape }}"><span>Find vej</span></a></p>
+    </section>
+  </div>
+</div>
+<style>
+  .bc {
+    --bc-text: rgb(var(--color-scheme-text, 255 46 0));
+    --bc-bg: rgb(var(--color-scheme-background, 255 255 255));
+    --bc-line: rgb(var(--color-gridline, 255 191 191));
+    --bc-lw: var(--gridline-width, 1px);
+    --bc-pad: var(--section-horizontal-spacing, 0.5rem);
+    --bc-h2: var(--secondary-heading-size, 1.563rem);
+    --bc-heading-font: var(--heading-font-stack, "Instrument Serif", serif);
+    --bc-body-font: var(--body-font-stack, "Space Mono", monospace);
+    color: var(--bc-text); font-family: var(--bc-body-font);
+    font-size: var(--font-size-base, 1rem); line-height: var(--base-line-height, 1.2);
+  }
+  @media (min-width: 1024px) {
+    .bc { --bc-pad: var(--section-horizontal-spacing, 1rem); --bc-h2: var(--secondary-heading-size, 2.441rem); }
+  }
+  .bc *, .bc *::before, .bc *::after { box-sizing: border-box; }
+  .bc [hidden] { display: none !important; }
+  .bc :where(p, address) { margin: 0; }
+  .bc address { font-style: normal; }
+  .bc :where(a) { color: inherit; }
+  .bc :focus-visible { outline: 2px solid var(--bc-text); outline-offset: 3px; }
+  .bc-sr { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+  /* Grid look: pink lines are the background showing through 1px gaps */
+  .bc-grid { display: grid; gap: var(--bc-lw); background: var(--bc-line); }
+  .bc-grid > .bc-cell { background: var(--bc-bg); min-width: 0; }
+
+  /* Buttons (Press: 14px uppercase, 1px border, fully round, arrow added by CSS) */
+  .bc-ctas { grid-template-columns: 1fr; border-bottom: var(--bc-lw) solid var(--bc-line); }
+  .bc-ctas > .bc-cell { padding: 0.5rem var(--bc-pad); }
+  @media (min-width: 768px) { .bc-ctas { grid-template-columns: repeat(var(--bc-cta-count, 3), minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .bc-ctas > .bc-cell { padding: 1rem var(--bc-pad); } }
+  .bc .bc-btn {
+    display: flex; align-items: center; justify-content: center; width: 100%; min-height: 44px;
+    padding: 0.5rem 2rem; text-align: center; text-decoration: none;
+    font-family: var(--bc-body-font); font-size: var(--button-size, 1rem); line-height: 1.2;
+    text-transform: var(--button-text-transform, uppercase);
+    color: var(--bc-text); background: transparent;
+    border: var(--button-border-width, 1px) solid var(--bc-text); border-radius: var(--button-border-radius, 9999px);
+  }
+  .bc .bc-btn--primary { color: var(--bc-bg); background: var(--bc-text); }
+  .bc-btn::after { content: var(--button-after-content, "\00a0\2192"); }
+  @supports (content: "x" / "") { .bc-btn::after { content: var(--button-after-content, "\00a0\2192") / ""; } }
+  @media (min-width: 1024px) and (pointer: fine) { .bc .bc-btn { min-height: 33px; } }
+
+  /* Info cells: 1 column on phones, 2 on tablets, 3 from 1024px */
+  .bc-info { grid-template-columns: 1fr; }
+  .bc-info > .bc-cell { padding: 2rem var(--bc-pad); }
+  @media (min-width: 768px) and (max-width: 1023.98px) {
+    .bc-info { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .bc-info > .bc-cell--hours { grid-row: span 2; }
+  }
+  @media (min-width: 1024px) { .bc-info { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .bc-h2 {
+    margin: 0 0 1rem; color: var(--bc-text); font-family: var(--bc-heading-font);
+    font-weight: var(--heading-font-weight, 400); font-size: var(--bc-h2);
+    line-height: var(--heading-line-height, 0.9); letter-spacing: var(--heading-letterspacing, -0.025em);
+    text-transform: none; scroll-margin-top: 1rem;
+  }
+
+  /* Tables: pink line above every row and under the last one, no vertical lines */
+  .bc-table { width: 100%; border-collapse: collapse; margin: 0; }
+  .bc-table th, .bc-table td {
+    padding: 0.5rem 0; border: 0; border-top: var(--bc-lw) solid var(--bc-line);
+    text-align: left; vertical-align: top; font-weight: inherit; font-size: inherit; background: none;
+  }
+  .bc-table tr:last-child > * { border-bottom: var(--bc-lw) solid var(--bc-line); }
+  .bc-hours td { text-align: right; white-space: nowrap; padding-left: 1rem; }
+  .bc-hours tr.is-today { font-weight: var(--font-body-bold-weight, 700); }
+  .bc-hours tr.is-today th::before {
+    content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: currentColor; margin-right: 0.375rem; vertical-align: 0.05em;
+  }
+  .bc-details th { width: 9ch; padding-right: 0.5rem; }
+  .bc-details td { overflow-wrap: anywhere; }
+  @media (pointer: coarse) { .bc-details th, .bc-details td { padding-block: calc((44px - 1.2em) / 2); } }
+  .bc-small { font-size: var(--font-size-sm, 0.8rem); line-height: 1.2; }
+  .bc-source { margin-top: 0.5rem; }
+
+  /* Special-hours notice */
+  .bc-notice { border: 1px solid currentColor; padding: 0.5rem; margin-bottom: 1rem; }
+  .bc-notice__title { margin-bottom: 0.5rem; text-transform: var(--subheading-capitalize, uppercase); }
+  .bc-notice .bc-table td { text-align: right; white-space: nowrap; padding-left: 1rem; }
+  .bc-notice .bc-table tr:last-child > * { border-bottom: 0; }
+  .bc-notice .bc-note td { border-top: 0; padding-top: 0; padding-left: 0; text-align: left; white-space: normal; }
+
+  /* Links */
+  .bc-link { text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .bc-textlink { position: relative; display: inline-block; text-decoration: none; text-transform: var(--links-text-transform, uppercase); }
+  .bc-textlink span { border-bottom: var(--links-bottom-border-width, 1px) solid currentColor; padding-bottom: var(--links-bottom-padding, 0.25rem); }
+  .bc-textlink span::after { content: var(--links-after-content, "\00a0\2192"); }
+  @supports (content: "x" / "") { .bc-textlink span::after { content: var(--links-after-content, "\00a0\2192") / ""; } }
+  .bc-hit::before { content: ""; position: absolute; left: 0; right: 0; top: calc((100% - 44px) / 2); bottom: calc((100% - 44px) / 2); }
+  .bc-stack > * + * { margin-top: 1rem; }
+  .bc-stack > .bc-textlink-wrap { margin-top: 0.5rem; }
+  .bc-email-missing { margin-top: 1rem; }
+</style>
+<script>
+(function () {
+  'use strict';
+  /* Runs once per page; if the theme editor reloads a section, it just redraws. */
+  if (window.bcHours) { window.bcHours(); return; }
+
+  var ZONE = 'Europe/Copenhagen', AHEAD = 14;
+  var T = {
+    open: 'Åbent nu · lukker {close}',
+    opensLater: 'Lukket · åbner i dag {open}',
+    opensTomorrow: 'Lukket · åbner i morgen {open}',
+    opensOn: 'Lukket · åbner {day} {open}',
+    closedToday: 'Lukket i dag',
+    notice: 'Bemærk: ændrede åbningstider {date}: {hours}',
+    specialHeading: 'Særlige åbningstider',
+    closed: 'Lukket',
+    today: 'i dag',
+    days: ['søndag', 'mandag', 'tirsdag', 'onsdag', 'torsdag', 'fredag', 'lørdag'],
+    months: ['januar', 'februar', 'marts', 'april', 'maj', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'december']
+  };
+  if (!window.Intl || !Intl.DateTimeFormat) return;              // the neutral "Åbningstider" link stays
+  var clock;
+  try {
+    clock = new Intl.DateTimeFormat('en-GB', { timeZone: ZONE, hourCycle: 'h23',
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return; }
+
+  var YMD = /^\d{4}-\d{2}-\d{2}$/;
+  function hhmm(s) {                                              // "9:00", "09.00" -> "09:00"; anything else -> null
+    var m = /^([01]?\d|2[0-3])[:.]([0-5]\d)$/.exec(String(s || '').trim());
+    return m ? (m[1].length === 1 ? '0' : '') + m[1] + ':' + m[2] : null;
+  }
+  function realDate(s) { var d = new Date(s + 'T12:00:00Z'); return YMD.test(s) && !isNaN(d) && d.toISOString().slice(0, 10) === s; }
+  function utc(ymd) { return new Date(ymd + 'T12:00:00Z'); }      // date maths at noon UTC: no daylight-saving surprises
+  function addDays(ymd, k) { var d = utc(ymd); d.setUTCDate(d.getUTCDate() + k); return d.toISOString().slice(0, 10); }
+  function dow(ymd) { return utc(ymd).getUTCDay(); }
+  function longDate(ymd) { var d = utc(ymd); return T.days[d.getUTCDay()] + ' ' + d.getUTCDate() + '. ' + T.months[d.getUTCMonth()]; }
+  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function dk(t) { return t.replace(':', '.'); }
+  function fill(s, o) { return s.replace(/\{(\w+)\}/g, function (m, k) { return k in o ? o[k] : m; }); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  var testNow = null, p = new URLSearchParams(location.search).get('now');
+  if (p && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(p) && realDate(p.slice(0, 10)) && hhmm(p.slice(11))) testNow = { ymd: p.slice(0, 10), hm: p.slice(11) };
+  function nowCph() {
+    if (testNow) return testNow;
+    var o = {};
+    clock.formatToParts(new Date()).forEach(function (x) { o[x.type] = x.value; });
+    return { ymd: o.year + '-' + o.month + '-' + o.day, hm: (o.hour === '24' ? '00' : o.hour) + ':' + o.minute };
+  }
+
+  function readSpecial() {                                        // lines like "2026-12-24 | lukket | God jul."
+    var src = document.getElementById('bc-special'), list = [];
+    if (!src) return list;
+    src.textContent.split(/\r?\n/).forEach(function (line) {
+      if (!line.trim()) return;
+      var f = line.split('|').map(function (x) { return x.trim(); }), x;
+      if (/^lukket$/i.test(f[1] || '')) x = { date: f[0], closed: true, note: f.slice(2).join(' | ') };
+      else x = { date: f[0], open: hhmm(f[1]), close: hhmm(f[2]), closed: false, note: f.slice(3).join(' | ') };
+      if (!realDate(x.date) || (!x.closed && !(x.open && x.close && x.open < x.close))) {
+        if (window.console) console.warn('Byman: ignoring special-hours line "' + line.trim() + '"');
+        return;
+      }
+      list = list.filter(function (s) { return s.date !== x.date; }).concat([x]);
+    });
+    return list;
+  }
+
+  function render() {
+    var status = document.getElementById('bc-status'), table = document.getElementById('bc-hours'), box = document.getElementById('bc-notice');
+    if (!table) return;
+    var rows = [].slice.call(table.querySelectorAll('tr[data-day]')), week = {}, ok = rows.length === 7;
+    rows.forEach(function (r) {
+      var td = r.querySelector('td');
+      if (r.bcRegular == null) r.bcRegular = td.innerHTML;        // remember the normal cell, to restore after a special day
+      if (r.hasAttribute('data-closed')) { week[r.getAttribute('data-day')] = null; return; }
+      var o = hhmm(r.getAttribute('data-open')), c = hhmm(r.getAttribute('data-close'));
+      if (!o || !c || o >= c) { ok = false; return; }
+      week[r.getAttribute('data-day')] = { open: o, close: c };
+    });
+    if (!ok) { if (window.console) console.warn('Byman: check the opening-hours lines (7 days, times like 09:00).'); return; }
+    var special = readSpecial();
+    function specialOn(ymd) { for (var i = 0; i < special.length; i++) if (special[i].date === ymd) return special[i]; return null; }
+    function hoursOn(ymd) { var s = specialOn(ymd); if (s) return s.closed ? null : s; return week[dow(ymd)] || null; }
+    function hoursText(x) { return x.closed ? T.closed : dk(x.open) + '–' + dk(x.close); }
+
+    var now = nowCph(), today = hoursOn(now.ymd), text, state = 'closed';
+
+    // 1. Status strip (snippet 1)
+    if (today && now.hm >= today.open && now.hm < today.close) { text = fill(T.open, { close: dk(today.close) }); state = 'open'; }
+    else if (today && now.hm < today.open) text = fill(T.opensLater, { open: dk(today.open) });
+    else {
+      text = T.closedToday;
+      for (var i = 1; i <= AHEAD; i++) {
+        var d = addDays(now.ymd, i), h = hoursOn(d);
+        if (!h) continue;
+        text = i === 1 ? fill(T.opensTomorrow, { open: dk(h.open) })
+          : fill(T.opensOn, { day: i <= 6 ? T.days[dow(d)] : longDate(d), open: dk(h.open) });
+        break;
+      }
+    }
+    if (status) { status.textContent = text; status.setAttribute('data-state', state); }
+
+    // 2. Today's row: bold + dot + hidden "(i dag)". On a special date it shows that day's real hours.
+    var todayDow = dow(now.ymd), sp = specialOn(now.ymd);
+    rows.forEach(function (r) {
+      var isToday = +r.getAttribute('data-day') === todayDow, td = r.querySelector('td'), th = r.querySelector('th');
+      var old = th.querySelector('.bc-sr'); if (old) th.removeChild(old);
+      td.innerHTML = r.bcRegular;
+      r.classList.toggle('is-today', isToday);
+      if (!isToday) return;
+      if (sp) td.textContent = hoursText(sp);
+      th.appendChild(el('span', 'bc-sr', ' (' + T.today + ')'));
+    });
+
+    // 3. Special-hours notice: every special date from today to 14 days ahead.
+    if (!box) return;
+    var last = addDays(now.ymd, AHEAD);
+    var soon = special.filter(function (x) { return x.date >= now.ymd && x.date <= last; })
+      .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    box.textContent = '';
+    if (soon.length === 1) {
+      var x = soon[0];
+      box.appendChild(el('p', '', fill(T.notice, { date: longDate(x.date), hours: hoursText(x) }) + (x.note ? '. ' + x.note : '')));
+    } else if (soon.length > 1) {
+      box.appendChild(el('p', 'bc-notice__title', T.specialHeading));
+      var t = el('table', 'bc-table'), body = document.createElement('tbody');
+      soon.forEach(function (x) {
+        var tr = el('tr'), th = el('th', '', cap(longDate(x.date)));
+        th.setAttribute('scope', 'row');
+        tr.appendChild(th); tr.appendChild(el('td', '', hoursText(x))); body.appendChild(tr);
+        if (x.note) { var nr = el('tr', 'bc-note'), nd = el('td', '', x.note); nd.colSpan = 2; nr.appendChild(nd); body.appendChild(nr); }
+      });
+      t.appendChild(body); box.appendChild(t);
+    }
+    box.hidden = soon.length === 0;
+  }
+
+  window.bcHours = render;
+  render();
+  setInterval(render, 60000);                                     // keep the status fresh if the page stays open
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) render(); });
+  document.addEventListener('shopify:section:load', render);      // theme editor: redraw after a section reloads
+})();
+</script>

@@ -1,0 +1,158 @@
+{
+  "name": "Byman Cykler",
+  "legalName": "BYMAN CYKLER I/S",
+  "cvr": "14579656",
+  "address": {
+    "street": "Øster Farimagsgade 32",
+    "postalCode": "2100",
+    "city": "København Ø",
+    "country": "DK"
+  },
+  "geo": {
+    "lat": 55.691656,
+    "lng": 12.5766201
+  },
+  "phone": {
+    "display": "35 42 51 56",
+    "e164": "+4535425156"
+  },
+  "email": "bymancykler@gmail.com",
+  "website": "https://byman-cykler.dk",
+  "openingHours": [
+    {
+      "day": "monday",
+      "open": "09:00",
+      "close": "16:00",
+      "closed": false
+    },
+    {
+      "day": "tuesday",
+      "open": "09:00",
+      "close": "16:00",
+      "closed": false
+    },
+    {
+      "day": "wednesday",
+      "open": "11:00",
+      "close": "17:00",
+      "closed": false
+    },
+    {
+      "day": "thursday",
+      "open": "09:00",
+      "close": "16:00",
+      "closed": false
+    },
+    {
+      "day": "friday",
+      "open": "09:00",
+      "close": "16:00",
+      "closed": false
+    },
+    {
+      "day": "saturday",
+      "open": "11:00",
+      "close": "14:00",
+      "closed": false
+    },
+    {
+      "day": "sunday",
+      "open": null,
+      "close": null,
+      "closed": true
+    }
+  ],
+  "specialHours": [],
+  "google": {
+    "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Byman+Cykler+%C3%98ster+Farimagsgade+32+2100+K%C3%B8benhavn+%C3%98",
+    "placeId": "0x46525302b34557e7:0x2ce360f597b2c25f",
+    "rating": 3.6,
+    "reviewCount": 62,
+    "categories": [
+      "Cykelværksted"
+    ],
+    "status": "OPERATIONAL"
+  },
+  "social": {
+    "instagram": "https://www.instagram.com/byman.cykler/",
+    "facebook": "https://www.facebook.com/byman.cykler.dk/",
+    "strava": ""
+  },
+  "sources": {
+    "name": {
+      "url": "https://www.google.com/maps/place/Byman+Cykler/@55.691656,12.5766201,17z/data=!3m1!4b1!4m6!3m5!1s0x46525302b34557e7:0x2ce360f597b2c25f!8m2!3d55.691656!4d12.5766201!16s%2Fg%2F1vspq36y",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Matches Krak, Facebook, Instagram and the shop's own byman-cykler.dk."
+    },
+    "legalName": {
+      "url": "https://datacvr.virk.dk/enhed/virksomhed/14579656",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Official Danish Business Authority (Erhvervsstyrelsen) register, CVR lookup. Confirmed also by Krak."
+    },
+    "cvr": {
+      "url": "https://datacvr.virk.dk/enhed/virksomhed/14579656",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Status: Aktiv (active). Company form Interessentskab, start date 01.10.1987."
+    },
+    "address": {
+      "url": "https://datacvr.virk.dk/enhed/virksomhed/14579656",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Confirmed by official CVR register and Krak as 'Øster Farimagsgade 32, 2100 København Ø'. Google Maps shows the same street and postal code but displays the city simply as 'København' (drops the 'Ø' district letter) — see disagreements in data-sources.md."
+    },
+    "phone": {
+      "url": "https://www.google.com/maps/place/Byman+Cykler/@55.691656,12.5766201,17z/data=!3m1!4b1!4m6!3m5!1s0x46525302b34557e7:0x2ce360f597b2c25f!8m2!3d55.691656!4d12.5766201!16s%2Fg%2F1vspq36y",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "35 42 51 56, same number also on Krak and the Facebook page. Matches Søren's starting data."
+    },
+    "email": {
+      "url": "https://byman-cykler.dk",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Found as a mailto: link in the raw HTML of the shop's own (password-protected) Shopify 'coming soon' page, and independently confirmed on the shop's public Facebook page (facebook.com/byman.cykler.dk) under contact info. Confirmed by Søren at Gate 1 (2026-10-09)."
+    },
+    "website": {
+      "url": "https://www.google.com/maps/place/Byman+Cykler/@55.691656,12.5766201,17z/data=!3m1!4b1!4m6!3m5!1s0x46525302b34557e7:0x2ce360f597b2c25f!8m2!3d55.691656!4d12.5766201!16s%2Fg%2F1vspq36y",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "byman-cykler.dk is currently the Shopify password/coming-soon page — this is the same site this placeholder is meant to sit behind. Internal Shopify shop name is 'Byman Sport' and the myshopify.com handle is byman-cykler, but the public-facing title on the page and everywhere else is 'Byman Cykler' — see disagreements."
+    },
+    "openingHours": {
+      "url": "https://www.google.com/maps/place/Byman+Cykler/@55.691656,12.5766201,17z/data=!3m1!4b1!4m6!3m5!1s0x46525302b34557e7:0x2ce360f597b2c25f!8m2!3d55.691656!4d12.5766201!16s%2Fg%2F1vspq36y",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Read from the expanded weekly-hours panel on the Google Business Profile (per Søren's rule, Google wins on hours). Krak lists no hours. The shop's Instagram bio (Mon–Fri 09–15) disagrees, see data-sources.md. Confidence raised from medium to high because Søren confirmed at Gate 1 (2026-10-09) that the Google hours are correct and the Instagram bio is outdated."
+    },
+    "social.instagram": {
+      "url": "https://byman-cykler.dk",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Linked from the shop's own website; page loads and shows the shop's name/bio."
+    },
+    "social.facebook": {
+      "url": "https://byman-cykler.dk",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "Linked from the shop's own website; page loads and shows matching address, phone and email."
+    },
+    "google.rating": {
+      "url": "https://www.google.com/maps/place/Byman+Cykler/@55.691656,12.5766201,17z/data=!3m1!4b1!4m6!3m5!1s0x46525302b34557e7:0x2ce360f597b2c25f!8m2!3d55.691656!4d12.5766201!16s%2Fg%2F1vspq36y",
+      "retrieved": "2026-10-09",
+      "confidence": "high",
+      "note": "3.6 stars from 62 reviews (breakdown: 36x5★, 4x4★, 3x3★, 1x2★, 18x1★). Note Facebook shows a different, non-comparable metric: '90% anbefalet (53 anmeldelser)' (thumbs up/down, not stars)."
+    },
+    "google.placeId": {
+      "url": "https://www.google.com/maps/place/Byman+Cykler/@55.691656,12.5766201,17z/data=!3m1!4b1!4m6!3m5!1s0x46525302b34557e7:0x2ce360f597b2c25f!8m2!3d55.691656!4d12.5766201!16s%2Fg%2F1vspq36y",
+      "retrieved": "2026-10-09",
+      "confidence": "medium",
+      "note": "This is the CID pair shown in the Maps URL (1s...:...), not the standard Places API 'ChIJ...' place_id. It will need to be re-resolved via a Place ID finder/API call before use in the Google Places API (New)."
+    }
+  },
+  "missing": [
+    "social.strava"
+  ]
+}

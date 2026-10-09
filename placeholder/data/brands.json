@@ -1,0 +1,79 @@
+[
+  {
+    "name": "ENVE",
+    "slug": "enve",
+    "url": "https://www.enve.com",
+    "category": "Hjul & komponenter",
+    "logo": "assets/logos/enve.png",
+    "logoSource": "https://enve.com/cdn/shop/files/ENVE_logo_white_1650x600_84289d1e-bdf5-4c05-82f4-91206decc5df.png",
+    "scale": 1.2,
+    "featured": true,
+    "notes": "UNVERIFIED (ingen presskit-adgang fundet): kun en hvid PNG (transparent baggrund) fundet i enve.com's header, ingen SVG og intet officielt presskit. assets/logos/enve-original.png er den urørte fil (1650x600); enve.png er beskåret stramt om bogstaverne (1420x391, hvid, transparent) uden at tegne om. Da det er en PNG (pixelbillede), kan byggetrinnet ikke bruge currentColor - brug CSS filter (fx invert/brightness) hvis en mørk variant er nødvendig. Ingen officielle brugsregler (clear space/min. størrelse) fundet offentligt. Featured=true: ENVE er et prestigefyldt hjul-/komponentmærke der passer godt til butikkens fokus på high-end landevejscykler."
+  },
+  {
+    "name": "Specialized",
+    "slug": "specialized",
+    "url": "https://www.specialized.com",
+    "category": "Cykler",
+    "logo": "assets/logos/specialized.svg",
+    "logoSource": "https://www.specialized.com/dk/da",
+    "scale": 0.85,
+    "featured": true,
+    "notes": "UNVERIFIED (intet offentligt presskit fundet): ordmærket er hentet som inlinet SVG fra footer-sektionen på specialized.com/dk/da (ingen separat fil-URL findes). ViewBox 0 0 1540 160 var allerede stramt beskåret om bogstaverne. Oprindelig fill brugte CSS-variablen var(--theme-secondary-fill); ændret til currentColor per sikkerheds-/temakrav. Ingen officielle brugsregler fundet offentligt. Featured=true: Specialized er hovedmærket i butikken."
+  },
+  {
+    "name": "Silca",
+    "slug": "silca",
+    "url": "https://silca.cc",
+    "category": "Pumper & værktøj",
+    "logo": "assets/logos/silca.svg",
+    "logoSource": "https://silca.cc",
+    "scale": 1.05,
+    "featured": false,
+    "notes": "UNVERIFIED (intet offentligt presskit fundet): ordmærket (med lille ™-mærke) er hentet som inlinet SVG fra header på silca.cc (ingen separat fil-URL findes). ViewBox 0 0 80 16 var allerede stramt beskåret. Oprindelig fill #1D1D1B ændret til currentColor. Ingen officielle brugsregler fundet offentligt. Featured=false: Silca er et respekteret, men nichepræget tilbehørs-/værktøjsmærke - mindre centralt end cykel- og hjulmærkerne på forsiden, men stadig relevant for butikkens værksted."
+  },
+  {
+    "name": "MET",
+    "slug": "met",
+    "url": "https://www.met-helmets.com",
+    "category": "Hjelme",
+    "logo": "assets/logos/met.svg",
+    "logoSource": "https://www.met-helmets.com/app/themes/methelmets-theme/dist/images/met-logo_40357cf1.svg",
+    "scale": 1.4,
+    "featured": false,
+    "notes": "Søren valgte ved Gate 1 (2026-10-09) det fulde kvadratiske badge i én farve: kvadratet i currentColor med bogstaverne skåret ud (fill-rule evenodd), lavet direkte fra met-original.svg uden at tegne om. Ingen officielle brugsregler fundet."
+  },
+  {
+    "name": "Polymer Workshop",
+    "slug": "polymer",
+    "url": "https://www.polymer.ws",
+    "category": "Komponenter",
+    "logo": "assets/logos/polymer.svg",
+    "logoSource": "https://www.polymer.ws/",
+    "scale": 1.3,
+    "featured": false,
+    "notes": "Bekræftet af Søren ved Gate 1 (2026-10-09): Polymer Workshop (polymer.ws), københavnsk producent af karbonhjul, styr og sadelpinde. Logo fra forsidens header-SVG; ingen offentlige brugsregler fundet."
+  },
+  {
+    "name": "GripGrab",
+    "slug": "gripgrab",
+    "url": "https://www.gripgrab.com",
+    "category": "Handsker & beklædning",
+    "logo": "assets/logos/gripgrab-original.png",
+    "logoSource": "https://www.gripgrab.com/cdn/shop/files/GripGrab_logo_white-PNG-transparent_600px.png?v=1638799477",
+    "scale": 1,
+    "featured": false,
+    "notes": "Bekræftet: dansk handske-/beklædningsmærke grundlagt 2000 af Kristian Krøyer, stadig familieejet (gripgrab.com/pages/press). Intet SVG fundet i header og intet downloadbart logo i presserummet (kun pressefotos og PDF-pressemeddelelser samt en fotogalleri-portal der kræver login til højopløste billeder) - derfor er kilden den officielle hvide, transparente PNG (600x134px) fra forsidens header, som er prioritet 3 i briefen. Filen er gemt urørt som gripgrab-original.png og IKKE omdannet til SVG eller optegnet. Da filen allerede er hvid, skal byggetrinnet gøre den ensfarvet med CSS (fx mask-image: url(...) + background-color, eller en filter/invert-løsning) i stedet for currentColor, som kun virker på SVG. Ingen officielle brugsregler (clear space/min. størrelse) fundet offentligt."
+  },
+  {
+    "name": "DT Swiss",
+    "slug": "dt-swiss",
+    "url": "https://www.dtswiss.com",
+    "category": "Hjul & naver",
+    "logo": "assets/logos/dt-swiss.svg",
+    "logoSource": "https://www.dtswiss.com/en",
+    "scale": 0.85,
+    "featured": false,
+    "notes": "Bekræftet: schweizisk hjul-/nav-producent. Officielle brugsregler fundet på brandplatform.dtswiss.com/en/corporate-guidelines/corporate-design/overview: friplads = logoets egen højde til alle sider; minimumsstørrelse 145x23 px digitalt / 20x3 mm print; farver begrænset til sort, hvid eller gråtoner derimellem, og SKAL være hvid på farvede baggrunde/billeder; logoet må aldrig adskilles fra claimet 'Engineering Performance' hvis begge bruges sammen - er der ikke plads, droppes claimet helt (denne fil har intet claim). Det fulde aktivbibliotek (asset-search) kræver login/registrering, så ordmærket er i stedet hentet som inlinet SVG fra dtswiss.com's header (prioritet 2), viewBox 0 0 400 65, allerede stramt beskåret. Original fill #ffffff ændret til currentColor; ingen former tegnet om."
+  }
+]

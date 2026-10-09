@@ -1,0 +1,46 @@
+[
+  {
+    "name": "ENVE",
+    "slug": "enve",
+    "url": "https://www.enve.com",
+    "category": "Hjul & komponenter",
+    "logo": "assets/logos/enve.png",
+    "logoSource": "https://enve.com/cdn/shop/files/ENVE_logo_white_1650x600_84289d1e-bdf5-4c05-82f4-91206decc5df.png",
+    "scale": 1.2,
+    "featured": true,
+    "notes": "UNVERIFIED (ingen presskit-adgang fundet): kun en hvid PNG (transparent baggrund) fundet i enve.com's header, ingen SVG og intet officielt presskit. assets/logos/enve-original.png er den urørte fil (1650x600); enve.png er beskåret stramt om bogstaverne (1420x391, hvid, transparent) uden at tegne om. Da det er en PNG (pixelbillede), kan byggetrinnet ikke bruge currentColor - brug CSS filter (fx invert/brightness) hvis en mørk variant er nødvendig. Ingen officielle brugsregler (clear space/min. størrelse) fundet offentligt. Featured=true: ENVE er et prestigefyldt hjul-/komponentmærke der passer godt til butikkens fokus på high-end landevejscykler."
+  },
+  {
+    "name": "Specialized",
+    "slug": "specialized",
+    "url": "https://www.specialized.com",
+    "category": "Cykler",
+    "logo": "assets/logos/specialized.svg",
+    "logoSource": "https://www.specialized.com/dk/da",
+    "scale": 0.85,
+    "featured": true,
+    "notes": "UNVERIFIED (intet offentligt presskit fundet): ordmærket er hentet som inlinet SVG fra footer-sektionen på specialized.com/dk/da (ingen separat fil-URL findes). ViewBox 0 0 1540 160 var allerede stramt beskåret om bogstaverne. Oprindelig fill brugte CSS-variablen var(--theme-secondary-fill); ændret til currentColor per sikkerheds-/temakrav. Ingen officielle brugsregler fundet offentligt. Featured=true: Specialized er hovedmærket i butikken."
+  },
+  {
+    "name": "Silca",
+    "slug": "silca",
+    "url": "https://silca.cc",
+    "category": "Pumper & værktøj",
+    "logo": "assets/logos/silca.svg",
+    "logoSource": "https://silca.cc",
+    "scale": 1.05,
+    "featured": false,
+    "notes": "UNVERIFIED (intet offentligt presskit fundet): ordmærket (med lille ™-mærke) er hentet som inlinet SVG fra header på silca.cc (ingen separat fil-URL findes). ViewBox 0 0 80 16 var allerede stramt beskåret. Oprindelig fill #1D1D1B ændret til currentColor. Ingen officielle brugsregler fundet offentligt. Featured=false: Silca er et respekteret, men nichepræget tilbehørs-/værktøjsmærke - mindre centralt end cykel- og hjulmærkerne på forsiden, men stadig relevant for butikkens værksted."
+  },
+  {
+    "name": "MET",
+    "slug": "met",
+    "url": "https://www.met-helmets.com",
+    "category": "Hjelme",
+    "logo": "assets/logos/met.svg",
+    "logoSource": "https://www.met-helmets.com/app/themes/methelmets-theme/dist/images/met-logo_40357cf1.svg",
+    "scale": 1.15,
+    "featured": false,
+    "notes": "FLAG TIL SØREN: den officielle MET-logofil er et rødt kvadrat med et hvidt 'MET' bogstavaftryk (begge dele ét samlet badge-logo, se met-original.svg). Da briefen bad om et vandret ordmærke (ikke kun et ikon) og én ensfarvet farve, er kun det hvide bogstav-lag beholdt og den røde baggrundsfirkant fjernet - ingen former er ændret eller tegnet om, kun det ene originale lag valgt fra og viewBox beskaaret stramt om bogstaverne. Dette ændrer dog det genkendelige kvadratiske badge-udtryk, så det bør tjekkes/godkendes. Ingen officielle brugsregler (clear space/min. størrelse) fundet offentligt. Featured=false: MET er et solidt, men sekundært hjelmemærke sammenlignet med butikkens landevejs-/gruppesaet-fokus."
+  }
+]

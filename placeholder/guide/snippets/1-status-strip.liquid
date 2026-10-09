@@ -1,0 +1,54 @@
+{%- comment -%}
+  =====================================================================
+  BYMAN CYKLER - SNIPPET 1 OF 3: STATUS STRIP ("ÅBENT NU · LUKKER 16.00")
+  =====================================================================
+  WHERE IT GOES
+    Password page, the FIRST section from the top.
+    Add section -> Custom liquid -> paste ALL of this file into the
+    "Custom Liquid" box. Leave Subheading, Heading and Text empty.
+
+  WHAT YOU CHANGE HERE
+    Nothing. The live text ("Åbent nu · lukker 16.00") is filled in by the
+    script in snippet 2 (2-buttons-hours-contact.liquid), which reads the
+    opening hours from its own table. So the hours are typed in ONE place.
+    Without snippet 2, or if a visitor has JavaScript switched off, the
+    strip simply says "ÅBNINGSTIDER" with an arrow and links to the hours.
+    It never says "Åbent nu" unless the script has checked the clock.
+
+  WHERE THIS CAME FROM
+    Copied from the standalone page: build/index.html (A1 status strip)
+    and build/styles.css (ui-spec.md section 6.4).
+    All class names start with "bc-" so they can't clash with the theme.
+    Theme colour and font variables (--color-scheme-text, --body-font-stack
+    and so on) were seen on the Press demo store (theme 5.0.0) on
+    2026-10-09, NOT yet in your own theme files. If a variable doesn't
+    exist, the value after the comma is used instead (the measured Press
+    value), so the strip still looks right.
+  Comments like this one are not sent to visitors.
+{%- endcomment -%}
+<div class="bc-strip">
+  <a class="bc-status" id="bc-status" href="#bc-aabningstider">Åbningstider</a>
+</div>
+<style>
+  .bc-strip {
+    --bc-pad: var(--section-horizontal-spacing, 0.5rem);
+    display: flex; justify-content: center; padding: 0 var(--bc-pad); text-align: center;
+    color: rgb(var(--color-scheme-text, 255 46 0));
+    font-family: var(--body-font-stack, "Space Mono", monospace);
+    font-size: var(--font-size-base, 1rem); line-height: var(--base-line-height, 1.2);
+  }
+  @media (min-width: 1024px) { .bc-strip { --bc-pad: var(--section-horizontal-spacing, 1rem); } }
+  .bc-status {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
+    min-height: 44px; color: inherit; text-decoration: none;
+    text-transform: var(--subheading-capitalize, uppercase);
+    letter-spacing: var(--subheading-letterspacing, 0);
+  }
+  @media (pointer: fine) { .bc-status { min-height: 32px; } }
+  .bc-status::after { content: "\00a0\2193"; }
+  @supports (content: "x" / "") { .bc-status::after { content: "\00a0\2193" / ""; } }
+  .bc-status[data-state]::before { content: ""; flex: none; width: 7px; height: 7px; border-radius: 50%; }
+  .bc-status[data-state="open"]::before { background: currentColor; }
+  .bc-status[data-state="closed"]::before { box-shadow: inset 0 0 0 1px currentColor; }
+  .bc-status:focus-visible { outline: 2px solid rgb(var(--color-scheme-text, 255 46 0)); outline-offset: -2px; }
+</style>

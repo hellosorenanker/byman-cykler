@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="da" data-fonts="fallback">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI test: brand grid (A7)</title>
+<!--
+  A7 UI test, not part of the build. Brand grid exactly as ui-spec.md §5 describes it.
+  Open over http (CSS masks fail on file://):
+    http://localhost:3002/design/ui-tests/grid.html?n=7     (7 = the real list)
+    http://localhost:3002/design/ui-tests/grid.html?n=12    (real logos repeated)
+    http://localhost:3002/design/ui-tests/grid.html?n=25
+  Extra switches: &badge=1.2 (badge factor), &nomask=1 (simulate a browser without CSS masks),
+  &label=1 (print name/scale/px under each logo, for checking only).
+-->
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--color-bg); color: var(--color-text); font: var(--font-size-base)/var(--line-height-body) var(--font-body); }
+  .test-bar { font-size: var(--font-size-sm); padding: var(--space-xs) var(--page-padding); border-bottom: 1px solid var(--color-line); text-transform: uppercase; }
+
+  /* ---- Section title row (Rich text) ---- */
+  .title-row { text-align: center; padding: var(--section-header-padding-top) var(--page-padding) var(--section-header-padding-bottom); border-bottom: var(--border-width) solid var(--color-line); }
+  .title-row h2 { font: var(--font-weight-heading) var(--heading-standard-size)/var(--line-height-heading) var(--font-heading); letter-spacing: var(--letter-spacing-heading); margin: 0; }
+  .title-row p { margin: var(--space-sm) auto 0; max-width: 34em; color: var(--color-text-small); }
+  @media (min-width: 1024px) { .title-row p { max-width: var(--text-width-page); } }
+
+  /* ---- Brand grid (ui-spec §5) ---- */
+  .brands { border-bottom: var(--border-width) solid var(--color-line); }
+  .brand-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(var(--brand-cols), minmax(0, 1fr));
+    gap: var(--grid-gap); background: var(--color-line);       /* the 1px gaps ARE the pink lines */
+  }
+  .brand {
+    background: var(--color-bg); height: var(--brand-cell-h); padding: var(--brand-cell-pad);
+    display: flex; align-items: center; justify-content: center; min-width: 0;
+  }
+  .logo {
+    --h: calc(var(--brand-logo-h) * var(--scale, 1) * var(--badge, 1));
+    display: block; flex: none;
+    width: min(calc(var(--h) * var(--ratio)), var(--brand-logo-max-w));
+    height: auto; aspect-ratio: var(--ratio);
+    color: var(--color-text);
+  }
+  .logo--badge { --badge: var(--brand-badge-factor); }
+  svg.logo { overflow: visible; }
+  /* PNG logos: the file is the mask, the colour is currentColor */
+  .logo--png { background-color: currentColor;
+    -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center; }
+  .logo--png img { display: none; }
+  /* Fallback without mask support: show the official file, made black with a filter (allowed: one colour) */
+  @supports not ((-webkit-mask-image: none) or (mask-image: none)) {
+    .logo--png { background: none; }
+    .logo--png img { display: block; width: 100%; height: 100%; object-fit: contain; filter: brightness(0); }
+  }
+  /* test only: the inline mask must be switched off with !important to simulate "no mask support" */
+  html.nomask .logo--png { background: none; -webkit-mask-image: none !important; mask-image: none !important; }
+  html.nomask .logo--png img { display: block; width: 100%; height: 100%; object-fit: contain; filter: brightness(0); }
+
+  .brand--more { grid-column: span var(--span-2); }
+  .brand--more p {
+    margin: 0; text-align: center; text-wrap: balance;
+    font: var(--font-weight-heading) var(--brand-more-size)/var(--line-height-heading) var(--font-heading);
+    letter-spacing: var(--letter-spacing-heading);
+  }
+  @media (min-width: 768px) { .brand--more { grid-column: span var(--span-4); } }
+  @media (min-width: 1024px) {
+    .brand-grid--many { --brand-cell-h: var(--brand-cell-h-many); --brand-logo-h: var(--brand-logo-h-many); }
+  }
+  @media (min-width: 1280px) {
+    .brand-grid--many { --brand-cols: var(--brand-cols-many); }
+    .brand-grid--many .brand--more { grid-column: span var(--span-6); }
+  }
+  .lbl { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; font-size: 9px; text-transform: uppercase; color: #888; }
+  html.label .brand { position: relative; }
+</style>
+</head>
+<body>
+<div class="test-bar" id="bar">Brand grid test</div>
+<section class="title-row">
+  <h2>Mærker vi forhandler</h2>
+  <p>Vi er specialister i Specialized og har stor erfaring med landevejscykler og elektroniske gearsystemer. Værkstedet servicerer cykler på tværs af mærker.</p>
+</section>
+<section class="brands" aria-labelledby="">
+  <ul class="brand-grid" id="grid"></ul>
+</section>
+<script>
+(async function () {
+  var p = new URLSearchParams(location.search);
+  var n = +(p.get('n') || 7);
+  if (p.get('badge')) document.documentElement.style.setProperty('--brand-badge-factor', p.get('badge'));
+  if (p.get('nomask')) document.documentElement.classList.add('nomask');
+  if (p.get('label')) document.documentElement.classList.add('label');
+  var brands = await (await fetch('/data/brands.json')).json();
+  // Load each logo once: SVG text (inlined, so currentColor works) or PNG size
+  for (var b of brands) {
+    var path = '/' + b.logo;
+    if (/\.svg$/.test(path)) {
+      var txt = await (await fetch(path)).text();
+      var vb = txt.match(/viewBox="([^"]+)"/)[1].split(/[\s,]+/).map(Number);
+      b._svg = txt; b._ratio = vb[2] / vb[3];
+    } else {
+      var im = new Image(); im.src = path; await im.decode();
+      b._png = path; b._ratio = im.naturalWidth / im.naturalHeight;
+    }
+  }
+  var grid = document.getElementById('grid');
+  if (n >= 12) grid.classList.add('brand-grid--many');
+  for (var i = 0; i < n; i++) {
+    var b = brands[i % brands.length];
+    var li = document.createElement('li'); li.className = 'brand';
+    var badge = b._ratio < 1.6 ? ' logo--badge' : '';
+    var style = '--scale:' + b.scale + ';--ratio:' + b._ratio.toFixed(4);
+    if (b._svg) {
+      li.innerHTML = b._svg.replace('<svg', '<svg class="logo' + badge + '" style="' + style + '" aria-label="' + b.name + '" focusable="false"');
+    } else {
+      li.innerHTML = '<span class="logo logo--png' + badge + '" role="img" aria-label="' + b.name + '" style="' + style +
+        ';-webkit-mask-image:url(' + b._png + ');mask-image:url(' + b._png + ')"><img src="' + b._png + '" alt=""></span>';
+    }
+    if (p.get('label')) li.insertAdjacentHTML('beforeend', '<span class="lbl">' + b.name + ' ' + b.scale + '</span>');
+    grid.appendChild(li);
+  }
+  var span = function (c) { var r = n % c; return c - r; };   // tile fills the rest of the last row
+  var more = document.createElement('li');
+  more.className = 'brand brand--more';
+  more.style.cssText = '--span-2:' + span(2) + ';--span-4:' + span(4) + ';--span-6:' + span(6);
+  more.innerHTML = '<p>…og mange flere</p>';
+  grid.appendChild(more);
+  // Report rendered logo sizes for the spec
+  await new Promise(function (r) { requestAnimationFrame(function () { requestAnimationFrame(r); }); });
+  var rep = [].slice.call(grid.querySelectorAll('.logo')).slice(0, 7).map(function (el) {
+    var r = el.getBoundingClientRect(); return el.getAttribute('aria-label') + ' ' + Math.round(r.width) + 'x' + Math.round(r.height);
+  });
+  var cell = grid.querySelector('.brand').getBoundingClientRect();
+  window.__report = { n: n, cols: getComputedStyle(grid).gridTemplateColumns.split(' ').length, cell: Math.round(cell.width) + 'x' + Math.round(cell.height),
+    gridH: Math.round(grid.getBoundingClientRect().height), logos: rep, more: getComputedStyle(more).gridColumnEnd };
+  document.getElementById('bar').textContent = 'Brand grid test · n=' + n + ' · ' + window.__report.cols + ' cols · cell ' + window.__report.cell;
+})();
+</script>
+</body>
+</html>

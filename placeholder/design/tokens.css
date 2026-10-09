@@ -1,0 +1,294 @@
+/* =====================================================================
+   Byman Cykler placeholder: design tokens
+   Copied from the Shopify "Baseline" theme (v5.0.0), "Press" preset.
+   Measured on 2026-10-09 on https://baseline-preset-coffee.myshopify.com/
+   with headless Chrome (computed styles) plus the theme's own inline
+   :root variables and assets/base.bundle.css.
+
+   How to read the comments:
+     "computed"   = read with getComputedStyle() on the live demo
+     ":root var"  = copied from the theme's inline <style> :root block
+     "css"        = read from base.bundle.css (the theme's compiled CSS)
+   Desktop values start at 1024px, the theme's "lg" breakpoint.
+   CSS variables can't be used inside media queries, so the breakpoint
+   is written out as 1024px below.
+
+   UNVERIFIED until the theme files arrive: these values describe the
+   demo store's Press settings. Søren's own store may be on a newer
+   theme version (5.4.0 on the theme store) and may have other settings.
+   ===================================================================== */
+
+:root {
+  /* ---------- Base size ---------- */
+  --base-font-size: 87.5%;          /* :root var --base-font-size; html computed 14px, so 1rem = 14px */
+
+  /* ---------- Fonts ---------- */
+  --font-heading: "Instrument Serif", "Times New Roman", Times, serif;   /* h1/h2/h3 computed "Instrument Serif", serif */
+  --font-body: "Space Mono", ui-monospace, Menlo, Consolas, monospace;   /* body computed "Space Mono", monospace */
+  --font-label: var(--font-body);   /* subheadings, buttons, nav, badges, breadcrumbs: computed Space Mono */
+  --font-weight-heading: 400;       /* h2 computed 400 */
+  --font-weight-body: 400;          /* body computed 400 */
+  --font-weight-body-bold: 700;     /* @font-face Space Mono 700 loaded; :root var --body-font-bold-weight */
+
+  /* ---------- Type scale (theme uses a 1.25 ratio; px at 14px root) ---------- */
+  --font-size-xs: 0.64rem;          /* 8.96px  :root var */
+  --font-size-sm: 0.8rem;           /* 11.2px  computed: copyright, badges, textarea */
+  --font-size-base: 1rem;           /* 14px    computed: body, nav, buttons, labels */
+  --font-size-lg: 1.25rem;          /* 17.5px  :root var */
+  --font-size-xl: 1.563rem;         /* 21.88px computed: mobile standard heading */
+  --font-size-2xl: 1.953rem;        /* 27.34px :root var */
+  --font-size-3xl: 2.441rem;        /* 34.17px computed: desktop secondary heading, mobile feature heading */
+  --font-size-4xl: 3.052rem;        /* 42.73px :root var */
+  --font-size-5xl: 3.815rem;        /* 53.41px computed: desktop standard heading */
+  --font-size-6xl: 4.768rem;        /* 66.75px computed: desktop feature heading (h1), collection-link pills */
+  --font-size-7xl: 5.96rem;         /* 83.44px :root var */
+  --font-size-8xl: 7.451rem;        /* 104.31px computed: hero scrolling text, desktop */
+  --font-size-9xl: 9.313rem;        /* 130.38px :root var */
+
+  /* ---------- Text roles (mobile first; desktop in the media query) ---------- */
+  --heading-standard-size: var(--font-size-xl);   /* computed 21.88px at 375 (section headings, "Join the club") */
+  --heading-feature-size: var(--font-size-3xl);   /* computed 34.17px at 375 (page h1, product title) */
+  --heading-secondary-size: var(--font-size-xl);  /* :root var n2 at mobile (blog card titles) */
+  --feature-text-size: var(--font-size-xl);       /* computed 21.88px at 375 (Feature text section paragraph) */
+  --hero-scroll-text-size: var(--font-size-3xl);  /* computed 34.17px at 375 (Image with scrolling text) */
+  --pill-link-size: var(--font-size-3xl);         /* computed 34.17px at 375 (Collection links pills) */
+  --subheading-size: var(--font-size-base);       /* computed 14px both sizes */
+  --button-size: var(--font-size-base);           /* computed 14px both sizes */
+
+  --line-height-body: 1.2;          /* body computed 16.8px / 14px */
+  --line-height-heading: 0.9;       /* h2 computed 48.07px / 53.41px */
+  --line-height-subheading: 1.2;    /* :root var --subheading-line-height */
+  --letter-spacing-heading: -0.025em; /* h2 computed -1.335px at 53.41px */
+  --letter-spacing-body: normal;    /* body computed */
+  --letter-spacing-label: 0em;      /* :root var --subheading-letterspacing */
+  --text-transform-heading: none;   /* h2 computed none: headings use the case you type */
+  --text-transform-label: uppercase; /* subheading, nav, button, link, badge, breadcrumbs computed uppercase */
+
+  /* ---------- Colours: Press colour scheme 1 (used by every home page section) ---------- */
+  --color-bg: #ffffff;              /* body/section bg computed rgb(255,255,255) */
+  --color-text: #ff2e00;            /* body computed rgb(255,46,0) */
+  --color-line: #ffbfbf;            /* gridlines computed rgb(255,191,191); :root var --color-gridline */
+  --color-accent: #ff2e00;          /* :root var scheme1 accent; the same as the text colour */
+  --color-accent-contrast: #ffffff; /* :root var scheme1 accent-contrast */
+  --color-button-bg: #ff2e00;       /* primary button computed bg ("Check out", "Buy it now") */
+  --color-button-text: #ffffff;     /* primary button computed text */
+  --color-button-border: #ff2e00;   /* primary button computed border */
+  --color-button-bg-hover: #ff2e00; /* css: hover = accent; real mouse hover gave no visible change */
+  --color-button-text-hover: #ffffff; /* css: hover = accent-contrast */
+  --color-button-secondary-bg: transparent; /* secondary button computed rgba(0,0,0,0) */
+  --color-button-secondary-text: #ff2e00;   /* secondary button computed */
+  --color-button-secondary-border: #ff2e00; /* secondary button computed */
+  --color-text-faded: rgb(255 46 0 / 0.4);  /* computed: siblings of a hovered link in "Collection links" */
+  --color-text-muted: rgb(255 46 0 / 0.6);  /* css .text-scheme-text/60 */
+  --color-media-placeholder: rgb(255 46 0 / 0.05); /* css: 5% text-colour tint behind images while they load */
+  --color-selection-bg: #ff2e00;    /* :root ::selection = accent */
+  --color-selection-text: #ffffff;  /* :root ::selection = accent-contrast */
+
+  /* Same colours as "R G B" numbers, for rgb(var(--x) / 0.4) style opacity */
+  --color-text-rgb: 255 46 0;       /* :root var --color-scheme-scheme1-text */
+  --color-bg-rgb: 255 255 255;      /* :root var --color-scheme-scheme1-background */
+  --color-line-rgb: 255 191 191;    /* :root var --color-gridline */
+
+  /* Other Press colour schemes. They exist in the preset but no home page section uses them.
+     Only use these after asking Søren. */
+  --scheme2-bg: #ff2e00;  --scheme2-text: #ffffff;  --scheme2-accent: #ffbfbf; /* :root var scheme2 ("inverted red") */
+  --scheme3-bg: #f8f8f8;  --scheme3-text: #ff2e00;  --scheme3-secondary: #d2d2d2; /* :root var scheme3 (light grey) */
+  --scheme4-bg: #000000;  --scheme4-text: #ffffff;  /* :root var scheme4 (black). Close to the facade's charcoal/white */
+  --scheme5-bg: #ffffff;  --scheme5-text: #000000;  /* :root var scheme5 (black on white) */
+
+  /* ---------- Lines and corners ---------- */
+  --border-width: 1px;              /* computed: every gridline, section bottom border, header border */
+  --border-width-double: 2px;       /* css .border-b-gridline-double (calc(gridline * 2)) */
+  --border-style: solid;            /* computed */
+  --text-border-width: 1px;         /* :root var: link underline, input underline, button border */
+  --radius: 20px;                   /* computed on the hero and product images (rounded-grid-media) */
+  --radius-media: 20px;             /* :root var --media-border-radius, --grid-media-border-radius */
+  --radius-thumbnail: 10px;         /* :root var --thumbnail-border-radius */
+  --radius-button: 9999px;          /* computed: buttons, pills and badges are fully round */
+  --radius-box: 0;                  /* computed: sections, grid cells, header and inputs have square corners */
+
+  /* ---------- Spacing (theme rhythm 0.25 / 0.5 / 1 / 2 / 4 rem) ---------- */
+  --space-3xs: 0.25rem;             /* 3.5px  computed: link padding-bottom, badge padding-y, input padding-y */
+  --space-2xs: 0.375rem;            /* 5.25px computed: gap between subheading dot and text */
+  --space-xs: 0.5rem;               /* 7px    :root var --spacing-half; mobile page padding */
+  --space-sm: 1rem;                 /* 14px   :root var --spacing; desktop page padding, cell padding */
+  --space-md: 2rem;                 /* 28px   :root var --spacing-double; button padding-x, section header top */
+  --space-lg: 4rem;                 /* 56px   :root var --media-padding-inset (desktop "deep inset") */
+  --section-padding-y: var(--space-sm);            /* css .py-section-vertical-spacing = 14px */
+  --section-header-padding-top: var(--space-md);   /* computed 28px (section title rows) */
+  --section-header-padding-bottom: var(--space-sm);/* computed 14px */
+  --subheading-margin-bottom: var(--space-xs);     /* computed 7px below "• BESTSELLERS" etc. */
+
+  /* ---------- Layout and grid ---------- */
+  --container-max: none;            /* computed: no max-width; sections are full viewport width (:root --wrapperWidth: 100vw) */
+  --page-padding: 0.5rem;           /* computed 7px at 375 (:root --section-horizontal-spacing-mobile) */
+  --grid-columns: 1;                /* computed 1 column at 375 (product grids use 2) */
+  --grid-gap: 1px;                  /* computed gap 1px (:root --gutter). The gap shows --color-line behind the cells */
+  --media-padding: 0.5rem;          /* computed 7px padding around images inside cells (p-grid-media) at 375 */
+  --media-inset-deep: 2rem;         /* :root var --media-padding-inset at mobile */
+  --media-content-padding: 1.25rem; /* :root var at mobile (text laid over images) */
+  --text-width-feature: 100%;       /* computed: Feature text is full width on mobile */
+  --text-width-page: 100%;          /* computed: page text (About) is full width on mobile */
+  --announcement-height: 32px;      /* computed, both sizes */
+  --header-height: 69px;            /* computed at 375 */
+  --breadcrumb-height: 32px;        /* computed: 7px padding + 1px bottom line */
+  --scrolling-strip-height: 32px;   /* computed: scrolling text strip */
+  --hero-aspect: 4 / 5;             /* css: hero wrapper aspect-[4/5] at mobile (computed 375x469) */
+
+  /* ---------- Buttons ---------- */
+  --button-font: var(--font-label); /* computed Space Mono */
+  --button-font-size: var(--button-size);
+  --button-line-height: 1.2;        /* :root var --button-line-height = base line height */
+  --button-letter-spacing: normal;  /* computed */
+  --button-text-transform: uppercase; /* :root var */
+  --button-padding-y: 0.5rem;       /* computed 7px */
+  --button-padding-x: 2rem;         /* computed 28px */
+  --button-border-width: 1px;       /* computed */
+  --button-radius: var(--radius-button); /* computed 9999px */
+  --button-height: 33px;            /* computed "READ NOW" 144x33 (14px x 1.2 + 2 x 7px + 2 x 1px) */
+  --button-arrow: "\00a0\2192";     /* :root var --button-after-content: a space and → after the label */
+  --button-transition: none;        /* computed transition: all 0s. Hover changes instantly */
+  --pill-padding: 0.5rem 1rem;      /* computed 7px 14px at 375 (Collection links pills) */
+
+  /* ---------- Text links ("VIEW ALL →") ---------- */
+  --link-text-transform: uppercase; /* :root var --links-text-transform */
+  --link-border-width: 1px;         /* computed border-bottom 1px currentColor */
+  --link-padding-bottom: 0.25rem;   /* computed 3.5px */
+  --link-arrow: "\00a0\2192";       /* computed ::after " →" */
+  --link-back-arrow: "\2190\00a0";  /* :root var --links-before-content "← " */
+
+  /* ---------- Small parts ---------- */
+  --subheading-dot-size: 7px;       /* computed ::before 7x7px circle in text colour (theme: 1ex rounded to px) */
+  --badge-font-size: var(--font-size-sm); /* computed 11.2px "SALE", "NEW!" */
+  --badge-padding: 0.25rem 0.5rem;  /* computed 3.5px 7px */
+  --input-border-width: 1px;        /* computed: email/text inputs have only a bottom line in currentColor */
+  --input-padding-y: 0.25rem;       /* computed 3.5px */
+  --textarea-padding: 0.5rem;       /* computed 7px, full 1px border */
+  --focus-outline-width: 5px;       /* :root var calc(2px * 2 + 1px) */
+
+  /* ---------- Motion ---------- */
+  --zoom-scale: 1.05;               /* :root var --zoom-media-scale (image grows on hover) */
+  --zoom-duration: 300ms;           /* css duration-300 on the hero image */
+  --zoom-easing: cubic-bezier(0.455, 0.03, 0.515, 0.955); /* :root var --zoom-timing-function */
+  --scroll-loop-duration: 12s;      /* hero inline style --base-scrolling-items-speed: 12s */
+  /* With prefers-reduced-motion the theme stops scrolling text and centres it (css motion-reduce:) */
+}
+
+/* Desktop: the theme's "lg" breakpoint */
+@media (min-width: 1024px) {
+  :root {
+    --heading-standard-size: var(--font-size-5xl);  /* computed 53.41px */
+    --heading-feature-size: var(--font-size-6xl);   /* computed 66.75px */
+    --heading-secondary-size: var(--font-size-3xl); /* computed 34.17px */
+    --feature-text-size: var(--font-size-5xl);      /* computed 53.41px */
+    --hero-scroll-text-size: var(--font-size-8xl);  /* computed 104.31px */
+    --pill-link-size: var(--font-size-6xl);         /* computed 66.75px */
+
+    --page-padding: 1rem;             /* computed 14px (:root --section-horizontal-spacing-desktop) */
+    --grid-columns: 12;               /* computed 12 x 105.75px + 11 x 1px = 1280px */
+    --media-padding: 1rem;            /* computed 14px */
+    --media-inset-deep: 4rem;         /* :root var at lg */
+    --media-content-padding: 1.75rem; /* :root var at lg */
+    --text-width-feature: 75%;        /* computed lg:w-3/4 (939px of 1252px) */
+    --text-width-page: 50%;           /* computed lg:w-1/2 (About page, 626px) */
+    --header-height: 56px;            /* computed at 1280 */
+    --hero-aspect: 16 / 9;            /* css lg:aspect-[16/9] (computed 1280x720) */
+    --pill-padding: 1rem 2rem;        /* computed 14px 28px */
+  }
+}
+
+/* The theme sets the root font size to 87.5% (14px), so all rem values above
+   match the demo. Keep this rule, or every size comes out 14% too big. */
+html {
+  font-size: var(--base-font-size);
+}
+
+/* =====================================================================
+   A7 ADDITIONS (UI designer, 2026-10-09). See design/ui-spec.md.
+   Everything ABOVE this block is A1's measured Press values and was not
+   changed. Everything below is new: decisions, not measurements.
+   Each token says which spec section it belongs to (§ = ui-spec.md).
+   ===================================================================== */
+:root {
+  /* ---------- §2 Fallback fonts (standalone page only) ----------
+     Shopify password page: the theme's real fonts (--font-heading / --font-body above).
+     Standalone page: <html data-fonts="fallback"> swaps in these stacks (rule at the end).
+     Instrument Serif stays first in case a visitor has it installed. Measured in headless
+     Chrome on this Mac: Bodoni 72 is 11% wider than Instrument Serif, Times New Roman 22%.
+     Menlo is 1.6% narrower than Space Mono. No size changes are needed (ui-spec §2). */
+  --font-heading-fallback: "Instrument Serif", "Bodoni 72", "Times New Roman", Times, "Liberation Serif", Tinos, serif;
+  --font-body-fallback: "Space Mono", ui-monospace, Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
+
+  /* ---------- §10 Contrast switch (needs Søren's decision) ----------
+     Press red on white is 3.72:1. That passes for text 24px and larger, but fails WCAG AA
+     (4.5:1) for smaller text. Every element under 24px uses --color-text-small, and the
+     filled button uses --color-button-bg-primary, so one decision changes one line.
+     Default = Press as measured (no change). Options: see ui-spec §10. */
+  --color-text-small: var(--color-text);                /* default #ff2e00. Option B: #e02800 (4.70:1). Option A: #000000 (21:1) */
+  --color-button-bg-primary: var(--color-button-bg);    /* default #ff2e00. Option B: #e02800 (white text 4.70:1). Option A: unchanged */
+  --color-button-text-primary: var(--color-button-text);/* default #ffffff. Option A: #000000 (black on red 5.64:1). Option B: unchanged */
+
+  /* ---------- §8 Interaction ---------- */
+  --tap-target: 44px;                     /* min height of every tap target on touch screens */
+  --focus-ring-width: 2px;                /* :focus-visible outline */
+  --focus-ring-offset: 3px;               /* gap between element and ring: 3 + 2 = 5px = the theme's --focus-outline-width */
+  --focus-ring-color: var(--color-text);  /* red ring, 3.72:1 against white (needs 3:1) */
+
+  /* ---------- §6 Status strip and hours ---------- */
+  --status-dot-size: var(--subheading-dot-size);  /* 7px. Open = filled dot, closed = 1px ring (Press variant-picker dots) */
+  --status-ring-width: 1px;
+  --hours-cell-pad-y: var(--space-xs);            /* 7px above and below each table row */
+  --hours-label-width: 9ch;                       /* "Telefon" / "E-mail" column in the Kontakt table */
+  --today-weight: var(--font-weight-body-bold);   /* 700, today's row */
+  --notice-border-width: var(--border-width);     /* special-hours notice: 1px box in currentColor */
+  --notice-padding: var(--space-xs);              /* 7px */
+
+  /* ---------- §4 Photo ---------- */
+  --photo-max-upscale: 1.5;               /* the build caps the contained photo at floor(width x 1.5) px */
+  --photo-fullbleed-min: 2400;            /* px; the build uses full-bleed only from this source width (not usable in CSS) */
+  --photo-contained-max-h: 75vh;          /* contained (temporary) photo never taller than this */
+  --photo-focus: 50% 50%;                 /* object-position for crops; build setting "photoFocus" overrides */
+  --hero-scroll-bottom: var(--media-content-padding); /* 17.5px mobile, 24.5px desktop: gap under the scrolling name */
+  --hero-scroll-unit: var(--scroll-loop-duration);    /* 12s for one "Byman Cykler." copy to move its own width */
+  --hero-scroll-size-contained: var(--font-size-7xl); /* 83.44px on desktop when the photo is contained */
+
+  /* ---------- §5 Brand grid (mobile first) ---------- */
+  --brand-cols: 2;
+  --brand-cell-h: 104px;
+  --brand-cell-pad: var(--space-xs);      /* 7px inside each cell */
+  --brand-logo-h: 28px;                   /* base height; logo height = base x scale (brands.json) */
+  --brand-logo-max-w: 85%;                /* of the cell's inner width; wide logos shrink to fit, never stretch */
+  --brand-badge-factor: 1.2;              /* extra x for near-square badges (width/height < 1.6), i.e. MET */
+  --brand-more-size: var(--heading-secondary-size);
+  /* "Many" variant: 12 or more logos (class brand-grid--many, set by the build) */
+  --brand-cell-h-many: 136px;             /* used from 1024px */
+  --brand-logo-h-many: 32px;              /* used from 1024px */
+  --brand-cols-many: 6;                   /* used from 1280px only (below that: 4), so DT Swiss stays >= 145px wide */
+
+  /* ---------- §1 Wordmark row (standalone A6 slot) ----------
+     "Byman Cykler" measures 4.97em in Bodoni 72 and 5.58em in Times New Roman, so dividing the
+     row width by 5.8 fills about 86% / 96% of it without overflowing. 100cqi = the row's inner width. */
+  --wordmark-divisor: 5.8;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --brand-cols: 4;
+    --brand-cell-h: 120px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --brand-cell-h: 160px;
+    --brand-cell-pad: var(--space-sm);    /* 14px */
+    --brand-logo-h: 36px;
+    --brand-logo-max-w: 80%;
+  }
+}
+
+/* Standalone page: <html lang="da" data-fonts="fallback">. Never set this on Shopify. */
+html[data-fonts="fallback"] {
+  --font-heading: var(--font-heading-fallback);
+  --font-body: var(--font-body-fallback);
+}
