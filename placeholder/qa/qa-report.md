@@ -5,6 +5,7 @@
 > - **M1:** the shop owns the temporary photo, so it may be published. It is still low resolution, so replacing it with a ≥ 2400 px photo stays recommended (`PHOTO_FILE` in `build.mjs`).
 > - **Path:** standalone page on Vercel at https://www.byman-cykler.dk/, committed and pushed to `main`.
 > - **Later the same day (Søren's request):** Vercel Web Analytics was added. It is cookieless and served from the site's own address (`/_vercel/insights/script.js`), and it never loads on localhost. So it is still "no third-party requests", but the page now counts visits.
+> - **2026-10-10 (Søren):** colour changed to deep dusty blue **#46627F** (lines #C8D0D9). Small text is now 6.34:1, so the old "red fails WCAG AA" item is **resolved**. 4 brands were added: Shimano, SRAM, Pelago, Christiania Bikes. SRAM's guidelines allow only black, white or red, and ask for approval before use. This was flagged to Søren (like the DT Swiss rule). The Pelago logo file is small (186×81 px), so a sharper version is welcome. The workshop text now names every bike type.
 
 
 Written by A9 QA, 2026-10-09 (Wave 4). Reviewed: `placeholder/build/` (index.html generated 2026-10-09, styles.css, app.js, tokens.css, img/) against `design/ui-spec.md`, `design/section-map.md`, `design/tokens.css`, `research/theme-analysis.md`, `research/ux-research.md`, `research/data-sources.md` and `data/business.json`.

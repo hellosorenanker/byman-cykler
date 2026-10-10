@@ -75,5 +75,49 @@
     "scale": 0.85,
     "featured": false,
     "notes": "Bekræftet: schweizisk hjul-/nav-producent. Officielle brugsregler fundet på brandplatform.dtswiss.com/en/corporate-guidelines/corporate-design/overview: friplads = logoets egen højde til alle sider; minimumsstørrelse 145x23 px digitalt / 20x3 mm print; farver begrænset til sort, hvid eller gråtoner derimellem, og SKAL være hvid på farvede baggrunde/billeder; logoet må aldrig adskilles fra claimet 'Engineering Performance' hvis begge bruges sammen - er der ikke plads, droppes claimet helt (denne fil har intet claim). Det fulde aktivbibliotek (asset-search) kræver login/registrering, så ordmærket er i stedet hentet som inlinet SVG fra dtswiss.com's header (prioritet 2), viewBox 0 0 400 65, allerede stramt beskåret. Original fill #ffffff ændret til currentColor; ingen former tegnet om."
+  },
+  {
+    "name": "Shimano",
+    "slug": "shimano",
+    "url": "https://bike.shimano.com",
+    "category": "Gear & komponenter",
+    "logo": "assets/logos/shimano.svg",
+    "logoSource": "https://www.shimano.com/jp/img/common/logo_shimano.svg",
+    "scale": 1.1,
+    "featured": false,
+    "notes": "Bekræftet: japansk komponentproducent (bike.shimano.com / shimano.com). Intet offentligt presskit med logo-download blev fundet - bike.shimano.com's egen header-logo er kun en PNG på 125x16 px (for lavopløst). Logoet er i stedet hentet som SVG fra headeren på moderselskabets globale site shimano.com/en/ (fil-sti /jp/img/common/logo_shimano.svg), som reelt er det logo der vises i <header> der - prioritet 2 i briefen. Det er det nuværende officielle 'SHIMANO'-ordmærke plus de tre farvede streger (grøn/lyseblå/mørkeblå for 'land, himmel, hav'), indført ved brandfornyelsen i 2021 (se shimano.com/en/cms/news/japan/news_detail_544.html), ikke det ældre rene ordmærke. Alle farver (blå tekst + tre streger) er samlet til én currentColor, så de tre streger mister deres individuelle farver i den ensfarvede visning. ViewBox beskåret stramt (målt med getBBox, matcher næsten præcis kildens 0 0 120.996 29.809). Ingen id'er, scripts, styles eller eksterne referencer i den rensede fil. Ingen offentlige brugsregler (clear space/minimumsstørrelse) fundet - kun presseomtale af selve brandfornyelsen."
+  },
+  {
+    "name": "SRAM",
+    "slug": "sram",
+    "url": "https://www.sram.com",
+    "category": "Gear & komponenter",
+    "logo": "assets/logos/sram.png",
+    "logoSource": "https://www.sram.com/globalassets/publicsites/logo-guidelines/brand-logo-art-files/sram-brand-logo-art-files_v05.zip",
+    "scale": 0.85,
+    "featured": false,
+    "notes": "Bekræftet: amerikansk komponentproducent (sram.com). Officielt 'Brand Logo Art Files' ZIP (3,3 MB) hentet fra sram.com/en/company/campaigns/logos - indeholder kun PNG og EPS, ingen SVG. Den sorte PNG (SMR_logo_Black.png, 1374x177 px, transparent, allerede stramt beskåret om bogstaverne) er valgt som sram.png/sram-original.png - prioritet 3 i briefen, ingen omtegning. De officielle brandretningslinjer (SMR_logo_corporate_guidelines_v05.pdf, samme side) kræver: logoet må kun bruges ensfarvet sort, hvid eller rødt (PMS 186C/#E51937), 'SRAM' skrives altid med versaler, der skal være fri plads omkring logoet (eksakt mål vises kun grafisk i PDF'en, ikke som tal), minimumshøjde 3,175 mm/0,125\" digitalt, og al brug skal principielt godkendes af SRAMs Creative Director før produktion - relevant at kende, selvom denne side kun viser hvilke mærker butikken forhandler. Da det er en PNG (ikke SVG), skal build-trinnet bruge CSS-maske i stedet for currentColor."
+  },
+  {
+    "name": "Pelago",
+    "slug": "pelago",
+    "url": "https://pelagobicycles.com",
+    "category": "Cykler",
+    "logo": "assets/logos/pelago.png",
+    "logoSource": "https://pelagobicycles.com/wp-content/themes/pelago/static_images/logo-white.png",
+    "scale": 1.4,
+    "featured": false,
+    "notes": "FLAG TIL SØREN: Bekræftet at det er Pelago Bicycles, det finske by-/pendlercykelmærke fra Helsinki (pelagobicycles.com/about - grundlagt 2009 af brødrene Mikko og Timo Hyppönen). Intet presskit eller SVG fundet noget sted på sitet, og en separat /press-side loader helt tom. Pelago har kun to officielle logofiler overhovedet: 1) et rundt 'Pelago Bicycles / Serve the Purpose / Helsinki / Firmitas Utilitas Venustas'-emblem (ikon+tekst kombineret), og 2) et rent 'Pelago'-ordmærke uden 'BICYCLES', kun i hvidt, fundet i sidens header/footer (logo-white.png). Da briefen bad om det vandrette ordmærke frem for et ikon, er ordmærket valgt - MEN filen er kun 186x81 px, altså markant under den ønskede minimumsbredde på 600 px, og det er den højeste opløsning der findes offentligt på sitet. Allerede stramt beskåret, ingen yderligere beskæring nødvendig. Scale sat til det maksimalt tilladte 1.4, da ordmærket er kompakt/firkantet og ellers virker lille ved siden af de andre mærker. Ingen offentlige brugsregler fundet."
+  },
+  {
+    "name": "Christiania Bikes",
+    "slug": "christiania-bikes",
+    "url": "https://www.christianiabikes.com",
+    "category": "Ladcykler",
+    "logo": "assets/logos/christiania-bikes.png",
+    "logoSource": "https://www.christianiabikes.com/wp-content/uploads/2022/06/logo.png",
+    "scale": 0.95,
+    "featured": false,
+    "notes": "Bekræftet: dansk ladcykel-producent (christianiabikes.com). Intet separat presse-/medieside fundet i navigationen. Logoet er hentet som PNG fra forsidens header (wp-content/uploads/2022/06/logo.png, 500x62 px, transparent, allerede stramt beskåret) - prioritet 2/3 i briefen. Det er et kombineret ikon+ordmærke (tre voksende prikker + 'christiania bikes' med ®-mærke); beholdt som én samlet enhed uden at adskille ikonet, som briefen foreskriver for kombinerede logoer. Ingen SVG fundet noget sted på sitet (kun UI-/socialikoner som inline SVG, intet relateret til selve logoet). Ingen offentlige brugsregler (clear space/minimumsstørrelse) fundet offentligt."
   }
 ]

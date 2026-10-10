@@ -293,3 +293,30 @@ html[data-fonts="fallback"] {
   --font-heading: var(--font-heading-fallback);
   --font-body: var(--font-body-fallback);
 }
+
+/* =====================================================================
+   SØREN'S COLOUR CHOICE (2026-10-10): deep dusty blue instead of Press red
+   Press has no dusty blue swatch, but Baseline lets each colour scheme use
+   any colour, so this is a normal theme setting, not a new design.
+   - Text, accent, buttons and logos: #46627F (6.34:1 on white, passes WCAG AA
+     for small text, which the red #FF2E00 at 3.72:1 did not)
+   - Lines: #C8D0D9, the same 30% tint of the main colour that Press uses
+     for its pink lines
+   To go back to Press red: delete this block and run node placeholder/build.mjs.
+   ===================================================================== */
+:root {
+  --color-text: #46627f;
+  --color-accent: #46627f;
+  --color-button-bg: #46627f;
+  --color-button-border: #46627f;
+  --color-button-bg-hover: #46627f;
+  --color-button-secondary-text: #46627f;
+  --color-button-secondary-border: #46627f;
+  --color-selection-bg: #46627f;
+  --color-line: #c8d0d9;
+  --color-text-rgb: 70 98 127;
+  --color-line-rgb: 200 208 217;
+  --color-text-faded: rgb(70 98 127 / 0.4);
+  --color-text-muted: rgb(70 98 127 / 0.6);
+  --color-media-placeholder: rgb(70 98 127 / 0.05);
+}
