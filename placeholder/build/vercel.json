@@ -1,0 +1,64 @@
+{
+  "redirects": [
+    {
+      "source": "/butik/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/products/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/collections/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/pages/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/blogs/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/policies/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/account/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/cart/:path*",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/search",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/password",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/index.php",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/da/:path*",
+      "destination": "/",
+      "permanent": false
+    }
+  ]
+}

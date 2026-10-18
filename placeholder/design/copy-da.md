@@ -107,5 +107,8 @@ newsletter.button = Giv mig besked
 newsletter.email.label = Din e-mail
 footer.text = Byman Cykler – personlig rådgivning, salg og værksted for cykelentusiaster i København.
 footer.privacy = Vi tæller besøg anonymt og uden cookies.
+notfound.title = Siden findes ikke
+notfound.text = Siden, du leder efter, findes ikke længere. Vores nye webshop er på vej – indtil da finder du åbningstider, adresse og kontakt på forsiden.
+notfound.link = Gå til forsiden
 photo.alt = Mørkegrå butiksfacade med et hvidt BYMAN-logo i en rund ramme og teksten CYKLER i mindre bogstaver under – indgangen til Byman Cykler på Øster Farimagsgade.
 ```

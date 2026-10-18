@@ -285,7 +285,7 @@ const S = {};
 }
 // Every key the page needs, with the {placeholders} it must contain.
 const REQUIRED_STRINGS = {
-  'meta.title': [], 'meta.description': [], 'hero.eyebrow': [], 'hero.headline': [], 'hero.scroll.pause': [], 'band.scroll.pause': [], 'footer.privacy': [], 'hero.intro': [],
+  'meta.title': [], 'meta.description': [], 'hero.eyebrow': [], 'hero.headline': [], 'hero.scroll.pause': [], 'band.scroll.pause': [], 'footer.privacy': [], 'notfound.title': [], 'notfound.text': [], 'notfound.link': [], 'hero.intro': [],
   'hours.heading': [], 'hours.special.heading': [], 'hours.status.open': ['close'], 'hours.status.opensLater': ['open'],
   'hours.status.opensTomorrow': ['open'], 'hours.status.opensOn': ['day', 'open'], 'hours.status.closedToday': [],
   'hours.notice.special': ['date', 'hours'], 'hours.source': [], 'hours.closed': [], 'hours.today': [],
@@ -820,6 +820,43 @@ for (const f of readdirSync(OUT_FONTS)) if (!fontFiles.includes(f)) unlinkSync(j
 for (const f of fontFiles) copyFileSync(join(FONT_DIR, f), join(OUT_FONTS, f));
 writeFileSync(join(OUT, 'index.html'), html);
 writeFileSync(join(OUT, 'tokens.css'), `/* GENERATED copy of design/tokens.css, made by build.mjs. Edit design/tokens.css, not this file. */\n${tokensCss}`);
+
+/* ---------- SEO helpers for the live site (2026-10-18) ---------- */
+// Old addresses from the earlier webshop (/butik/...) and from Shopify (/products/... etc.) send
+// visitors to the front page. TEMPORARY redirects (307), because the real webshop will use these
+// paths again on launch day. Vercel reads vercel.json from build/ (the project's root directory).
+const OLD_PATHS = ['/butik/:path*', '/products/:path*', '/collections/:path*', '/pages/:path*', '/blogs/:path*',
+  '/policies/:path*', '/account/:path*', '/cart/:path*', '/search', '/password', '/index.php', '/da/:path*'];
+writeFileSync(join(OUT, 'vercel.json'), JSON.stringify({
+  redirects: OLD_PATHS.map((source) => ({ source, destination: '/', permanent: false })),
+}, null, 2) + '\n');
+// robots.txt + sitemap.xml: search engines are welcome; the sitemap lists the one page.
+if (PAGE_URL) {
+  writeFileSync(join(OUT, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${abs('sitemap.xml')}\n`);
+  writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${esc(PAGE_URL)}</loc><lastmod>${buildDay}</lastmod></url>\n</urlset>\n`);
+}
+// 404 page for anything else: Danish, same look, never indexed.
+writeFileSync(join(OUT, '404.html'), `<!doctype html>
+<html lang="da" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(S['notfound.title'])} – ${esc(name)}</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/tokens.css">
+<link rel="stylesheet" href="/styles.css">
+<style>${FONTS.map((f) => `@font-face { font-family: "${f.family}"; src: url(/fonts/${f.file}) format("woff2"); font-weight: ${f.weight}; font-display: swap; }`).join(' ')}</style>
+</head>
+<body>
+<main class="intro" style="min-height:70vh;display:grid;place-content:center;gap:var(--space-sm)">
+  <h1>${esc(S['notfound.title'])}</h1>
+  <p class="lede">${esc(S['notfound.text'])}</p>
+  <p><a class="btn btn--primary" href="/">${esc(S['notfound.link'])}</a></p>
+</main>
+</body>
+</html>
+`);
 
 /* ---------- 6. Report ---------- */
 
