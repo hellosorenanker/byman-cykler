@@ -695,13 +695,10 @@ const head = [
   photo && PAGE_URL ? `<meta property="og:image" content="${esc(abs(photo.og.url))}">\n<meta property="og:image:width" content="${photo.og.w}">\n<meta property="og:image:height" content="${photo.og.h}">\n<meta property="og:image:alt" content="${esc(S['photo.alt'])}">` : '',
   `<link rel="icon" href="data:,">`,
   ...FONTS.filter((f) => f.preload).map((f) => `<link rel="preload" href="fonts/${f.file}" as="font" type="font/woff2" crossorigin>`),
-  VERCEL_ANALYTICS_SCRIPT ? `<script>/* Vercel Web Analytics (VERCEL_ANALYTICS_SCRIPT in build.mjs): no cookies, anonymous counts. Only on the live site. */
+  VERCEL_ANALYTICS_SCRIPT ? `<script>/* Vercel Web Analytics: privacy-friendly, no cookies, anonymous page view counts. */
 window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-(function (h) {
-  if (location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || /\\.localhost$/.test(h)) return;
-  var s = document.createElement('script'); s.defer = true; s.src = ${JSON.stringify(VERCEL_ANALYTICS_SCRIPT)}; document.head.appendChild(s);
-})(location.hostname);
-</script>` : '',
+</script>
+<script defer src=${JSON.stringify(VERCEL_ANALYTICS_SCRIPT)}></script>` : '',
   `<script>/* no-js -> js; ?nojs=1 previews the page without JavaScript */ if (!/[?&]nojs=1(&|$)/.test(location.search)) document.documentElement.classList.replace('no-js', 'js');</script>`,
   `<link rel="stylesheet" href="tokens.css">`,
   `<link rel="stylesheet" href="styles.css">`,
