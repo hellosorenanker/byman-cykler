@@ -22,31 +22,31 @@
     {
       "day": "monday",
       "open": "09:00",
-      "close": "16:00",
+      "close": "17:00",
       "closed": false
     },
     {
       "day": "tuesday",
       "open": "09:00",
-      "close": "16:00",
+      "close": "17:00",
       "closed": false
     },
     {
       "day": "wednesday",
-      "open": "11:00",
+      "open": "09:00",
       "close": "17:00",
       "closed": false
     },
     {
       "day": "thursday",
       "open": "09:00",
-      "close": "16:00",
+      "close": "17:00",
       "closed": false
     },
     {
       "day": "friday",
       "open": "09:00",
-      "close": "16:00",
+      "close": "17:00",
       "closed": false
     },
     {
@@ -122,10 +122,10 @@
       "note": "byman-cykler.dk is currently the Shopify password/coming-soon page — this is the same site this placeholder is meant to sit behind. Internal Shopify shop name is 'Byman Sport' and the myshopify.com handle is byman-cykler, but the public-facing title on the page and everywhere else is 'Byman Cykler' — see disagreements."
     },
     "openingHours": {
-      "url": "https://www.google.com/maps/place/Byman+Cykler/@55.691656,12.5766201,17z/data=!3m1!4b1!4m6!3m5!1s0x46525302b34557e7:0x2ce360f597b2c25f!8m2!3d55.691656!4d12.5766201!16s%2Fg%2F1vspq36y",
-      "retrieved": "2026-10-09",
+      "url": "",
+      "retrieved": "2026-11-17",
       "confidence": "high",
-      "note": "Read from the expanded weekly-hours panel on the Google Business Profile (per Søren's rule, Google wins on hours). Krak lists no hours. The shop's Instagram bio (Mon–Fri 09–15) disagrees, see data-sources.md. Confidence raised from medium to high because Søren confirmed at Gate 1 (2026-10-09) that the Google hours are correct and the Instagram bio is outdated."
+      "note": "New hours given by Søren (shop owner) on 2026-11-17: Mon–Fri 09–17, Sat 11–14, Sun closed. Replaces the Google hours read on 2026-10-09 (Mon/Tue/Thu/Fri 09–16, Wed 11–17)."
     },
     "social.instagram": {
       "url": "https://byman-cykler.dk",
